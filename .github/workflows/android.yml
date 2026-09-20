@@ -31,15 +31,17 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
-        run: echo "$KEYSTORE_B64" | base64 -d > release.jks
+        # Gradle resolves a relative store path against the app module, so
+        # hand it an absolute one.
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ABR_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
       - name: Build release APK
         env:
-          ABR_KEYSTORE_FILE: ${{ startsWith(github.ref, 'refs/tags/v') && 'release.jks' || '' }}
           ABR_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ABR_KEY_ALIAS: antibrainrot
           ABR_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          if [ -z "$ABR_KEYSTORE_FILE" ]; then unset ABR_KEYSTORE_FILE; fi
           ./gradlew --no-daemon :app:assembleRelease
           version=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
           cp app/build/outputs/apk/release/app-release.apk "anti-brainrot-$version.apk"
