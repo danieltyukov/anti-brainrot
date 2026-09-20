@@ -1,23 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Unrot toolbar and store icon: the mark on a sky blue rounded square. -->
+  <!-- Unrot toolbar and store icon (48 px and 128 px): the mark on a sky blue
+       rounded square. Corner radius is 22 percent of the tile. -->
   <rect id="tile" width="128" height="128" rx="28" fill="#73b8ee"/>
-  <!-- Same path as assets/logo.svg, scaled so the mark spans about 62% of the tile. -->
+  <!-- Same path data as assets/logo.svg, scaled so the mark spans about 63
+       percent of the tile width and sits on its optical centre. -->
   <path id="mark" fill="#1a1a2e" fill-rule="evenodd" transform="translate(17 15.6) scale(0.189)" d="
-    M 162 110
-    C 312 102 368 197 463 252
-    C 468 254 468 258 463 260
-    C 362 318 318 412 162 402
-    C 132 400 106 376 106 346
-    C 103 324 102 300 102 278
-    C 86 280 68 276 56 271
-    C 36 270 36 242 56 241
-    C 68 236 86 232 102 234
-    C 102 212 103 188 106 166
-    C 106 136 132 112 162 110
+    M 165 110
+    C 225 106 281 127 331 157
+    C 356 173 381 193 403 210
+    C 426 227 446 241 466 252
+    C 472 254 472 258 466 260
+    C 446 273 426 292 403 309
+    C 381 326 355 341 330 356
+    C 280 387 225 407 165 402
+    C 135 400 109 376 109 342
+    C 105 318 103 294 103 273
+    C 89 275 71 277 59 275
+    C 43 278 37 252 53 249
+    C 69 244 87 240 103 239
+    C 103 214 105 188 109 162
+    C 109 134 135 112 165 110
     Z
-    M 116 234
-    C 182 224 332 220 406 250
-    C 332 250 182 265 116 278
-    C 107 274 107 238 116 234
+    M 117 238
+    C 185 228 335 218 409 240
+    C 335 240 185 262 117 274
+    C 109 271 109 241 117 238
     Z"/>
 </svg>

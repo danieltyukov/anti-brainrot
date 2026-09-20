@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Unrot toolbar icon for 16 px and 32 px. Same blade as assets/icon.svg,
+       but the mark fills 72 percent of the tile, the stem is shorter and
+       stockier, and the midrib is wider so it survives the downscale. -->
+  <rect id="tile" width="128" height="128" rx="28" fill="#73b8ee"/>
+  <!-- Blade: identical to the logo. Stem and midrib: heavier variants. -->
+  <path id="mark" fill="#1a1a2e" fill-rule="evenodd" transform="translate(8.5 8.2) scale(0.218)" d="
+    M 165 110
+    C 225 106 281 127 331 157
+    C 356 173 381 193 403 210
+    C 426 227 446 241 466 252
+    C 472 254 472 258 466 260
+    C 446 273 426 292 403 309
+    C 381 326 355 341 330 356
+    C 280 387 225 407 165 402
+    C 135 400 109 376 109 342
+    C 105 318 103 296 103 276
+    C 91 278 78 279 68 278
+    C 46 279 44 245 66 244
+    C 78 241 91 239 103 238
+    C 103 214 105 188 109 162
+    C 109 134 135 112 165 110
+    Z
+    M 118 228
+    C 185 216 335 208 400 242
+    C 335 244 185 270 118 284
+    C 108 280 108 232 118 228
+    Z"/>
+</svg>

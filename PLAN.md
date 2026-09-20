@@ -255,7 +255,7 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 
 - [x] Step 1: tests: `start(5000, 1000)` -> remaining 5000; `tick(state, 3500)` -> 2500 counting; `tick(state, 6000)` -> 0 done; `format(299000)` -> `'4:59'`; `format(7000)` -> `'0:07'`; `format(3600000)` -> `'1:00:00'`; `delayLabel(0)` -> `'Instant'`, `delayLabel(300)` -> `'5 minutes'`, `delayLabel(3600)` -> `'1 hour'`.
 - [x] Step 2: implement, tests pass, commit `feat: countdown state machine`.
-- [ ] Step 3: popup. Layout 360 px wide, max height 560 px, scrollable list.
+- [x] Step 3: popup. Layout 360 px wide, max height 560 px, scrollable list.
   - Header: icon, "Anti-Brainrot", theme button (cycles system, light, dark), power button.
   - Filter-off panel: text "Filter is off", select of `DELAY_CHOICES` labelled by `delayLabel`, primary button "Turn on". Selecting writes `unlockDelaySec`; button writes `focus.enabled=true`.
   - Filter-on: list of toggles rendered from `AntiBrainrot.features.roots()` with nested children. Shorts row: checked, disabled, hint "always on". Each change calls `S.update({features:{[id]:checked}})`.
@@ -263,8 +263,8 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
   - Footer links: Options (`chrome.runtime.openOptionsPage()`), GitHub, Report issue.
   - Theme: `data-theme` on `<html>`; `system` uses `prefers-color-scheme`.
   - Colours: light bg #e9f4fd, surface #ffffff, ink #1a1a2e, muted #2c3e50, accent #3d8fd1; dark bg #0a1220, surface #16213a, ink #eceade, accent #73b8ee.
-- [ ] Step 4: E2E in Chrome using `trigger_extension_action` or by opening `chrome-extension://<id>/popup/popup.html` in a tab: toggles persist and apply to an open YouTube tab without reload; countdown runs; closing the tab mid-countdown leaves the filter on; countdown completion turns it off; delay select is disabled while on.
-- [ ] Step 5: Commit `feat: popup with toggles and friction timer`, tag `v0.2.0`.
+- [x] Step 4: E2E in Chrome using `trigger_extension_action` or by opening `chrome-extension://<id>/popup/popup.html` in a tab: toggles persist and apply to an open YouTube tab without reload; countdown runs; closing the tab mid-countdown leaves the filter on; countdown completion turns it off; delay select is disabled while on.
+- [x] Step 5: Commit `feat: popup with toggles and friction timer`, tag `v0.2.0`.
 
 ## Task 6: Educational mode
 

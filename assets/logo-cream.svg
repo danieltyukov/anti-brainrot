@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Unrot mark: a leaf whose silhouette is a play triangle pointing right.
-       Navy ink for light backgrounds.
+       Cream ink for dark backgrounds.
        One path, two subpaths, evenodd fill rule:
        subpath 1 (M 165 110 ... Z) is the blade, drawn clockwise from the top
        left corner: top edge, tip, bottom edge, base, stem, base, corner.
        subpath 2 (M 117 238 ... Z) is the midrib, a tapered sliver that the
        evenodd rule cuts out of the blade so the background shows through. -->
-  <path id="mark" fill="#1a1a2e" fill-rule="evenodd" d="
+  <path id="mark" fill="#eceade" fill-rule="evenodd" d="
     M 165 110
     C 225 106 281 127 331 157
     C 356 173 381 193 403 210
