@@ -154,27 +154,27 @@ Unrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minute', '5 
 **Files:** `package.json`, `.gitignore`, `.editorconfig`, `LICENSE`,
 `README.md` (stub), `CLAUDE.md`, `PLAN.md`, `docs/specs/...`
 
-- [ ] Step 1: package.json with `test`, `check`, `build`, `icons` scripts and no dependencies.
-- [ ] Step 2: git init on `main`, verify `git config user.email` is the global noreply address.
-- [ ] Step 3: `gh repo create danieltyukov/yt-anti-brain-rot --public --source . --push`.
-- [ ] Step 4: commit `chore: scaffold repository`.
+- [x] Step 1: package.json with `test`, `check`, `build`, `icons` scripts and no dependencies.
+- [x] Step 2: git init on `main`, verify `git config user.email` is the global noreply address.
+- [x] Step 3: `gh repo create danieltyukov/yt-anti-brain-rot --public --source . --push`.
+- [x] Step 4: commit `chore: scaffold repository`.
 
 ## Task 2: Feature registry and settings library (TDD)
 
 **Files:** `extension/lib/features.js`, `extension/lib/settings.js`,
 `test/features.test.js`, `test/settings.test.js`, `test/helpers/chrome-mock.js`
 
-- [ ] Step 1: write `test/features.test.js`: every id unique; every parent exists; `roots()` preserves table order; `children('sidebar')` returns the four children in order; `shorts` is `locked`.
-- [ ] Step 2: run `node --test` and see it fail (module missing).
-- [ ] Step 3: implement `features.js` from the table above.
-- [ ] Step 4: write `test/settings.test.js` using a `chrome.storage.sync` mock (in-memory object with `get`, `set`, `onChanged.addListener`):
+- [x] Step 1: write `test/features.test.js`: every id unique; every parent exists; `roots()` preserves table order; `children('sidebar')` returns the four children in order; `shorts` is `locked`.
+- [x] Step 2: run `node --test` and see it fail (module missing).
+- [x] Step 3: implement `features.js` from the table above.
+- [x] Step 4: write `test/settings.test.js` using a `chrome.storage.sync` mock (in-memory object with `get`, `set`, `onChanged.addListener`):
   - `defaults()` matches the table defaults, `focus.unlockDelaySec === 300`, `educational.allowedCategories` equals `DEFAULT_ALLOWED`.
-  - `normalize({})` equals `defaults()`; `normalize({features:{comments:'no'}})` coerces to boolean false; unknown feature keys are dropped; `unlockDelaySec` not in `DELAY_CHOICES` falls back to 300; `theme: 'purple'` falls back to `'system'`.
+  - `normalize({})` equals `defaults()`; `normalize({features:{mixes:'no'}})` ignores non-boolean values (keeps default); unknown feature keys are dropped; `unlockDelaySec` not in `DELAY_CHOICES` falls back to 300; `theme: 'purple'` falls back to `'system'`.
   - `isActive`: filter off gives false for everything; `sidebarRecommended` false when `sidebar` true; `redirectHome` false when `homeFeed` false; `shorts` is always... not part of isActive (locked features return true while filter on, but CSS does not depend on it).
   - `activeAttributes(defaults())` equals the exact expected array in table order.
   - `load()` on empty storage returns defaults; `save()` then `load()` round trips; `update({focus:{enabled:false}})` keeps `unlockDelaySec`.
-- [ ] Step 5: implement `settings.js`. `load` must not throw when `chrome` is undefined (returns defaults, logs once).
-- [ ] Step 6: `node --test` passes. Commit `feat: add feature registry and settings library`.
+- [x] Step 5: implement `settings.js`. `load` must not throw when `chrome` is undefined (returns defaults, logs once).
+- [x] Step 6: `node --test` passes. Commit `feat: add feature registry and settings library`.
 
 ## Task 3: Shorts redirect, manifest, background, first load in Chrome
 
