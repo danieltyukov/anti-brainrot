@@ -73,7 +73,18 @@ Website: https://danieltyukov.github.io/anti-brainrot/
   <img src="site/assets/screenshots/watch-blocked.png" alt="A watch page blocked by educational mode" width="720">
 </p>
 
-## Install
+## Android app
+
+The same rules on the phone: Shorts, Reels and Spotlight closed inside their
+apps, distracting apps behind a pause and a timed pass, adult and distracting
+sites filtered at the DNS level, the friction timer, locked hours, Lock for N
+hours, strict mode. Download `anti-brainrot-<version>.apk` from the
+[latest release](https://github.com/danieltyukov/anti-brainrot/releases/latest),
+open it on the phone, allow installing from that source, then follow the
+Setup screen. Android 8 or newer. Details, permissions and limits in
+[docs/ANDROID.md](docs/ANDROID.md).
+
+## Install the extension
 
 From the Chrome Web Store: coming soon.
 
@@ -183,6 +194,7 @@ extension/            the unpacked extension (load this folder)
                       distractions.js and distractions-main.js (registered on demand)
   popup/ options/ blocked/
   rules/              declarativeNetRequest rulesets
+android/              the Android app (Kotlin, Jetpack Compose); see docs/ANDROID.md
 assets/               logo and icon sources (SVG)
 site/                 the website, deployed to GitHub Pages
 scripts/              check, build, icons, blocklist generator

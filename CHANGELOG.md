@@ -5,6 +5,18 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-20
+
+### Added
+- Android app (`android/`), attached to releases as an APK: Shorts, Reels
+  and Spotlight closed inside their apps, blocked apps with pause, intention,
+  timed passes, daily budget and cooldown, notification hiding, a DNS-level
+  filter for adult and distracting sites, the friction timer, locked hours,
+  Lock for N hours, strict mode, daily counters. Setup screen for the
+  permissions Android needs.
+- Emulator test helper (`android/scripts/emu.sh`) and a stand-in YouTube app
+  for exercising the detector.
+
 ## [1.1.3] - 2026-09-20
 
 ### Fixed

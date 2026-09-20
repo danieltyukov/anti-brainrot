@@ -357,3 +357,14 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 Ideas not done yet, from the research: channel and keyword block list on
 YouTube, escalating pauses, a weekly unlock limit, a paragraph or
 friend-password unlock mode, allow-only mode during locked hours.
+
+
+## Task 12: Android app (done 2026-09-20, v1.2.0)
+
+- [x] Research: AppBlock features and Android techniques (`docs/research/mobile.md`).
+- [x] Kotlin core mirroring the extension rules (settings, loosening, locks, passes, domains) with JVM tests.
+- [x] Accessibility service (foreground, feeds, block trigger, strict mode), DNS VPN, notification listener, block screen, Compose UI, setup screen.
+- [x] Emulator end to end run (docs/E2E.md), CI signing and APK on releases.
+- [x] Docs and site.
+
+Not done: educational-only mode in the YouTube app (no category data), location and Wi-Fi schedules, per-app time metering, allow-only mode.

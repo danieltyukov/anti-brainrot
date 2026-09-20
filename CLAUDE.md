@@ -6,6 +6,13 @@ distractions behind a friction timer, optional educational-only playback.
 Read `docs/PLAN.md` first (the build plan, complete as of v1.0.0), then
 `docs/specs/2026-09-20-anti-brainrot-design.md` (why). Keep both current.
 
+The Android app lives in `android/` (Kotlin, Compose). Build with
+`cd android && ./gradlew :app:assembleDebug :app:testDebugUnitTest`. Test on
+the emulator with `android/scripts/emu.sh` (install, grant, shot, tap, front).
+The Android 16 Play image crash-loops on this machine (surfaceflinger
+RegionSampling); use the Android 15 AVD `m2a_pixel`. After reinstalling the
+app, cycle accessibility or reboot the emulator so the service binds again.
+
 ## Conventions
 
 - No build step. `extension/` loads unpacked as is. Library files attach to

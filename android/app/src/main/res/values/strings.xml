@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Anti-Brainrot</string>
+    <string name="accessibility_description">Anti-Brainrot uses this service to see which app is in front, to close YouTube Shorts, Instagram Reels and similar feeds, and to show its block screen over apps you chose to block. It reads nothing else and sends nothing anywhere.</string>
+    <string name="notification_listener_description">Hides notifications from the apps you block while the filter is on.</string>
+    <string name="vpn_channel">Site filter</string>
+    <string name="vpn_running">Site filter is on</string>
+    <string name="vpn_running_text">Adult and distracting sites are being filtered on this device.</string>
+</resources>
