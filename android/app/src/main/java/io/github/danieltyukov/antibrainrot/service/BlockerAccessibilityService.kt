@@ -139,13 +139,30 @@ class BlockerAccessibilityService : AccessibilityService() {
         if (!settings.focus.enabled) return false
         if (pkg != "com.android.settings" && !pkg.startsWith("com.google.android.settings")) return false
         val label = getString(io.github.danieltyukov.antibrainrot.R.string.app_name)
-        val hit = root.findAccessibilityNodeInfosByText(label).isNotEmpty()
+        // findAccessibilityNodeInfosByText finds nothing inside Compose
+        // screens (the App info page is one), so walk the tree ourselves.
+        val hit = root.findAccessibilityNodeInfosByText(label).isNotEmpty() || treeHasText(root, label)
+        if (BuildConfig.DEBUG) Log.d(TAG, "settings guard hit=$hit")
         if (!hit) return false
         val now = System.currentTimeMillis()
         if (now - lastBackAt < 700) return true
         lastBackAt = now
         performGlobalAction(GLOBAL_ACTION_BACK)
         return true
+    }
+
+    private fun treeHasText(root: AccessibilityNodeInfo, needle: String, limit: Int = 600): Boolean {
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var seen = 0
+        while (queue.isNotEmpty() && seen < limit) {
+            val node = queue.removeFirst()
+            seen += 1
+            if (node.text?.contains(needle, ignoreCase = true) == true) return true
+            if (node.contentDescription?.contains(needle, ignoreCase = true) == true) return true
+            for (i in 0 until node.childCount) node.getChild(i)?.let { queue.add(it) }
+        }
+        return false
     }
 
     private fun block(pkg: String) {

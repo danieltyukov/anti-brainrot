@@ -39,6 +39,7 @@ import io.github.danieltyukov.antibrainrot.ui.AppViewModel
 import io.github.danieltyukov.antibrainrot.ui.ChoiceRow
 import io.github.danieltyukov.antibrainrot.ui.InlineChoice
 import io.github.danieltyukov.antibrainrot.ui.SectionCard
+import io.github.danieltyukov.antibrainrot.ui.count
 import io.github.danieltyukov.antibrainrot.ui.delayLabel
 import kotlinx.coroutines.delay
 
@@ -93,7 +94,7 @@ fun HomeScreen(vm: AppViewModel, s: Settings, l: LocalState?) {
         val stats = l?.stats
         if (stats != null && stats.day == Passes.dayKey() && (stats.blocks > 0 || stats.passes > 0 || stats.feedsClosed > 0)) {
             SectionCard("Today") {
-                Text("Blocked apps ${stats.blocks} time${if (stats.blocks == 1) "" else "s"}, ${stats.passes} pass${if (stats.passes == 1) "" else "es"} used, Shorts and Reels closed ${stats.feedsClosed} time${if (stats.feedsClosed == 1) "" else "s"}.")
+                Text("Blocked apps ${count(stats.blocks, "time")}, ${count(stats.passes, "pass", "passes")} used, Shorts and Reels closed ${count(stats.feedsClosed, "time")}.")
             }
         }
         SectionCard("Always on") {

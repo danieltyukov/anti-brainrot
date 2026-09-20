@@ -3,6 +3,8 @@ package io.github.danieltyukov.antibrainrot.ui.screens
 import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +28,7 @@ import io.github.danieltyukov.antibrainrot.ui.SwitchRow
 
 private val DAY_NAMES = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ScheduleScreen(vm: AppViewModel, s: Settings) {
     val context = LocalContext.current
@@ -37,7 +40,7 @@ fun ScheduleScreen(vm: AppViewModel, s: Settings) {
         SectionCard("Locked hours", "During these hours the filter turns itself on and cannot be turned off, not even with the countdown.") {
             SwitchRow("Enable locked hours", s.schedule.enabled) { v -> vm.update { it.copy(schedule = it.schedule.copy(enabled = v)) } }
             Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 (1..7).forEach { day ->
                     val on = day in s.schedule.days
                     FilterChip(selected = on, onClick = {

@@ -88,6 +88,9 @@ fun <T> InlineChoice(value: T, choices: List<T>, enabled: Boolean = true, text: 
     }
 }
 
+// "1 pass", "2 passes", "3 times".
+fun count(n: Int, one: String, many: String = one + "s"): String = "$n ${if (n == 1) one else many}"
+
 fun minutesLabel(minutes: Int): String = when {
     minutes == 0 -> "None"
     minutes >= 1440 -> "Unlimited"

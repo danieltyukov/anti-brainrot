@@ -30,6 +30,7 @@ import io.github.danieltyukov.antibrainrot.core.Settings
 import io.github.danieltyukov.antibrainrot.ui.AppViewModel
 import io.github.danieltyukov.antibrainrot.ui.ChoiceRow
 import io.github.danieltyukov.antibrainrot.ui.SectionCard
+import io.github.danieltyukov.antibrainrot.ui.count
 import io.github.danieltyukov.antibrainrot.ui.SwitchRow
 
 @Composable
@@ -40,7 +41,11 @@ fun MoreScreen(vm: AppViewModel, s: Settings, l: LocalState?, onSetup: () -> Uni
         SectionCard("Today") {
             val stats = l?.stats
             val today = stats != null && stats.day == Passes.dayKey()
-            Text("Blocked apps ${if (today) stats!!.blocks else 0} times, ${if (today) stats!!.passes else 0} passes used, Shorts and Reels closed ${if (today) stats!!.feedsClosed else 0} times, ${l?.let { Passes.budgetLeft(it, s.apps) } ?: s.apps.dailyBudgetMinutes} minutes of pass budget left.")
+            val blocks = if (today) stats!!.blocks else 0
+            val passes = if (today) stats!!.passes else 0
+            val feeds = if (today) stats!!.feedsClosed else 0
+            val left = l?.let { Passes.budgetLeft(it, s.apps) } ?: s.apps.dailyBudgetMinutes
+            Text("Blocked apps ${count(blocks, "time")}, ${count(passes, "pass", "passes")} used, Shorts and Reels closed ${count(feeds, "time")}, ${count(left, "minute")} of pass budget left.")
         }
         SectionCard("Your reason", "One line shown on every block screen. Written by you, for you.") {
             OutlinedTextField(reason, { reason = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = { Text("Thesis due in March.") })
