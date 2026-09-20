@@ -89,7 +89,8 @@
         for (const child of F.children(root.id)) list.appendChild(makeRow(child, true));
       }
     }
-    list.classList.toggle('disabled', !settings.focus.enabled);
+    // While the filter is off everything is editable; that is when loosening
+    // changes are meant to happen.
   }
 
   function renderDelaySelect() {

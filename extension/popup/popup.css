@@ -190,11 +190,6 @@ select {
   padding: 8px 6px 8px 14px;
 }
 
-.list.disabled {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
 .group-title {
   margin: 10px 0 4px;
   font-size: 11.5px;
