@@ -97,8 +97,12 @@ fun AppRoot() {
 
     AntiBrainrotTheme(s.theme) {
         Box(Modifier.fillMaxSize().background(Theme.extra.pageGradient)) {
+            // The container is transparent so the gradient shows through; the
+            // content colour has to be set by hand or text outside cards
+            // falls back to black, invisible in the dark theme.
             Scaffold(
                 containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground,
                 topBar = { Header(s, showSetup) },
                 snackbarHost = { SnackbarHost(snackbar) },
                 bottomBar = {

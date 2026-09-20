@@ -5,6 +5,14 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-20
+
+### Fixed
+- Android: text outside cards (the header title, the app list) was drawn
+  black in the dark theme because the transparent scaffold set no content
+  colour. Status and navigation bar icons now follow the app's own theme
+  choice instead of the system's.
+
 ## [1.3.0] - 2026-09-20
 
 ### Added

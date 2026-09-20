@@ -1,6 +1,10 @@
 package io.github.danieltyukov.antibrainrot.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -114,6 +118,17 @@ fun AntiBrainrotTheme(theme: String = "system", content: @Composable () -> Unit)
         "light" -> false
         "dark" -> true
         else -> isSystemInDarkTheme()
+    }
+    // System bar icons follow the app's theme, not only the system's: the
+    // user can pick Dark while the phone is in light mode.
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            val controller = WindowCompat.getInsetsController(window, view)
+            controller.isAppearanceLightStatusBars = !dark
+            controller.isAppearanceLightNavigationBars = !dark
+        }
     }
     CompositionLocalProvider(LocalExtra provides if (dark) DarkExtra else LightExtra) {
         MaterialTheme(

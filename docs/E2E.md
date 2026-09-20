@@ -153,6 +153,7 @@ second) taps went by coordinates instead.
 | Apps tab | App list loads after the settings cards with a progress bar, rows reorder with animation when one is checked |
 | Locked hours card on Home | Chips and time buttons expand when the switch is on; Sun chip on the second row |
 | Unit tests | 24 pass, including history recording, pruning, streaks, top apps and the Stats migration |
+| Dark theme (1.3.1) | Header title, the Apps list and every tab readable; the 1.3.0 build drew the title and list black. Status bar icons turn light with the Dark theme choice and dark again on System |
 
 Not verifiable on this host: the animations' smoothness at 60 Hz (the
 emulator renders with SwiftShader), dark theme on a real display.
