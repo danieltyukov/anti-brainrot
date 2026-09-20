@@ -316,10 +316,10 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 **Files:** `assets/logo.svg`, `assets/icon.svg`, `assets/wordmark.svg`,
 `extension/icons/*.png`, `scripts/render-icons.sh`
 
-- [ ] Step 1: draw the leaf-as-play-triangle mark by hand as SVG paths, slightly irregular edges, one midrib stroke, navy #1a1a2e on sky #73b8ee rounded square (icon) and on transparent (logo).
-- [ ] Step 2: render with `rsvg-convert -w N` for 16, 32, 48, 128 and view each. At 16 px the mark must still read as a leaf/play shape: simplify strokes for the small sizes if needed (a second `icon-small.svg` is acceptable).
-- [ ] Step 3: load in Chrome, screenshot the toolbar and `chrome://extensions` card, iterate until clean.
-- [ ] Step 4: Commit `feat: logo and icons`.
+- [x] Step 1: draw the leaf-as-play-triangle mark by hand as SVG paths, slightly irregular edges, one midrib stroke, navy #1a1a2e on sky #73b8ee rounded square (icon) and on transparent (logo).
+- [x] Step 2: render with `rsvg-convert -w N` for 16, 32, 48, 128 and view each. At 16 px the mark must still read as a leaf/play shape: simplify strokes for the small sizes if needed (a second `icon-small.svg` is acceptable).
+- [x] Step 3: load in Chrome, screenshot the toolbar and `chrome://extensions` card, iterate until clean.
+- [x] Step 4: Commit `feat: logo and icons`.
 
 ## Task 9: Website
 
@@ -340,5 +340,5 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 - [x] Step 1: `check.mjs`: manifest parses, `manifest.version === package.json version`, every `data-abr-<attr>` in `hide.css` exists in the registry and vice versa (except JS-only), CHANGELOG has a heading for the version.
 - [x] Step 2: `build.sh`: `zip -r dist/anti-brainrot-<v>.zip extension -x '*.DS_Store'`.
 - [x] Step 3: `ci.yml` on push and PR: `npm test`, `npm run check`, `npm run build`, upload zip artifact. `release.yml` on `v*` tags: build and `gh release create` with the zip and notes from CHANGELOG.
-- [ ] Step 4: README: what it is, screenshot, install (store placeholder, release zip, load unpacked), features table, timer explanation, educational mode explanation and its limits, privacy, development (test, check, build, load), contributing, license.
+- [x] Step 4: README: what it is, screenshot, install (store placeholder, release zip, load unpacked), features table, timer explanation, educational mode explanation and its limits, privacy, development (test, check, build, load), contributing, license.
 - [ ] Step 5: Final full E2E pass, record in `docs/E2E.md`, bump to 1.0.0, commit `chore: release 1.0.0`, tag `v1.0.0`, push, verify the release workflow attached the zip.

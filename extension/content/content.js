@@ -24,6 +24,8 @@
   let blocked = false;
   let pausedWhileWaiting = false;
   let autoplayTimer = null;
+  let metaTimer = null;
+  const META_TIMEOUT_MS = 8000;
 
   // ---------------------------------------------------------------- attributes
 
@@ -158,11 +160,7 @@
       (document.body || root).appendChild(overlay);
     }
     const allowed = settings.educational.allowedCategories.join(', ') || 'nothing yet';
-    const category = meta.category || 'an unknown category';
     const title = meta.title ? `"${meta.title}"` : 'This video';
-    const reason = decision.reason === 'unknown'
-      ? `${title} has no category Anti-Brainrot can read, so it stays blocked.`
-      : `${title} is filed under <b></b>.`;
 
     overlay.replaceChildren();
     const card = document.createElement('div');
@@ -175,10 +173,15 @@
     const heading = document.createElement('h1');
     heading.textContent = 'Not on your list';
 
+    // Text nodes only: the title and category come from page data.
     const p1 = document.createElement('p');
-    p1.innerHTML = reason;
-    const bold = p1.querySelector('b');
-    if (bold) bold.textContent = category;
+    if (decision.reason === 'unknown') {
+      p1.textContent = `${title} has no category Anti-Brainrot can read, so it stays blocked.`;
+    } else {
+      const bold = document.createElement('b');
+      bold.textContent = meta.category;
+      p1.append(document.createTextNode(`${title} is filed under `), bold, document.createTextNode('.'));
+    }
 
     const p2 = document.createElement('p');
     p2.textContent = `Educational mode only plays: ${allowed}.`;
@@ -223,11 +226,20 @@
     }
     const id = currentVideoId();
     if (!currentMeta || currentMeta.videoId !== id) {
-      // Fail closed while we wait for metadata: pause and ask the bridge.
+      // Fail closed while we wait for metadata: pause and ask the bridge. If
+      // the bridge never answers, show the block screen rather than a silent
+      // paused player.
       if (pauseVideo()) pausedWhileWaiting = true;
       requestMeta();
+      clearTimeout(metaTimer);
+      metaTimer = setTimeout(() => {
+        if (!settings || !S.isActive(settings, 'educational') || !isWatchPage()) return;
+        if (currentMeta && currentMeta.videoId === currentVideoId()) return;
+        block({ videoId: currentVideoId(), title: '', category: '' }, { allow: false, reason: 'unknown' });
+      }, META_TIMEOUT_MS);
       return;
     }
+    clearTimeout(metaTimer);
     const decision = U.education.decide(currentMeta, settings.educational);
     if (decision.allow) {
       unblock();
@@ -262,6 +274,7 @@
 
   function onNavigateStart() {
     unblock();
+    clearTimeout(metaTimer);
     currentMeta = null;
     pausedWhileWaiting = false;
     redirectIfNeeded();
