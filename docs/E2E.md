@@ -39,6 +39,10 @@ and a Music channel; More from YouTube links to `/premium`, music and kids.
 | Adult blocker, custom domain (example.com) | Block page |
 | Adult blocker, allow list entry for example.com | Site loads; keyword hosts still blocked |
 | Adult blocker, filter off | Ruleset disabled, dynamic rules removed |
+| Hide Top Header | Masthead hidden, page margin 0, player at the top |
+| Hide Video Info | Description and bottom row hidden, title and channel visible |
+| Hide Video Sidebar at 900 px (one-column layout) | Recommendations that YouTube moves below the video are hidden too (fixed in 0.4.x) |
+| Educational mode, allowed video after reload | Plays without a manual resume |
 
 Not verifiable without a signed-in account in the test browser: notification
 bell hiding, live chat hiding, subscriptions channel list hiding, playlist
