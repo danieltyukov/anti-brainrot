@@ -5,6 +5,15 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-20
+
+### Changed
+- Preset corrections from the research pass: Snapchat now covers Spotlight,
+  Discover and Stories and leaves chat open; X adds search and trends;
+  Facebook adds home.php, Videos, Gaming and the groups feed; Instagram adds
+  the feed root and Stories; Bluesky and Tumblr add feeds, explore, tags
+  and search; Pinterest covers the country domains.
+
 ## [1.1.0] - 2026-09-20
 
 ### Added
