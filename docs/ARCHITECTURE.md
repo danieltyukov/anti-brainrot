@@ -15,15 +15,18 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
 | `lib/education.js` | content, options, tests | Category and channel policy. |
 | `lib/countdown.js` | popup, tests | Countdown state machine and formatting. |
 | `lib/blocker.js` | worker, options, block page, tests | Domain parsing and dynamic rule builders. |
+| `lib/distractions.js` | worker, options, watcher, tests | Presets, the pattern grammar, matching, RE2 rule builders, pass and budget helpers. |
+| `content/distractions.js` | enabled distracting hosts, isolated world | Redirects in-app navigation, grayscale, pass warning, expiry. Registered with `chrome.scripting`. |
+| `content/distractions-main.js` | enabled distracting hosts, main world | Wraps `history.pushState` and `replaceState` and raises `abr:navigate`. |
 | `content/hide.css` | youtube.com | Every hiding rule, keyed by `data-abr-*` attributes on `<html>`. Shorts rules have no attribute. |
 | `content/content.js` | youtube.com, isolated world | Sets attributes from settings, handles in-page navigation, home redirect, autoplay, and the educational overlay. |
 | `content/page-bridge.js` | youtube.com, main world | Reads the player response and emits `abr:video` with a JSON string. |
-| `background.js` | service worker | Seeds settings, badge text, enables the adult ruleset and dynamic rules. |
+| `background.js` | service worker | Normalises settings on start, badge text, adult ruleset, custom rules, distracting site rules and scripts, passes, cooldowns, budget, stats, locked hours. |
 | `rules/shorts.json` | declarativeNetRequest | Redirects full loads of `/shorts/ID`. |
 | `rules/adult.json` | declarativeNetRequest | Domain list plus keyword rules redirecting to `blocked/blocked.html`. Disabled until the feature is on. |
 | `popup/` | action popup | Toggle tree, filter switch, delay picker, countdown. |
 | `options/` | options page | Lists, delay, theme, import, export, reset. |
-| `blocked/` | extension page | Themed block page. |
+| `blocked/` | extension page | Themed block page with three views: adult, block, pause. |
 
 ## Data flow
 
@@ -47,6 +50,27 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
 5. The worker reacts to settings changes by enabling or disabling the
    `adult` ruleset and replacing the dynamic rules built from the user's own
    lists. Allow rules carry a higher priority than block rules.
+6. Distracting sites use dynamic redirect rules (ids 3000 to 3499),
+   exception allow rules (3500 to 3999) and session pass rules (4000 and up,
+   priority 4). The worker registers the two watcher scripts for the enabled
+   hosts only. A pass is granted through a serialised queue, stored in
+   `chrome.storage.local` with its expiry, mirrored as a session rule, and
+   revoked by an alarm, after which a cooldown entry replaces it.
+7. Locked hours and ad hoc locks: `settings.isLockedNow` is checked by the
+   popup, by `settings.update` (refuses turning the filter off) and by the
+   worker, which forces the switch on through `settings.patch` on every
+   settings change and once a minute.
+
+## Rule id ranges
+
+| Ruleset | Ids | Priority | Purpose |
+| --- | --- | --- | --- |
+| static `shorts` | 1, 2 | 1 | Shorts to watch redirect |
+| static `adult` | 1 to 6, 7 | 1, 2 | domain list, keyword rules, benign keyword exceptions |
+| dynamic | 1000, 2000 | 2, 3 | user's blocked and allowed adult domains |
+| dynamic | 3000 to 3499 | 2 | distracting site redirects |
+| dynamic | 3500 to 3999 | 3 | distracting site exceptions |
+| session | 4000 and up | 4 | active passes |
 
 ## The loosening rule
 

@@ -5,9 +5,15 @@ Anti-Brainrot is a local tool. This page lists everything it touches.
 ## What is stored
 
 Your settings (which toggles are on, the unlock delay, theme, educational
-categories and channels, custom blocked and allowed sites) are stored in
+categories and channels, custom blocked and allowed sites, distracting site
+lists and pass settings, the schedule, your reason line) are stored in
 `chrome.storage.sync`. Chrome may sync that object between your own browsers
-when you are signed in to Chrome. Nothing else is stored.
+when you are signed in to Chrome.
+
+Passes, cooldowns, today's pass budget and today's block and pass counts are
+stored in `chrome.storage.local` on this machine only. They hold a pattern
+name and a timestamp, never a URL or a page title, and nothing older than
+today is kept.
 
 ## What is sent
 
@@ -28,10 +34,13 @@ category from it. That request goes to YouTube only.
   ruleset. Rules are declarative; the extension never sees request contents.
 - Host access to youtube.com: the content scripts that hide elements and
   gate videos.
+- `scripting`: registers the distracting sites watcher, and only for the
+  hosts you enabled. Nothing runs on other sites.
+- `alarms`: the once-a-minute locked hours check and pass expiry timers.
 - Optional host access to all sites: requested only when you switch on
-  Block adult sites, because a redirect rule can only act on sites the
-  extension has access to. You can revoke it at any time in
-  `chrome://extensions`.
+  Block adult sites or Block distracting sites, because a redirect rule can
+  only act on sites the extension has access to. You can revoke it at any
+  time in `chrome://extensions`.
 
 ## What the content scripts read
 

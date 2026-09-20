@@ -341,3 +341,19 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 - [x] Step 3: `ci.yml` on push and PR: `npm test`, `npm run check`, `npm run build`, upload zip artifact. `release.yml` on `v*` tags: build and `gh release create` with the zip and notes from CHANGELOG.
 - [x] Step 4: README: what it is, screenshot, install (store placeholder, release zip, load unpacked), features table, timer explanation, educational mode explanation and its limits, privacy, development (test, check, build, load), contributing, license.
 - [x] Step 5: Final full E2E pass, record in `docs/E2E.md`, bump to 1.0.0, commit `chore: release 1.0.0`, tag `v1.0.0`, push, verify the release workflow attached the zip.
+
+
+## Task 11: v1.1.0, distracting sites, locks, YouTube extras (done 2026-09-20)
+
+- [x] Research report `docs/research/anti-distraction-tools.md`.
+- [x] `lib/distractions.js` with presets, grammar, rules, passes, budget, cooldowns, exceptions; tests.
+- [x] Settings: distractions and schedule sections, `focus.lockUntil`, `focus.reason`, loosening rules, `isLockedNow`, `patch`.
+- [x] Worker: rules, scripts, passes, cooldowns, stats, locked hours, serialised queues.
+- [x] Watcher and main-world history hook; block page with three views; popup lock row, stats, reason; options sections.
+- [x] YouTube extras: thumbnails, blur, metrics, chips, rich sections, search suggestions, grayscale.
+- [x] Full E2E matrix (docs/E2E.md), second code review, fixes.
+- [x] Docs, site, release.
+
+Ideas not done yet, from the research: channel and keyword block list on
+YouTube, escalating pauses, a weekly unlock limit, a paragraph or
+friend-password unlock mode, allow-only mode during locked hours.

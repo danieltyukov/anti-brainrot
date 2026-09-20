@@ -160,6 +160,62 @@ Pinned extension id: `manifest.json` carries a `key` so the id is
 the absolute chrome-extension:// URL of the block page, which is only stable
 with a pinned id. The private key lives outside the repository.
 
+## 4d. Distracting sites (added 2026-09-20, v1.1.0)
+
+Feature id `distractions`, label "Block distracting sites", section
+"Everywhere", default off (same optional permission as the adult blocker).
+
+Patterns: `host` (host and subdomains, all paths), `host/` (front page
+only), `host/path` (path prefix). Presets in `lib/distractions.js` cover
+the brain rot surfaces of the major platforms with feed-only and whole-site
+variants. `distractions.custom` adds patterns, `distractions.exceptions`
+keeps parts open (priority 3 allow rules, checked first by the watcher).
+
+Modes: `block` redirects to the block page. `pause` redirects to the pause
+view: a countdown of `pauseSeconds` that restarts when the tab is hidden, an
+optional intention line, then a pass of `passMinutes` charged against
+`dailyBudgetMinutes`, followed by a cooldown of `cooldownMinutes` for that
+pattern. Passes are session allow rules (priority 4) plus an entry in
+`chrome.storage.local`, revoked by an alarm. The worker serialises pass
+grants so two tabs cannot double spend.
+
+Enforcement: dynamic redirect rules (ids 3000 to 3499), exception rules
+(3500 to 3999), session pass rules (4000 and up). Two content scripts are
+registered with `chrome.scripting` only for the enabled hosts: a main-world
+hook that raises a DOM event on `history.pushState` and `replaceState`, and
+an isolated watcher that redirects on in-app navigation, applies grayscale
+(during a pass, or always when `grayscaleAlways`), warns 30 seconds before a
+pass ends and sends the tab back to the pause page when it expires. The
+block page is web accessible because a content-script navigation to it is
+web-initiated.
+
+Loosening: block to pause, removing a preset or custom pattern, adding an
+exception, a longer pass, a shorter pause, a bigger budget, a shorter
+cooldown, switching off grayscale or the intention line.
+
+## 4e. Locked hours and locks (added 2026-09-20, v1.1.0)
+
+Feature id `schedule`, label "Locked hours". `schedule.days`, `start`,
+`end`. While inside the window the worker forces `focus.enabled` on (on
+every settings change and once a minute by alarm) and `settings.update`
+refuses turning it off with a LockedError naming the end time. The popup
+disables the power button. `focus.lockUntil` is an ad hoc lock set from the
+popup ("Lock for N hours") with the same effect; extending a lock is
+tightening, shortening it is loosening. Enforcement writes use
+`settings.patch`, which shares the update queue but skips the guards.
+
+## 4f. More YouTube options (added 2026-09-20, v1.1.0)
+
+`thumbnails` (with child `thumbnailsBlur`), `metrics`, `chips`,
+`richSections`, `searchSuggestions`, `grayscale`. All CSS, keyed like the
+rest. `chips` and `richSections` default on.
+
+## 4g. Nudges (added 2026-09-20, v1.1.0)
+
+`focus.reason` is a line the user writes once; it is shown on every block
+and pause page and in the popup. `chrome.storage.local.stats` counts block
+page loads and passes for the current day and is shown in the popup.
+
 ## 4c. Tighten any time, loosen only while off
 
 Added 2026-09-20. A friction timer on the master switch alone would be
@@ -186,7 +242,10 @@ extension/
   rules/shorts.json       static DNR redirect: /shorts/ID -> /watch?v=ID
   rules/adult.json        static DNR redirect of adult sites to blocked/blocked.html
   lib/blocker.js          pure domain list parsing and dynamic rule builders
-  blocked/                themed block page
+  lib/distractions.js     presets, pattern grammar, matching, rule builders, passes
+  content/distractions.js         watcher for enabled distracting hosts (isolated world)
+  content/distractions-main.js    history hook for the watcher (main world)
+  blocked/                themed block page with adult, block and pause views
   lib/features.js         feature registry (id, label, parent, default, html attribute)
   lib/settings.js         defaults, load/save, migration, attribute derivation
   lib/shorts.js           pure URL rewrite helpers

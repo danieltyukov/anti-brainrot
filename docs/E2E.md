@@ -49,6 +49,36 @@ and a Music channel; More from YouTube links to `/premium`, music and kids.
 | Three popup toggles clicked within a few ms | All three persisted (serialised updates) |
 | Block screen after the text-node rewrite | Title and category shown correctly, video paused |
 
+## 2026-09-20, Chrome 153, version 1.1.0 (full feature matrix)
+
+| Check | Result |
+| --- | --- |
+| Search page baseline (defaults) | 10 results visible, Shorts shelves, ads, shelves hidden, search filter chips kept |
+| Watch page baseline | related and comments hidden, autoplay off, cards hidden, metrics visible |
+| Hide Thumbnails, Hide Metrics, Hide Search Suggestions, Grayscale | thumbnails, metadata lines and duration badges hidden with titles and channel names intact; suggestions container hidden while typing; `filter: grayscale(1)` on `ytd-app`; like count, view count and subscriber count hidden on watch |
+| Blur Thumbnails | `blur(14px) saturate(0.6)` on thumbnail images |
+| Live toggling while a video plays | playback unaffected |
+| Popup with 36 rows, YouTube and Everywhere groups | renders, active toggles locked while on, all editable while off |
+| Distracting sites on | 26 dynamic redirect rules for the default presets, two watcher scripts registered |
+| reddit.com in pause mode | pause page with host, countdown, intention, budget line, Continue disabled until both are done |
+| Continue | pass granted, session allow rule, budget debited, expiry alarm; reddit loads in grayscale |
+| Pass expiry (1 minute) | warning toast 30 seconds before, tab returns to the pause page, cooldown message shown, session rule removed |
+| Budget 0 | exhausted view, no Continue |
+| Block mode | example.com (custom `example.com/`) blocked, example.com/other loads |
+| In-app navigation | `history.pushState('/r/pics/')` from an allowed subreddit lands on the pause page through the main-world hook |
+| Exceptions | `reddit.com/r/programming` loads under a whole-site reddit preset, grayscale always applied |
+| Locked hours | filter forced on immediately and by alarm, power disabled, update refused with the end time |
+| Lock for 1 hour | power disabled, note shows the end time, turning off refused |
+| Options gates while locked | remove preset, block to pause, remove day, later start, bigger budget, intention off, remove pattern all refused; add preset, shorter pass, longer pause, add pattern saved |
+| Reason line and stats | shown on block pages and in the popup ("blocked 3 times, 1 pass used") |
+| Adult blocker | xvideos.com lands on the adult view of the block page |
+| Popup countdown | starts at the chosen delay, cancel works |
+| Console | no errors or warnings on popup, options, block page |
+
+Bug found and fixed during this run: content-script navigation to the
+block page produced `chrome-extension://invalid/` until the page was listed
+under `web_accessible_resources`.
+
 Not verifiable without a signed-in account in the test browser: notification
 bell hiding, live chat hiding, subscriptions channel list hiding, playlist
 panel, fundraiser shelf, merch shelf. Their selectors come from current

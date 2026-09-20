@@ -42,6 +42,23 @@ Website: https://danieltyukov.github.io/anti-brainrot/
 - **Adult site blocker.** Optional. A bundled list of 15,000 domains plus
   hostname keyword rules redirect to a block page, everywhere in the
   browser. Add your own sites, or allow false positives, in the options.
+- **Distracting sites.** Optional. Presets for the feed and short-video
+  surfaces of TikTok, Instagram, X, Reddit, Facebook, Threads, LinkedIn,
+  Bluesky, Tumblr, Pinterest, Twitch, Kick, 9GAG, Imgur, Snapchat and
+  Netflix, plus your own patterns and exceptions. In pause mode a countdown
+  and a one-line intention stand between you and the site, then you get a
+  timed pass drawn from a daily budget, with a cooldown before the next one.
+  In block mode they are simply off. In-app navigation is caught too, and
+  the site turns grayscale during a pass.
+- **Locked hours and locks.** A weekly schedule during which the filter turns
+  itself on and cannot be turned off, and a "Lock for N hours" button for
+  the moments you know you need it.
+- **More YouTube options.** Hide or blur thumbnails, hide view counts, likes
+  and durations, hide filter chips and the posts, news and games shelves,
+  hide search suggestions, or turn YouTube grayscale.
+- **Small nudges.** A reason line you write once and see on every block
+  page, a count of today's blocks and passes in the popup, and a warning
+  thirty seconds before a pass ends.
 
 <p align="center">
   <img src="site/assets/screenshots/popup-dark.png" alt="The popup with the toggle list" width="360">
@@ -112,6 +129,31 @@ Your own entries in the options page are applied as dynamic rules. Allowed
 sites win over blocked ones, so a false positive is a one-line fix once the
 filter is off.
 
+## Distracting sites
+
+Off by default, switched on from the popup like the adult site blocker
+(same one-time permission). Pick the presets in the options, add your own
+patterns (`site.com` for the whole site, `site.com/` for its front page
+only, `site.com/path` for everything under a path) and exceptions that stay
+open inside a blocked site, such as `reddit.com/r/programming`.
+
+Pause mode: a countdown you sit through (it restarts if you switch tabs), a
+short intention if you want it, then "Continue for 5 minutes". Passes are
+charged up front against a daily budget, and after a pass ends the same site
+cools down before it offers another. Block mode skips all of that. Full
+page loads are handled by declarative rules before any request is made;
+in-app navigation is caught by a small watcher that only runs on the
+enabled hosts.
+
+## Locked hours
+
+Set days and a window in the options and switch on Locked hours. During the
+window the filter turns itself on within a minute and the power button is
+disabled; not even the countdown can turn it off. "Lock for N hours" in the
+popup does the same for an ad hoc stretch. Both are subject to the usual
+rule: widening a lock is immediate, narrowing it waits until the filter is
+off.
+
 ## Privacy
 
 See [PRIVACY.md](PRIVACY.md). Short version: settings live in
@@ -134,7 +176,8 @@ Layout:
 ```
 extension/            the unpacked extension (load this folder)
   lib/                shared plain-script modules on globalThis.AntiBrainrot
-  content/            hide.css (attribute-keyed rules), content.js, page-bridge.js
+  content/            hide.css (attribute-keyed rules), content.js, page-bridge.js,
+                      distractions.js and distractions-main.js (registered on demand)
   popup/ options/ blocked/
   rules/              declarativeNetRequest rulesets
 assets/               logo and icon sources (SVG)

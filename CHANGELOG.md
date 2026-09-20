@@ -5,6 +5,36 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-20
+
+### Added
+- Distracting sites: presets for the feed and short-video surfaces of 16
+  platforms, custom patterns with a host, front-page and path grammar,
+  exceptions that stay open, pause mode with a countdown, an intention line,
+  timed passes drawn from a daily budget and a cooldown, block mode,
+  in-app navigation caught by a watcher registered only on enabled hosts,
+  grayscale during a pass or always, a warning before a pass ends.
+- Locked hours (weekly schedule) and Lock for N hours from the popup. The
+  filter turns itself on and the power button is disabled until the lock
+  ends.
+- YouTube: hide or blur thumbnails, hide view counts, likes and durations,
+  hide filter chips, hide posts, news and games shelves, hide search
+  suggestions, grayscale.
+- A reason line shown on block pages and in the popup, and a daily count of
+  blocks and passes.
+- Consistency check that the shipped manifest never grants all-sites access
+  at install.
+
+### Changed
+- All toggles are editable while the filter is off.
+- The block page has three views and a "Keep it blocked" button.
+- Worker writes that enforce locks go through the same serialised queue as
+  user changes; granting passes is serialised too.
+
+### Fixed
+- Content-script navigation to the block page failed with an invalid URL
+  because the page was not web accessible.
+
 ## [1.0.1] - 2026-09-20
 
 ### Changed
