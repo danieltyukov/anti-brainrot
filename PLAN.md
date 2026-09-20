@@ -294,14 +294,14 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 - [x] Step 1: registry entry `adultSites` (section `web`, default false, attr null). Settings section `blocker` with `blockedDomains` and `allowedDomains` (normalized string lists). Tests for both.
 - [x] Step 2: tests for `normalizeDomain`: `'https://www.Example.com/x'` -> `'example.com'`; `'sub.example.co.uk'` stays; `'not a domain'` -> null; `'localhost'` -> null. `parseDomainList('a.com\nA.com, b.org')` -> `['a.com','b.org']`. `dynamicRules({blockedDomains:['x.com'], allowedDomains:['y.com']})` -> two rules, the allow rule with higher priority. `blockedUrlFrom('chrome-extension://id/blocked/blocked.html?u=https://x.com/a?b=1&c=2')` -> `'https://x.com/a?b=1&c=2'`.
 - [x] Step 3: implement `blocker.js`, tests pass, commit `feat: blocker domain helpers`.
-- [ ] Step 4: `scripts/build-adult-list.mjs` (Node, no deps): downloads the Sinfonietta pornography hosts list, the blocklistproject porn list and the Tranco top 1M, keeps domains present in Tranco, adds `scripts/adult-core.txt` (hand-curated, always included), prunes subdomains whose parent is present, sorts, writes `extension/rules/adult.json` with rule 1 = requestDomains redirect and rules 2..n = keyword regex redirects. Target under 15,000 domains and under 400 KB. Prints counts. Record the source URLs and licences in `docs/BLOCKLIST.md`.
-- [ ] Step 5: manifest: `optional_host_permissions: ["<all_urls>"]`, ruleset `adult` with `enabled: false`, `web_accessible_resources` not needed (redirect target is an extension page, which is allowed for DNR redirects).
+- [x] Step 4: `scripts/build-adult-list.mjs` (Node, no deps): downloads the Sinfonietta pornography hosts list, the blocklistproject porn list and the Tranco top 1M, keeps domains present in Tranco, adds `scripts/adult-core.txt` (hand-curated, always included), prunes subdomains whose parent is present, sorts, writes `extension/rules/adult.json` with rule 1 = requestDomains redirect and rules 2..n = keyword regex redirects. Target under 15,000 domains and under 400 KB. Prints counts. Record the source URLs and licences in `docs/BLOCKLIST.md`.
+- [x] Step 5: manifest: `optional_host_permissions: ["<all_urls>"]`, ruleset `adult` with `enabled: false`, `web_accessible_resources` not needed (redirect target is an extension page, which is allowed for DNR redirects).
 - [x] Step 6: `background.js`: `syncBlocker(settings)` enables or disables the `adult` ruleset and replaces dynamic rules from `blocker.dynamicRules`. Called on install, startup and settings change.
 - [x] Step 7: `blocked/blocked.html`: theme, hostname from `blockedUrlFrom(location.href)`, Back button (`history.back()` with a fallback to closing the tab via `window.close()`).
-- [ ] Step 8: popup: "Everywhere" group with the toggle. On switching on, call `chrome.permissions.request({origins:['<all_urls>']})`; only write the setting when granted. Show a one-line note under the toggle when not granted.
+- [x] Step 8: popup: "Everywhere" group with the toggle. On switching on, call `chrome.permissions.request({origins:['<all_urls>']})`; only write the setting when granted. Show a one-line note under the toggle when not granted.
 - [x] Step 9: options: "Blocked sites" section with two textareas (blocked, allowed), the removal restriction while the filter is on, and a hint about it.
-- [ ] Step 10: E2E: open a known adult domain and a keyword hostname, both land on the block page with the hostname shown; turn the feature off through the countdown and confirm the site loads; add a custom domain (example.org) and confirm it is blocked; add it to the allow list only after turning the filter off.
-- [ ] Step 11: commit `feat: adult site blocker`, tag `v0.4.0`.
+- [x] Step 10: E2E: open a known adult domain and a keyword hostname, both land on the block page with the hostname shown; turn the feature off through the countdown and confirm the site loads; add a custom domain (example.org) and confirm it is blocked; add it to the allow list only after turning the filter off.
+- [x] Step 11: commit `feat: adult site blocker`, tag `v0.4.0`.
 
 ## Task 7: Options page
 
@@ -337,8 +337,8 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 `.github/workflows/release.yml`, `README.md`, `CONTRIBUTING.md`,
 `CHANGELOG.md`, `PRIVACY.md`, `docs/E2E.md`, `docs/ARCHITECTURE.md`
 
-- [ ] Step 1: `check.mjs`: manifest parses, `manifest.version === package.json version`, every `data-abr-<attr>` in `hide.css` exists in the registry and vice versa (except JS-only), CHANGELOG has a heading for the version.
-- [ ] Step 2: `build.sh`: `zip -r dist/anti-brainrot-<v>.zip extension -x '*.DS_Store'`.
-- [ ] Step 3: `ci.yml` on push and PR: `npm test`, `npm run check`, `npm run build`, upload zip artifact. `release.yml` on `v*` tags: build and `gh release create` with the zip and notes from CHANGELOG.
+- [x] Step 1: `check.mjs`: manifest parses, `manifest.version === package.json version`, every `data-abr-<attr>` in `hide.css` exists in the registry and vice versa (except JS-only), CHANGELOG has a heading for the version.
+- [x] Step 2: `build.sh`: `zip -r dist/anti-brainrot-<v>.zip extension -x '*.DS_Store'`.
+- [x] Step 3: `ci.yml` on push and PR: `npm test`, `npm run check`, `npm run build`, upload zip artifact. `release.yml` on `v*` tags: build and `gh release create` with the zip and notes from CHANGELOG.
 - [ ] Step 4: README: what it is, screenshot, install (store placeholder, release zip, load unpacked), features table, timer explanation, educational mode explanation and its limits, privacy, development (test, check, build, load), contributing, license.
 - [ ] Step 5: Final full E2E pass, record in `docs/E2E.md`, bump to 1.0.0, commit `chore: release 1.0.0`, tag `v1.0.0`, push, verify the release workflow attached the zip.
