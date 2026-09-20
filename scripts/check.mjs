@@ -36,7 +36,13 @@ globalThis.AntiBrainrot = {};
 new Function(read('extension/lib/features.js'))();
 const registryAttrs = new Set(globalThis.AntiBrainrot.features.FEATURES.map((f) => f.attr).filter(Boolean));
 const css = read('extension/content/hide.css');
-const cssAttrs = new Set([...css.matchAll(/data-abr-([a-z-]+)/g)].map((m) => m[1]));
+// Only attributes placed on <html> count; element tags like
+// yt-chip-cloud-chip-renderer[data-abr-shorts-chip] are set by content.js.
+const cssAttrs = new Set();
+for (const line of css.split('\n')) {
+  if (!/^html/.test(line.trim())) continue;
+  for (const m of line.matchAll(/\[data-abr-([a-z-]+)\]/g)) cssAttrs.add(m[1]);
+}
 for (const a of cssAttrs) if (!registryAttrs.has(a)) problems.push(`hide.css uses data-abr-${a} which is not in the feature registry`);
 for (const a of registryAttrs) if (!cssAttrs.has(a)) problems.push(`feature attribute ${a} has no rule in hide.css`);
 

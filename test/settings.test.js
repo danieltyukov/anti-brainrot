@@ -79,7 +79,7 @@ test('activeAttributes lists attributes of active features in registry order', (
   assert.deepEqual(S.activeAttributes(S.defaults()), [
     'home-feed', 'sidebar-recommended', 'live-chat', 'fundraiser', 'end-screen-feed',
     'end-screen-cards', 'comments', 'mixes', 'merch', 'notifications', 'inapt-search',
-    'explore', 'more-from-youtube', 'annotations',
+    'explore', 'more-from-youtube', 'autoplay', 'annotations',
   ]);
   const off = S.defaults();
   off.focus.enabled = false;

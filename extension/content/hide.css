@@ -32,10 +32,17 @@ yt-lockup-view-model:has(a[href^="/shorts/"]),
 ytd-reel-item-renderer,
 ytd-reel-video-renderer,
 ytd-notification-renderer:has(a[href*="/shorts/"]),
+ytd-rich-grid-renderer[is-shorts-grid],
+ytd-rich-grid-group:has(a[href^="/shorts/"]),
+a.ytp-videowall-still[href*="/shorts/"],
+/* Search filter chip, tagged by content.js because it has no attribute */
+yt-chip-cloud-chip-renderer[data-abr-shorts-chip],
 /* Channel page tab and the Shorts player itself (in case a redirect is slow) */
 yt-tab-shape[tab-title="Shorts"],
 tp-yt-paper-tab:has(.tab-content[title="Shorts"]),
-ytd-shorts {
+ytd-shorts,
+#shorts-container,
+#player-shorts-container {
   display: none !important;
 }
 
@@ -71,7 +78,17 @@ html:is([data-abr-sidebar], [data-abr-fundraiser]) ytd-donation-shelf-renderer {
 /* End screen feed: the grid of suggested videos when a video ends */
 html[data-abr-end-screen-feed] .ytp-endscreen-content,
 html[data-abr-end-screen-feed] .html5-endscreen.ytp-player-content,
-html[data-abr-end-screen-feed] .ytp-endscreen-paginate {
+html[data-abr-end-screen-feed] .html5-endscreen:not(.mweb-endscreen),
+html[data-abr-end-screen-feed] .ytp-endscreen-paginate,
+html[data-abr-end-screen-feed] .ytp-endscreen-previous,
+html[data-abr-end-screen-feed] .ytp-endscreen-next,
+html[data-abr-end-screen-feed] .ytp-fullscreen-grid {
+  display: none !important;
+}
+/* Autoplay: the script switches the toggle off; this hides the up next countdown */
+html[data-abr-autoplay] .ytp-autonav-endscreen-countdown-overlay,
+html[data-abr-autoplay] .ytp-autonav-endscreen-upnext-container,
+html[data-abr-autoplay] .autonav-endscreen {
   display: none !important;
 }
 /* End screen cards: the creator-placed cards in the last seconds */
@@ -91,20 +108,39 @@ html[data-abr-annotations] .video-annotations {
 /* ------------------------------------------------------------------ */
 /* Below the player                                                    */
 /* ------------------------------------------------------------------ */
-html[data-abr-comments] ytd-comments#comments {
+html[data-abr-comments] ytd-comments#comments,
+html[data-abr-comments] #comment-teaser,
+html[data-abr-comments] ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"] {
   display: none !important;
 }
-html[data-abr-video-info] ytd-watch-metadata #bottom-row,
-html[data-abr-video-info] ytd-watch-metadata #description {
+html[data-abr-comment-avatars] ytd-comment-view-model #author-thumbnail,
+html[data-abr-comment-avatars] .ytd-comment-renderer yt-img-shadow {
+  display: none !important;
+}
+/* Video info: the whole block below the player, or its parts */
+html[data-abr-video-info] ytd-watch-metadata,
+html[data-abr-video-info] #primary-inner > #info,
+html:is([data-abr-video-info], [data-abr-video-buttons]) ytd-watch-metadata #actions,
+html:is([data-abr-video-info], [data-abr-video-channel]) ytd-watch-metadata #owner,
+html:is([data-abr-video-info], [data-abr-video-description]) ytd-watch-metadata #description,
+html:is([data-abr-video-info], [data-abr-video-description]) ytd-watch-metadata #bottom-row {
   display: none !important;
 }
 html[data-abr-merch] ytd-merch-shelf-renderer,
+html[data-abr-merch] #merch-shelf,
 html[data-abr-merch] ytd-ticket-shelf-renderer,
 html[data-abr-merch] #ticket-shelf,
 html[data-abr-merch] #offer-module,
+html[data-abr-merch] #shopping-timely-shelf,
 html[data-abr-merch] ytd-product-details-renderer,
+html[data-abr-merch] ytd-metadata-row-container-renderer > #always-shown,
 html[data-abr-merch] .ytp-suggested-action,
-html[data-abr-merch] ytd-watch-flexy #panels ytd-engagement-panel-section-list-renderer[target-id^="shopping"] {
+html[data-abr-merch] .ytp-drawer,
+html[data-abr-merch] ytd-watch-flexy #panels ytd-engagement-panel-section-list-renderer[target-id^="shopping"],
+html[data-abr-merch] #masthead-ad,
+html[data-abr-merch] ytd-mealbar-promo-renderer,
+html[data-abr-merch] ytd-primetime-promo-renderer,
+html[data-abr-merch] ytd-statement-banner-renderer {
   display: none !important;
 }
 
@@ -113,8 +149,9 @@ html[data-abr-merch] ytd-watch-flexy #panels ytd-engagement-panel-section-list-r
 /* ------------------------------------------------------------------ */
 html[data-abr-mixes] ytd-radio-renderer,
 html[data-abr-mixes] ytd-compact-radio-renderer,
-html[data-abr-mixes] ytd-rich-item-renderer:has(a[href*="list=RD"]),
-html[data-abr-mixes] yt-lockup-view-model:has(a[href*="list=RD"]),
+html[data-abr-mixes] .ytp-videowall-still[data-is-mix="true"],
+html[data-abr-mixes] ytd-rich-item-renderer:has(a[href*="list=RD"], a[href*="start_radio=1"]),
+html[data-abr-mixes] yt-lockup-view-model:has(a[href*="list=RD"], a[href*="start_radio=1"]),
 html[data-abr-mixes] ytd-grid-playlist-renderer:has(a[href*="list=RD"]),
 html[data-abr-mixes] ytd-playlist-renderer:has(a[href*="list=RD"]),
 html[data-abr-mixes] ytd-search ytd-video-renderer:has(a#thumbnail[href*="list=RD"]) {
@@ -135,7 +172,15 @@ html[data-abr-top-header] ytd-app #page-manager,
 html[data-abr-top-header] #page-manager.ytd-app {
   margin-top: 0 !important;
 }
-html[data-abr-notifications] ytd-notification-topbar-button-renderer {
+html[data-abr-top-header] ytd-mini-guide-renderer.ytd-app,
+html[data-abr-top-header] tp-yt-app-drawer#guide {
+  top: 0 !important;
+}
+html[data-abr-top-header] #guide-spacer {
+  display: none !important;
+}
+html[data-abr-notifications] ytd-notification-topbar-button-renderer,
+html[data-abr-notifications] ytd-notification-topbar-button-shape-renderer {
   display: none !important;
 }
 

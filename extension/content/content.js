@@ -61,6 +61,39 @@
     return false;
   }
 
+  // ---------------------------------------------------------------- small fixes
+
+  // The Shorts filter chip on search results has no attribute to key on.
+  function tagShortsChip() {
+    for (const chip of document.querySelectorAll('ytd-search yt-chip-cloud-chip-renderer')) {
+      if (chip.textContent.trim() === 'Shorts') chip.setAttribute('data-abr-shorts-chip', '');
+    }
+  }
+
+  // YouTube prefixes the tab title with the unread count, for example "(3) ".
+  const titlePrefix = /^\(\d+\)\s*/;
+  function stripTitleCount() {
+    if (!settings || !S.isActive(settings, 'notifications')) return;
+    if (titlePrefix.test(document.title)) document.title = document.title.replace(titlePrefix, '');
+  }
+
+  function watchTitle() {
+    const title = document.querySelector('title');
+    if (!title) return;
+    new MutationObserver(stripTitleCount).observe(title, { childList: true, characterData: true, subtree: true });
+    stripTitleCount();
+  }
+
+  // Send the logo to Subscriptions before YouTube's router sees the click.
+  function onLogoClick(event) {
+    if (!settings || !S.isActive(settings, 'redirectHome')) return;
+    const link = event.target && event.target.closest && event.target.closest('a#logo, ytd-topbar-logo-renderer a');
+    if (!link) return;
+    event.preventDefault();
+    event.stopPropagation();
+    location.assign('/feed/subscriptions');
+  }
+
   // ---------------------------------------------------------------- autoplay
 
   function fixAutoplay() {
@@ -238,6 +271,9 @@
     if (redirectIfNeeded()) return;
     fixAutoplay();
     evaluateEducation();
+    tagShortsChip();
+    stripTitleCount();
+    setTimeout(tagShortsChip, 1500);
   }
 
   function onSettings(next) {
@@ -257,7 +293,10 @@
   document.addEventListener(EVENT_VIDEO, onVideoMeta);
   document.addEventListener('yt-navigate-start', onNavigateStart);
   document.addEventListener('yt-navigate-finish', onNavigateFinish);
+  document.addEventListener('click', onLogoClick, true);
   window.addEventListener('popstate', () => redirectIfNeeded());
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchTitle);
+  else watchTitle();
 
   S.load().then(onSettings);
   S.onChange(onSettings);

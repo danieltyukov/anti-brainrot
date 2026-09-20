@@ -45,7 +45,9 @@ test('children of sidebar are the four sidebar parts in order', () => {
   );
   assert.deepEqual(features.children('homeFeed').map((f) => f.id), ['redirectHome']);
   assert.deepEqual(features.children('topHeader').map((f) => f.id), ['notifications']);
-  assert.deepEqual(features.children('comments'), []);
+  assert.deepEqual(features.children('comments').map((f) => f.id), ['commentAvatars']);
+  assert.deepEqual(features.children('videoInfo').map((f) => f.id), ['videoButtons', 'videoChannel', 'videoDescription']);
+  assert.deepEqual(features.children('mixes'), []);
 });
 
 test('shorts is locked on and has no attribute', () => {
