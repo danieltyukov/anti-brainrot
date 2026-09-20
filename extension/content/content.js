@@ -22,6 +22,7 @@
   let settings = null;
   let currentMeta = null;
   let blocked = false;
+  let pausedWhileWaiting = false;
   let autoplayTimer = null;
 
   // ---------------------------------------------------------------- attributes
@@ -90,7 +91,19 @@
 
   function pauseVideo() {
     const video = mainVideo();
-    if (video && !video.paused) video.pause();
+    if (video && !video.paused) {
+      video.pause();
+      return true;
+    }
+    return false;
+  }
+
+  // Resumes a video that was only paused while the category was unknown.
+  function resumeIfWePaused() {
+    if (!pausedWhileWaiting) return;
+    pausedWhileWaiting = false;
+    const video = mainVideo();
+    if (video && video.paused) video.play().catch(() => {});
   }
 
   function overlayElement() {
@@ -159,6 +172,7 @@
 
   function block(meta, decision) {
     blocked = true;
+    pausedWhileWaiting = false;
     renderBlock(meta, decision);
     pauseVideo();
   }
@@ -177,13 +191,17 @@
     const id = currentVideoId();
     if (!currentMeta || currentMeta.videoId !== id) {
       // Fail closed while we wait for metadata: pause and ask the bridge.
-      pauseVideo();
+      if (pauseVideo()) pausedWhileWaiting = true;
       requestMeta();
       return;
     }
     const decision = U.education.decide(currentMeta, settings.educational);
-    if (decision.allow) unblock();
-    else block(currentMeta, decision);
+    if (decision.allow) {
+      unblock();
+      resumeIfWePaused();
+    } else {
+      block(currentMeta, decision);
+    }
   }
 
   function onVideoMeta(event) {
@@ -212,6 +230,7 @@
   function onNavigateStart() {
     unblock();
     currentMeta = null;
+    pausedWhileWaiting = false;
     redirectIfNeeded();
   }
 

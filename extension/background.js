@@ -57,4 +57,25 @@ S.onChange((settings) => {
   sync(settings);
 });
 
+// The popup asks for the all-sites permission when Block adult sites is
+// switched on. Chrome's prompt can close the popup before it can write the
+// setting, so the worker completes the switch when the grant arrives, and
+// reflects a revocation made in chrome://extensions.
+chrome.permissions.onAdded.addListener(async (granted) => {
+  if (!(granted.origins || []).includes('<all_urls>')) return;
+  try {
+    await S.update({ features: { adultSites: true } });
+  } catch (err) {
+    console.warn('[anti-brainrot] could not switch on the site blocker: ' + err.message);
+  }
+});
+
+chrome.permissions.onRemoved.addListener(async (removed) => {
+  if (!(removed.origins || []).includes('<all_urls>')) return;
+  const s = await S.load();
+  if (!s.features.adultSites) return;
+  s.features.adultSites = false;
+  await S.save(s);
+});
+
 sync();
