@@ -8,13 +8,16 @@
 # Anti-Brainrot
 
 The anti brain rot extension for Chrome. It removes YouTube Shorts for good,
-hides feeds and distractions behind a friction timer, limits YouTube to
-educational videos when you want, and blocks adult sites across the whole
-browser.
+hides feeds and distractions behind a friction timer, pauses or blocks
+distracting sites across the whole browser, limits YouTube to educational
+videos when you want, blocks adult sites, and locks itself during your focus
+hours.
 
 On YouTube it replaces three extensions in one: Remove YouTube Shorts,
-Youtube-shorts block, and Unhook. Outside YouTube it keeps adult sites out of
-reach. No accounts, no analytics, no network calls of its own.
+Youtube-shorts block, and Unhook. Outside YouTube it stands between you and
+the feeds of TikTok, Instagram, X, Reddit, Facebook and the rest, and keeps
+adult sites out of reach. No accounts, no analytics, no network calls of its
+own.
 
 Website: https://danieltyukov.github.io/anti-brainrot/
 

@@ -5,6 +5,12 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-09-20
+
+### Changed
+- Descriptions in the manifest, README, site and GitHub About now mention
+  distracting sites and locked hours.
+
 ## [1.1.1] - 2026-09-20
 
 ### Changed
