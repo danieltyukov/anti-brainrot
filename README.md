@@ -136,7 +136,7 @@ assets/               logo and icon sources (SVG)
 site/                 the website, deployed to GitHub Pages
 scripts/              check, build, icons, blocklist generator
 test/                 node --test suites
-docs/                 spec, architecture, brand, blocklist, E2E checklist
+docs/                 spec, plan, architecture, brand, blocklist, research, E2E checklist
 ```
 
 How it works, in one paragraph: `hide.css` is injected at `document_start`

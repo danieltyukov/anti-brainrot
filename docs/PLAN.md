@@ -1,7 +1,7 @@
 # Anti-Brainrot implementation plan
 
-> For agentic workers: this is the working plan for the whole project. Read it
-> before doing anything. Read the spec at
+> Status: complete as of 2026-09-20 (v1.0.0). Kept as the record of how the
+> project was built. For agentic workers: read it before changing scope. Read the spec at
 > `docs/specs/2026-09-20-anti-brainrot-design.md` for the reasoning behind every
 > decision. Tick boxes as you finish steps. Do not change scope without
 > writing the change here first.
@@ -325,10 +325,10 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 **Files:** `site/index.html`, `site/style.css`, `site/assets/*`,
 `.github/workflows/pages.yml`
 
-- [ ] Step 1: static page in the reference theme: sky gradient, drifting hand-drawn clouds (inline SVG, CSS keyframes, paused under `prefers-reduced-motion`), Barlow from Google Fonts with the Bahnschrift stack first, sections per spec 6. Install section links to the latest GitHub release zip and explains load unpacked in five steps, plus a Chrome Web Store placeholder marked "coming soon".
-- [ ] Step 2: screenshots of the popup and a blocked page (taken in Chrome, saved to `site/assets/`).
-- [ ] Step 3: `pages.yml` deploys `site/` with `actions/upload-pages-artifact` and `actions/deploy-pages`. Enable Pages with `gh api -X POST repos/danieltyukov/anti-brainrot/pages -f build_type=workflow`.
-- [ ] Step 4: verify the live URL renders, commit `feat: install website`.
+- [x] Step 1: static page in the reference theme: sky gradient, drifting hand-drawn clouds (inline SVG, CSS keyframes, paused under `prefers-reduced-motion`), Barlow from Google Fonts with the Bahnschrift stack first, sections per spec 6. Install section links to the latest GitHub release zip and explains load unpacked in five steps, plus a Chrome Web Store placeholder marked "coming soon".
+- [x] Step 2: screenshots of the popup and a blocked page (taken in Chrome, saved to `site/assets/`).
+- [x] Step 3: `pages.yml` deploys `site/` with `actions/upload-pages-artifact` and `actions/deploy-pages`. Enable Pages with `gh api -X POST repos/danieltyukov/anti-brainrot/pages -f build_type=workflow`.
+- [x] Step 4: verify the live URL renders, commit `feat: install website`.
 
 ## Task 10: CI, release packaging, docs, v1.0.0
 
@@ -340,4 +340,4 @@ surfaces the refusal in its status line. Covered by tests and E2E.
 - [x] Step 2: `build.sh`: `zip -r dist/anti-brainrot-<v>.zip extension -x '*.DS_Store'`.
 - [x] Step 3: `ci.yml` on push and PR: `npm test`, `npm run check`, `npm run build`, upload zip artifact. `release.yml` on `v*` tags: build and `gh release create` with the zip and notes from CHANGELOG.
 - [x] Step 4: README: what it is, screenshot, install (store placeholder, release zip, load unpacked), features table, timer explanation, educational mode explanation and its limits, privacy, development (test, check, build, load), contributing, license.
-- [ ] Step 5: Final full E2E pass, record in `docs/E2E.md`, bump to 1.0.0, commit `chore: release 1.0.0`, tag `v1.0.0`, push, verify the release workflow attached the zip.
+- [x] Step 5: Final full E2E pass, record in `docs/E2E.md`, bump to 1.0.0, commit `chore: release 1.0.0`, tag `v1.0.0`, push, verify the release workflow attached the zip.

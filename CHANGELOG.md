@@ -5,6 +5,12 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-20
+
+First full release: everything from 0.1.0 to 0.4.0 plus the items below, the
+install website at https://danieltyukov.github.io/anti-brainrot/, and a full
+end to end pass recorded in docs/E2E.md.
+
 ### Added
 - Sub-options from Unhook: Hide Profile Photos under comments; Hide Buttons
   Bar, Hide Channel and Hide Description under video info.
@@ -18,6 +24,14 @@ Keep a Changelog and the project uses semantic versioning.
 - Hide Video Sidebar now also hides the parts YouTube moves below the video
   in the one-column layout.
 - An allowed video no longer stays paused after the educational check.
+- The educational block screen is built from text nodes; the video title
+  never reaches innerHTML.
+- Educational mode stays closed while a video's category is still unknown,
+  and shows the block screen if the category never arrives.
+- Settings updates are serialised, so two quick toggles cannot overwrite
+  each other.
+- A custom blocked site now wins over the bundled allow list for keyword
+  false positives.
 
 ## [0.4.0] - 2026-09-20
 

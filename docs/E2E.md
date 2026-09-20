@@ -4,7 +4,7 @@ Manual checks against the live www.youtube.com, driven through Chrome DevTools.
 Add a dated line whenever you verify or fix something. Logged-out YouTube
 unless noted.
 
-## 2026-09-20, Chrome 153, version 0.4.0
+## 2026-09-20, Chrome 153, versions 0.4.0 to 1.0.0
 
 YouTube markup observed: Shorts shelves are `grid-shelf-view-model` with
 `ytm-shorts-lockup-view-model-v2` items; sidebar recommendations are
@@ -45,6 +45,9 @@ and a Music channel; More from YouTube links to `/premium`, music and kids.
 | Educational mode, allowed video after reload | Plays without a manual resume |
 | Search "Shorts" filter chip | Tagged by content.js and hidden |
 | Logo click with redirect on | Goes straight to `/feed/subscriptions`, no home flash |
+| Educational mode, blocked video to allowed video by in-page search | Overlay gone, Education video playing within 4 s (waiting guard plus resume) |
+| Three popup toggles clicked within a few ms | All three persisted (serialised updates) |
+| Block screen after the text-node rewrite | Title and category shown correctly, video paused |
 
 Not verifiable without a signed-in account in the test browser: notification
 bell hiding, live chat hiding, subscriptions channel list hiding, playlist

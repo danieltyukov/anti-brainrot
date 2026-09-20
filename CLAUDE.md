@@ -3,7 +3,7 @@
 Chrome MV3 extension: hides YouTube Shorts unconditionally, hides feeds and
 distractions behind a friction timer, optional educational-only playback.
 
-Read `PLAN.md` first (working plan with checkboxes), then
+Read `docs/PLAN.md` first (the build plan, complete as of v1.0.0), then
 `docs/specs/2026-09-20-anti-brainrot-design.md` (why). Keep both current.
 
 ## Conventions
