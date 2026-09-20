@@ -182,13 +182,13 @@ Unrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minute', '5 
 `extension/rules/shorts.json`, `extension/manifest.json`,
 `extension/background.js`, placeholder `extension/icons/*.png`
 
-- [ ] Step 1: tests for `videoIdFromPath('/shorts/AbC-12_')` -> `'AbC-12_'`, `'/shorts/'` -> null, `'/watch'` -> null; `rewriteUrl('https://www.youtube.com/shorts/x1?feature=share')` -> `'https://www.youtube.com/watch?v=x1'`; `rewriteUrl('https://m.youtube.com/shorts/x1')` -> `'https://m.youtube.com/watch?v=x1'`; non-shorts -> null.
-- [ ] Step 2: implement, tests pass.
-- [ ] Step 3: `rules/shorts.json` single rule: regexFilter `^https?://(www\.|m\.)?youtube\.com/shorts/([A-Za-z0-9_-]+)`, regexSubstitution `https://\1youtube.com/watch?v=\2`, resourceTypes `["main_frame"]`. Note: the empty group for `www.` must still produce a valid host, so use two rules instead if RE2 substitution of an unmatched optional group is a problem (test it live).
-- [ ] Step 4: manifest per spec section 5, version `0.1.0`, temporary icons generated with rsvg-convert from a simple placeholder SVG.
-- [ ] Step 5: `background.js`: `importScripts('lib/features.js','lib/settings.js')`; on `onInstalled` normalize and save; on storage change and on startup set badge text `OFF` (grey) when filter off, empty when on.
-- [ ] Step 6: `chrome-ext load extension` (from repo root) and open `https://www.youtube.com/shorts/<any id>`; confirm the URL becomes `/watch?v=`. Check the service worker console has no errors.
-- [ ] Step 7: Commit `feat: manifest, background worker and shorts redirect rule`, tag nothing yet.
+- [x] Step 1: tests for `videoIdFromPath('/shorts/AbC-12_')` -> `'AbC-12_'`, `'/shorts/'` -> null, `'/watch'` -> null; `rewriteUrl('https://www.youtube.com/shorts/x1?feature=share')` -> `'https://www.youtube.com/watch?v=x1'`; `rewriteUrl('https://m.youtube.com/shorts/x1')` -> `'https://m.youtube.com/watch?v=x1'`; non-shorts -> null.
+- [x] Step 2: implement, tests pass.
+- [x] Step 3: `rules/shorts.json` single rule: regexFilter `^https?://(www\.|m\.)?youtube\.com/shorts/([A-Za-z0-9_-]+)`, regexSubstitution `https://\1youtube.com/watch?v=\2`, resourceTypes `["main_frame"]`. Note: the empty group for `www.` must still produce a valid host, so use two rules instead if RE2 substitution of an unmatched optional group is a problem (test it live).
+- [x] Step 4: manifest per spec section 5, version `0.1.0`, temporary icons generated with rsvg-convert from a simple placeholder SVG.
+- [x] Step 5: `background.js`: `importScripts('lib/features.js','lib/settings.js')`; on `onInstalled` normalize and save; on storage change and on startup set badge text `OFF` (grey) when filter off, empty when on.
+- [x] Step 6: `chrome-ext load extension` (from repo root) and open `https://www.youtube.com/shorts/<any id>`; confirm the URL becomes `/watch?v=`. Check the service worker console has no errors.
+- [x] Step 7: Commit `feat: manifest, background worker and shorts redirect rule`, tag nothing yet.
 
 ## Task 4: Hiding CSS and content runtime
 
