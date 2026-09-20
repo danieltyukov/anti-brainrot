@@ -5,6 +5,13 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-20
+
+### Changed
+- Described as the anti brain rot extension for Chrome rather than a YouTube
+  tool, in the manifest, README, site and GitHub description.
+- README mark switches to the cream version on dark GitHub themes.
+
 ## [1.0.0] - 2026-09-20
 
 First full release: everything from 0.1.0 to 0.4.0 plus the items below, the

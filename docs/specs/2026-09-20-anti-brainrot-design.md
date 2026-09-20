@@ -30,7 +30,7 @@ results are hidden and /shorts/ URLs are rewritten to /watch URLs.
 ## 2. Naming and identity
 
 - Product name: Anti-Brainrot (wordmark: anti-brainrot)
-- Tagline: YouTube without the brain rot
+- Tagline: The anti brain rot extension for Chrome. (Changed 2026-09-20 from a YouTube-only line because the site blocker works everywhere.)
 - Repository: github.com/danieltyukov/anti-brainrot (public, MIT)
 - Website: https://danieltyukov.github.io/anti-brainrot/
 - Visual theme: borrowed from flappingairplanes.com. Sky-blue gradient

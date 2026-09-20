@@ -1,15 +1,20 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="" width="96" height="96">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-cream.svg">
+    <img src="assets/logo.svg" alt="" width="96" height="96">
+  </picture>
 </p>
 
-# anti-brainrot
+# Anti-Brainrot
 
-YouTube without the brain rot. A Chrome extension that removes Shorts for
-good, hides feeds and distractions behind a friction timer, can restrict
-playback to educational videos, and can keep adult sites out of reach.
+The anti brain rot extension for Chrome. It removes YouTube Shorts for good,
+hides feeds and distractions behind a friction timer, limits YouTube to
+educational videos when you want, and blocks adult sites across the whole
+browser.
 
-It replaces three extensions in one: Remove YouTube Shorts, Youtube-shorts
-block, and Unhook. No accounts, no analytics, no network calls of its own.
+On YouTube it replaces three extensions in one: Remove YouTube Shorts,
+Youtube-shorts block, and Unhook. Outside YouTube it keeps adult sites out of
+reach. No accounts, no analytics, no network calls of its own.
 
 Website: https://danieltyukov.github.io/anti-brainrot/
 

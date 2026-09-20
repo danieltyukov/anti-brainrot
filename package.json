@@ -1,7 +1,7 @@
 {
   "name": "anti-brainrot",
-  "version": "1.0.0",
-  "description": "YouTube without the brain rot. Chrome extension that blocks Shorts for good, hides distractions behind a friction timer, and can restrict playback to educational videos.",
+  "version": "1.0.1",
+  "description": "The anti brain rot extension for Chrome. Removes YouTube Shorts for good, hides feeds and distractions behind a friction timer, limits YouTube to educational videos when you want, and blocks adult sites across the whole browser.",
   "private": true,
   "license": "MIT",
   "author": "danieltyukov",
