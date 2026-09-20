@@ -1,5 +1,5 @@
 // Pure helpers for turning /shorts/ID URLs into /watch?v=ID URLs.
-(globalThis.Unrot ||= {}).shorts = (() => {
+(globalThis.AntiBrainrot ||= {}).shorts = (() => {
   'use strict';
 
   const SHORTS_PATH = /^\/shorts\/([A-Za-z0-9_-]+)\/?$/;

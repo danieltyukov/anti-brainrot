@@ -1,1 +1,270 @@
-/* filled in Task 4 */
+/*
+ * Anti-Brainrot hiding rules for www.youtube.com.
+ *
+ * The Shorts block at the top is unconditional. Every other rule is keyed by a
+ * data-abr-<feature> attribute on <html>, which content/content.js sets from
+ * the settings at document_start and keeps in sync when settings change.
+ * Attribute names come from extension/lib/features.js.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Shorts: always hidden                                               */
+/* ------------------------------------------------------------------ */
+
+/* Guide (left sidebar) and mini guide entries */
+ytd-guide-entry-renderer:has(a[title="Shorts"]),
+ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
+ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+/* Shelves on home, subscriptions, channel and search pages */
+ytd-rich-shelf-renderer[is-shorts],
+ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+ytd-reel-shelf-renderer,
+ytd-item-section-renderer:has(> #contents > ytd-reel-shelf-renderer:only-child),
+grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"]),
+/* Individual Shorts items wherever they appear */
+ytd-rich-item-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"]),
+ytd-video-renderer:has(a[href^="/shorts/"]),
+ytd-grid-video-renderer:has(a[href^="/shorts/"]),
+ytd-compact-video-renderer:has(a[href^="/shorts/"]),
+yt-lockup-view-model:has(a[href^="/shorts/"]),
+ytd-reel-item-renderer,
+ytd-reel-video-renderer,
+ytd-notification-renderer:has(a[href*="/shorts/"]),
+/* Channel page tab and the Shorts player itself (in case a redirect is slow) */
+yt-tab-shape[tab-title="Shorts"],
+tp-yt-paper-tab:has(.tab-content[title="Shorts"]),
+ytd-shorts {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Home feed                                                           */
+/* ------------------------------------------------------------------ */
+html[data-abr-home-feed] ytd-browse[page-subtype="home"] ytd-rich-grid-renderer,
+html[data-abr-home-feed] ytd-browse[page-subtype="home"] ytd-feed-filter-chip-bar-renderer,
+html[data-abr-home-feed] ytd-browse[page-subtype="home"] ytd-rich-section-renderer {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Watch page sidebar                                                  */
+/* ------------------------------------------------------------------ */
+html[data-abr-sidebar] ytd-watch-flexy #secondary {
+  display: none !important;
+}
+html[data-abr-sidebar-recommended] ytd-watch-flexy #related,
+html[data-abr-sidebar-recommended] ytd-watch-next-secondary-results-renderer {
+  display: none !important;
+}
+html[data-abr-live-chat] ytd-watch-flexy #chat-container,
+html[data-abr-live-chat] ytd-watch-flexy #chat,
+html[data-abr-live-chat] ytd-live-chat-frame {
+  display: none !important;
+}
+html[data-abr-playlist] ytd-watch-flexy ytd-playlist-panel-renderer#playlist {
+  display: none !important;
+}
+html[data-abr-fundraiser] ytd-watch-flexy #donation-shelf,
+html[data-abr-fundraiser] ytd-donation-shelf-renderer {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Player overlays                                                     */
+/* ------------------------------------------------------------------ */
+/* End screen feed: the grid of suggested videos when a video ends */
+html[data-abr-end-screen-feed] .ytp-endscreen-content,
+html[data-abr-end-screen-feed] .html5-endscreen.ytp-player-content,
+html[data-abr-end-screen-feed] .ytp-endscreen-paginate {
+  display: none !important;
+}
+/* End screen cards: the creator-placed cards in the last seconds */
+html[data-abr-end-screen-cards] .ytp-ce-element {
+  display: none !important;
+}
+/* Annotations and info cards */
+html[data-abr-annotations] .ytp-cards-teaser,
+html[data-abr-annotations] .ytp-cards-button,
+html[data-abr-annotations] .iv-branding,
+html[data-abr-annotations] .ytp-paid-content-overlay,
+html[data-abr-annotations] .annotation,
+html[data-abr-annotations] .video-annotations {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Below the player                                                    */
+/* ------------------------------------------------------------------ */
+html[data-abr-comments] ytd-comments#comments {
+  display: none !important;
+}
+html[data-abr-video-info] ytd-watch-metadata #bottom-row,
+html[data-abr-video-info] ytd-watch-metadata #description {
+  display: none !important;
+}
+html[data-abr-merch] ytd-merch-shelf-renderer,
+html[data-abr-merch] ytd-ticket-shelf-renderer,
+html[data-abr-merch] #ticket-shelf,
+html[data-abr-merch] #offer-module,
+html[data-abr-merch] ytd-product-details-renderer,
+html[data-abr-merch] .ytp-suggested-action,
+html[data-abr-merch] ytd-watch-flexy #panels ytd-engagement-panel-section-list-renderer[target-id^="shopping"] {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mixes (auto-generated radio playlists, list=RD...)                  */
+/* ------------------------------------------------------------------ */
+html[data-abr-mixes] ytd-radio-renderer,
+html[data-abr-mixes] ytd-compact-radio-renderer,
+html[data-abr-mixes] ytd-rich-item-renderer:has(a[href*="list=RD"]),
+html[data-abr-mixes] yt-lockup-view-model:has(a[href*="list=RD"]),
+html[data-abr-mixes] ytd-grid-playlist-renderer:has(a[href*="list=RD"]),
+html[data-abr-mixes] ytd-playlist-renderer:has(a[href*="list=RD"]) {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Header                                                              */
+/* ------------------------------------------------------------------ */
+html[data-abr-top-header] #masthead-container {
+  display: none !important;
+}
+html[data-abr-top-header] ytd-app {
+  --ytd-masthead-height: 0px;
+  --ytd-toolbar-height: 0px;
+}
+html[data-abr-top-header] ytd-app #page-manager,
+html[data-abr-top-header] #page-manager.ytd-app {
+  margin-top: 0 !important;
+}
+html[data-abr-notifications] ytd-notification-topbar-button-renderer {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Search results: everything that is not a direct result             */
+/* ------------------------------------------------------------------ */
+html[data-abr-inapt-search] ytd-search ytd-shelf-renderer,
+html[data-abr-inapt-search] ytd-search grid-shelf-view-model,
+html[data-abr-inapt-search] ytd-search ytd-horizontal-card-list-renderer,
+html[data-abr-inapt-search] ytd-search ytd-secondary-search-container-renderer,
+html[data-abr-inapt-search] ytd-search ytd-ad-slot-renderer,
+html[data-abr-inapt-search] ytd-search ytd-promoted-sparkles-web-renderer,
+html[data-abr-inapt-search] ytd-search ytd-promoted-video-renderer,
+html[data-abr-inapt-search] ytd-search ytd-radio-renderer {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Guide sections                                                      */
+/* ------------------------------------------------------------------ */
+/* Explore: Trending, Music, Movies, Live, Gaming, News, Sports, ...   */
+html[data-abr-explore] ytd-guide-section-renderer:has(
+  a[href^="/feed/trending"], a[href="/feed/explore"], a[href^="/feed/storefront"],
+  a[href^="/feed/hype"], a[href^="/gaming"], a[href^="/feed/news_destination"],
+  a[href^="/feed/sports"], a[href^="/feed/learning"], a[href^="/feed/fashion"],
+  a[href^="/podcasts"], a[href="/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ"]),
+html[data-abr-explore] ytd-mini-guide-entry-renderer:has(a[href^="/feed/trending"], a[href="/feed/explore"]),
+html[data-abr-explore] ytd-guide-entry-renderer:has(a[href^="/feed/trending"], a[href="/feed/explore"]) {
+  display: none !important;
+}
+/* More from YouTube: Premium, Music, Kids, Studio */
+html[data-abr-more-from-youtube] ytd-guide-section-renderer:has(
+  a[href="/premium"], a[href^="https://music.youtube.com"],
+  a[href^="https://www.youtubekids.com"], a[href^="https://studio.youtube.com"]) {
+  display: none !important;
+}
+/* Subscriptions: the feed entry and the channel list */
+html[data-abr-subscriptions] ytd-guide-section-renderer:has(a[href="/feed/channels"]),
+html[data-abr-subscriptions] ytd-guide-entry-renderer:has(a[href="/feed/subscriptions"]),
+html[data-abr-subscriptions] ytd-mini-guide-entry-renderer:has(a[href="/feed/subscriptions"]) {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Educational mode block screen (inserted by content.js)              */
+/* ------------------------------------------------------------------ */
+html[data-abr-educational] #abr-block {
+  position: fixed;
+  top: var(--ytd-masthead-height, 56px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #73b8ee 0%, #b2dcfa 45%, #d7efff 100%);
+  color: #1a1a2e;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+html[data-abr-educational][data-abr-top-header] #abr-block {
+  top: 0;
+}
+html[data-abr-educational] #abr-block .abr-card {
+  max-width: 520px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 20px;
+  padding: 32px 36px;
+  box-shadow: 0 20px 50px rgba(10, 18, 32, 0.15);
+  text-align: center;
+}
+html[data-abr-educational] #abr-block .abr-brand {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 14px;
+}
+html[data-abr-educational] #abr-block h1 {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+  line-height: 1.15;
+}
+html[data-abr-educational] #abr-block p {
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0 0 10px;
+  color: #2c3e50;
+}
+html[data-abr-educational] #abr-block p b {
+  color: #1a1a2e;
+  font-weight: 600;
+}
+html[data-abr-educational] #abr-block .abr-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 22px 0 10px;
+}
+html[data-abr-educational] #abr-block button,
+html[data-abr-educational] #abr-block a.abr-button {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 2px solid #1a1a2e;
+  background: #1a1a2e;
+  color: #eceade;
+  cursor: pointer;
+  text-decoration: none;
+}
+html[data-abr-educational] #abr-block a.abr-button {
+  background: transparent;
+  color: #1a1a2e;
+}
+html[data-abr-educational] #abr-block .abr-hint {
+  font-size: 13px;
+  opacity: 0.75;
+  margin: 0;
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Unrot toolbar and store icon: the mark on a sky blue rounded square. -->
+  <rect id="tile" width="128" height="128" rx="28" fill="#73b8ee"/>
+  <!-- Same path as assets/logo.svg, scaled so the mark spans about 62% of the tile. -->
+  <path id="mark" fill="#1a1a2e" fill-rule="evenodd" transform="translate(16 14.5) scale(0.193)" d="
+    M 153 106
+    C 187 104 227 112 255 124
+    C 295 141 337 168 371 190
+    C 405 212 447 240 469 256
+    C 445 270 405 300 371 322
+    C 337 344 289 376 247 388
+    C 217 396 179 406 153 406
+    C 127 406 107 386 107 360
+    C 103 332 102 304 102 278
+    C 87 281 73 282 62 279
+    C 44 283 38 255 56 251
+    C 69 243 85 236 102 234
+    C 102 208 103 180 107 152
+    C 107 126 127 106 153 106
+    Z
+    M 115 234
+    C 193 226 343 224 441 250
+    C 343 256 193 266 115 278
+    C 106 274 106 238 115 234
+    Z"/>
+</svg>

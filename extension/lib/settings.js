@@ -1,10 +1,10 @@
 // Settings: defaults, validation, persistence in chrome.storage.sync, and the
-// mapping from settings to the data-unrot-* attributes that hide.css keys on.
+// mapping from settings to the data-abr-* attributes that hide.css keys on.
 // Requires lib/features.js to be loaded first.
-(globalThis.Unrot ||= {}).settings = (() => {
+(globalThis.AntiBrainrot ||= {}).settings = (() => {
   'use strict';
 
-  const { FEATURES, byId } = globalThis.Unrot.features;
+  const { FEATURES, byId } = globalThis.AntiBrainrot.features;
 
   const VERSION = 1;
   const KEY = 'settings';
@@ -17,7 +17,7 @@
   function warnOnce(msg) {
     if (warned) return;
     warned = true;
-    console.warn('[unrot] ' + msg);
+    console.warn('[anti-brainrot] ' + msg);
   }
 
   function defaults() {

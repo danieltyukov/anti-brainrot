@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 require('../extension/lib/features.js');
-const { features } = globalThis.Unrot;
+const { features } = globalThis.AntiBrainrot;
 
 test('every feature id is unique', () => {
   const ids = features.FEATURES.map((f) => f.id);

@@ -3,12 +3,12 @@
 // id      stable key used in settings.features
 // label   popup text
 // default initial value
-// attr    attribute name set on <html> as data-unrot-<attr> (null = no CSS)
+// attr    attribute name set on <html> as data-abr-<attr> (null = no CSS)
 // parent  id of the parent row
 // mode    'when-parent-off': child only matters when the parent is off
 //         'when-parent-on':  child only matters when the parent is on
 // locked  always on, not editable (Shorts)
-(globalThis.Unrot ||= {}).features = (() => {
+(globalThis.AntiBrainrot ||= {}).features = (() => {
   'use strict';
 
   const FEATURES = [

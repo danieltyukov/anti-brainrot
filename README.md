@@ -1,4 +1,4 @@
-# Unrot
+# Anti-Brainrot
 
 YouTube without the brain rot. A Chrome extension that blocks Shorts for good,
 hides feeds and distractions behind a friction timer, and can restrict playback

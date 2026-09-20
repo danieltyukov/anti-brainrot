@@ -5,7 +5,7 @@ const { installChromeMock, removeChromeMock } = require('./helpers/chrome-mock.j
 
 require('../extension/lib/features.js');
 require('../extension/lib/settings.js');
-const { settings: S, features } = globalThis.Unrot;
+const { settings: S, features } = globalThis.AntiBrainrot;
 
 test('defaults match the feature registry', () => {
   const d = S.defaults();

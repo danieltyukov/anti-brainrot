@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 require('../extension/lib/shorts.js');
-const { shorts } = globalThis.Unrot;
+const { shorts } = globalThis.AntiBrainrot;
 
 test('videoIdFromPath extracts the id from a shorts path', () => {
   assert.equal(shorts.videoIdFromPath('/shorts/AbC-12_xyz'), 'AbC-12_xyz');

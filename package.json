@@ -1,5 +1,5 @@
 {
-  "name": "unrot",
+  "name": "anti-brainrot",
   "version": "0.1.0",
   "description": "YouTube without the brain rot. Chrome extension that blocks Shorts for good, hides distractions behind a friction timer, and can restrict playback to educational videos.",
   "private": true,
@@ -7,9 +7,9 @@
   "author": "danieltyukov",
   "repository": {
     "type": "git",
-    "url": "https://github.com/danieltyukov/yt-anti-brain-rot.git"
+    "url": "https://github.com/danieltyukov/anti-brainrot.git"
   },
-  "homepage": "https://danieltyukov.github.io/yt-anti-brain-rot/",
+  "homepage": "https://danieltyukov.github.io/anti-brainrot/",
   "engines": {
     "node": ">=20"
   },

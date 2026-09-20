@@ -1,7 +1,7 @@
 // Service worker: seeds settings on install and keeps the toolbar badge in sync.
 importScripts('lib/features.js', 'lib/settings.js');
 
-const S = globalThis.Unrot.settings;
+const S = globalThis.AntiBrainrot.settings;
 
 async function refreshBadge(settings) {
   const s = settings || (await S.load());

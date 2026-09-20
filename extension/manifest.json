@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Unrot",
+  "name": "Anti-Brainrot",
   "version": "0.1.0",
   "description": "YouTube without the brain rot. Blocks Shorts for good, hides feeds and distractions behind a friction timer, and can limit playback to educational videos.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs5GLwkr2EUF+8rweRPiylYJ/FCMnmKg0XfmbOIAu7IHw1SZIJBSORDx0ODXkpW1ki5g56suMGUPclu+v2HgHzq/G8OcBt6bGlCBrYKJ0KXea5lWHRPU/iRgiVs7FbsW0ZltrH31tIoeesOXIYwEKHPS5nHjkm1sPqIPninX4vl9oAt8E0CcF/0S8QvGI0EpEl3s4QAf61cdfJWTstk9ujp2l1r5Ms/Hk8foQBPH5SUfb7Ui+sUwhzLwOufY5Qq35Zqn2Rgj21+D2C4ab+eoAsjwwavOTqAUpGxq3IyNAzQrduwAL4MlbVImzY1J2k13oywlN4QiP79EHXiYLIOksfQIDAQAB",
   "minimum_chrome_version": "111",
   "author": "danieltyukov",
-  "homepage_url": "https://github.com/danieltyukov/yt-anti-brain-rot",
+  "homepage_url": "https://github.com/danieltyukov/anti-brainrot",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -13,7 +14,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "Unrot",
+    "default_title": "Anti-Brainrot",
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
@@ -29,17 +30,32 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage", "declarativeNetRequest"],
-  "host_permissions": ["*://www.youtube.com/*", "*://m.youtube.com/*", "*://youtube.com/*"],
+  "permissions": [
+    "storage",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "*://www.youtube.com/*",
+    "*://m.youtube.com/*",
+    "*://youtube.com/*"
+  ],
   "declarative_net_request": {
     "rule_resources": [
-      { "id": "shorts", "enabled": true, "path": "rules/shorts.json" }
+      {
+        "id": "shorts",
+        "enabled": true,
+        "path": "rules/shorts.json"
+      }
     ]
   },
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*"],
-      "css": ["content/hide.css"],
+      "matches": [
+        "*://www.youtube.com/*"
+      ],
+      "css": [
+        "content/hide.css"
+      ],
       "js": [
         "lib/features.js",
         "lib/settings.js",
@@ -50,8 +66,12 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["*://www.youtube.com/*"],
-      "js": ["content/page-bridge.js"],
+      "matches": [
+        "*://www.youtube.com/*"
+      ],
+      "js": [
+        "content/page-bridge.js"
+      ],
       "run_at": "document_start",
       "world": "MAIN"
     }
