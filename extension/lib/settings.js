@@ -32,6 +32,10 @@
         allowedCategories: [...DEFAULT_CATEGORIES],
         allowedChannels: [],
       },
+      blocker: {
+        blockedDomains: [],
+        allowedDomains: [],
+      },
     };
   }
 
@@ -71,6 +75,13 @@
       if (cats) out.educational.allowedCategories = cats;
       const chans = cleanStringList(raw.educational.allowedChannels);
       if (chans) out.educational.allowedChannels = chans;
+    }
+
+    if (isObject(raw.blocker)) {
+      const blocked = cleanStringList(raw.blocker.blockedDomains);
+      if (blocked) out.blocker.blockedDomains = blocked;
+      const allowed = cleanStringList(raw.blocker.allowedDomains);
+      if (allowed) out.blocker.allowedDomains = allowed;
     }
 
     return out;
@@ -114,8 +125,51 @@
     return next;
   }
 
+  function lowerSet(list) {
+    return new Set((list || []).map((s) => String(s).trim().toLowerCase()));
+  }
+
+  function hasNew(before, after) {
+    const b = lowerSet(before);
+    for (const v of lowerSet(after)) if (!b.has(v)) return true;
+    return false;
+  }
+
+  // True when `next` restricts less than `current` in any way. Used to apply
+  // the rule "tighten any time, loosen only while the filter is off".
+  function isLoosening(current, next) {
+    const a = normalize(current);
+    const b = normalize(next);
+    for (const f of FEATURES) {
+      if (!f.locked && a.features[f.id] && !b.features[f.id]) return true;
+    }
+    if (b.focus.unlockDelaySec < a.focus.unlockDelaySec) return true;
+    if (b.features.educational) {
+      if (hasNew(a.educational.allowedCategories, b.educational.allowedCategories)) return true;
+      if (hasNew(a.educational.allowedChannels, b.educational.allowedChannels)) return true;
+    }
+    if (b.features.adultSites) {
+      if (hasNew(b.blocker.blockedDomains, a.blocker.blockedDomains)) return true;
+      if (hasNew(a.blocker.allowedDomains, b.blocker.allowedDomains)) return true;
+    }
+    return false;
+  }
+
+  class LockedError extends Error {
+    constructor() {
+      super('The filter is on. Loosening it needs the filter off first.');
+      this.name = 'LockedError';
+    }
+  }
+
+  // Applies a partial change. Throws LockedError when the filter is on, stays
+  // on, and the change would loosen it.
   async function update(patch) {
-    const merged = normalize(merge(await load(), patch));
+    const current = await load();
+    const merged = normalize(merge(current, patch));
+    if (current.focus.enabled && merged.focus.enabled && isLoosening(current, merged)) {
+      throw new LockedError();
+    }
     await save(merged);
     return merged;
   }
@@ -162,6 +216,8 @@
     load,
     save,
     update,
+    isLoosening,
+    LockedError,
     onChange,
     isActive,
     activeAttributes,

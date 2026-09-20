@@ -43,7 +43,9 @@
     input.type = 'checkbox';
     input.id = 'f-' + feature.id;
     input.checked = feature.locked ? true : Boolean(settings.features[feature.id]);
-    input.disabled = Boolean(feature.locked);
+    // Tighten any time, loosen only while off: an active feature cannot be
+    // switched off while the filter is on.
+    input.disabled = Boolean(feature.locked) || (settings.focus.enabled && input.checked);
     const track = document.createElement('span');
     track.className = 'track';
     label.append(input, track);
@@ -114,7 +116,7 @@
 
     const note = $('delay-note');
     note.hidden = !on || countdown !== null;
-    note.textContent = `Unlock delay: ${C.delayLabel(settings.focus.unlockDelaySec).toLowerCase()}. Change it while the filter is off.`;
+    note.textContent = `Filter is on with a ${C.delayLabel(settings.focus.unlockDelaySec).toLowerCase()} unlock delay. Add restrictions any time. Removing one needs the filter off.`;
 
     renderDelaySelect();
     renderList();
@@ -122,9 +124,38 @@
 
   // ---------------------------------------------------------------- actions
 
+  function showNote(row, text) {
+    let note = row.nextElementSibling;
+    if (!note || !note.classList.contains('note')) {
+      note = document.createElement('div');
+      note.className = 'note';
+      row.after(note);
+    }
+    note.textContent = text;
+  }
+
   async function onToggle(feature, input) {
     if (feature.locked) return;
-    await S.update({ features: { [feature.id]: input.checked } });
+    const row = input.closest('.row');
+    if (feature.id === 'adultSites' && input.checked) {
+      let granted = false;
+      try {
+        granted = await chrome.permissions.request({ origins: ['<all_urls>'] });
+      } catch {
+        granted = false;
+      }
+      if (!granted) {
+        input.checked = false;
+        showNote(row, 'Blocking sites outside YouTube needs the permission Chrome just asked for.');
+        return;
+      }
+    }
+    try {
+      await S.update({ features: { [feature.id]: input.checked } });
+    } catch (err) {
+      input.checked = !input.checked;
+      showNote(row, err.message);
+    }
   }
 
   async function turnOn() {

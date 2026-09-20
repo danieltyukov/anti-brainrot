@@ -33,7 +33,7 @@ test('roots keep registry order and exclude children', () => {
     [
       'homeFeed', 'sidebar', 'endScreenFeed', 'endScreenCards', 'shorts', 'comments',
       'mixes', 'merch', 'videoInfo', 'topHeader', 'inaptSearch', 'explore',
-      'moreFromYouTube', 'subscriptions', 'autoplay', 'annotations', 'educational',
+      'moreFromYouTube', 'subscriptions', 'autoplay', 'annotations', 'educational', 'adultSites',
     ],
   );
 });
@@ -53,6 +53,10 @@ test('shorts is locked on and has no attribute', () => {
   assert.equal(shorts.locked, true);
   assert.equal(shorts.default, true);
   assert.equal(shorts.attr, null);
+});
+
+test('adultSites is the only web-section feature', () => {
+  assert.deepEqual(features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id), ['adultSites']);
 });
 
 test('byId returns undefined for unknown ids', () => {

@@ -160,6 +160,22 @@ Pinned extension id: `manifest.json` carries a `key` so the id is
 the absolute chrome-extension:// URL of the block page, which is only stable
 with a pinned id. The private key lives outside the repository.
 
+## 4c. Tighten any time, loosen only while off
+
+Added 2026-09-20. A friction timer on the master switch alone would be
+pointless if every individual toggle could be flipped off instantly. So one
+rule applies everywhere (popup, options, import, reset): while the filter is
+on, any change that restricts more is applied immediately, and any change that
+restricts less is refused until the filter is off. Turning the filter off is
+what the countdown protects.
+
+"Restricts less" means: turning a feature off, shortening the unlock delay,
+adding an allowed category or channel while educational mode is on, removing a
+blocked domain or adding an allowed domain while the site blocker is on.
+Theme changes are always free. `settings.isLoosening(current, next)` is the
+single implementation and `settings.update()` enforces it by throwing
+`LockedError`.
+
 ## 5. Architecture
 
 ```

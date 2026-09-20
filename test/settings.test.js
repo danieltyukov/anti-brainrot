@@ -16,6 +16,7 @@ test('defaults match the feature registry', () => {
   for (const f of features.FEATURES) assert.equal(d.features[f.id], f.default, f.id);
   assert.deepEqual(d.educational.allowedCategories, ['Education', 'Science & Technology', 'Howto & Style']);
   assert.deepEqual(d.educational.allowedChannels, []);
+  assert.deepEqual(d.blocker, { blockedDomains: [], allowedDomains: [] });
 });
 
 test('defaults returns a fresh object each time', () => {
@@ -108,6 +109,65 @@ test('load, save and update round trip through chrome.storage.sync', async () =>
   const again = await S.update({ features: { mixes: false } });
   assert.equal(again.features.comments, false);
   assert.equal(again.features.mixes, false);
+  removeChromeMock();
+});
+
+function on() {
+  const s = S.defaults();
+  s.features.educational = true;
+  s.features.adultSites = true;
+  s.blocker.blockedDomains = ['x.com'];
+  return s;
+}
+
+test('isLoosening detects every way of allowing more', () => {
+  const base = on();
+  assert.equal(S.isLoosening(base, base), false);
+
+  let next = on(); next.features.comments = false;
+  assert.equal(S.isLoosening(base, next), true, 'feature off');
+  next = on(); next.features.playlist = true;
+  assert.equal(S.isLoosening(base, next), false, 'feature on is tightening');
+
+  next = on(); next.focus.unlockDelaySec = 60;
+  assert.equal(S.isLoosening(base, next), true, 'shorter delay');
+  next = on(); next.focus.unlockDelaySec = 3600;
+  assert.equal(S.isLoosening(base, next), false, 'longer delay');
+
+  next = on(); next.educational.allowedCategories.push('Gaming');
+  assert.equal(S.isLoosening(base, next), true, 'extra category');
+  next = on(); next.educational.allowedCategories = ['Education'];
+  assert.equal(S.isLoosening(base, next), false, 'fewer categories');
+  next = on(); next.educational.allowedChannels = ['@someone'];
+  assert.equal(S.isLoosening(base, next), true, 'extra channel');
+
+  next = on(); next.blocker.blockedDomains = [];
+  assert.equal(S.isLoosening(base, next), true, 'blocked domain removed');
+  next = on(); next.blocker.blockedDomains = ['x.com', 'y.com'];
+  assert.equal(S.isLoosening(base, next), false, 'blocked domain added');
+  next = on(); next.blocker.allowedDomains = ['z.com'];
+  assert.equal(S.isLoosening(base, next), true, 'allowed domain added');
+
+  const eduOff = on(); eduOff.features.educational = false;
+  next = on(); next.features.educational = false; next.educational.allowedCategories.push('Gaming');
+  assert.equal(S.isLoosening(eduOff, next), false, 'category lists do not matter while educational mode is off');
+
+  next = on(); next.theme = 'dark';
+  assert.equal(S.isLoosening(base, next), false, 'theme is free');
+});
+
+test('update refuses loosening changes while the filter is on', async () => {
+  installChromeMock();
+  await S.save(on());
+  await assert.rejects(S.update({ features: { comments: false } }), S.LockedError);
+  const tightened = await S.update({ features: { playlist: true } });
+  assert.equal(tightened.features.playlist, true);
+  const off = await S.update({ focus: { enabled: false } });
+  assert.equal(off.focus.enabled, false);
+  const loosened = await S.update({ features: { comments: false } });
+  assert.equal(loosened.features.comments, false, 'anything goes while off');
+  const backOn = await S.update({ focus: { enabled: true } });
+  assert.equal(backOn.features.comments, false);
   removeChromeMock();
 });
 

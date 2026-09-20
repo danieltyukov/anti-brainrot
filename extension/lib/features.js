@@ -8,6 +8,7 @@
 // mode    'when-parent-off': child only matters when the parent is off
 //         'when-parent-on':  child only matters when the parent is on
 // locked  always on, not editable (Shorts)
+// section 'youtube' (default) or 'web' (applies outside YouTube)
 (globalThis.AntiBrainrot ||= {}).features = (() => {
   'use strict';
 
@@ -35,6 +36,7 @@
     { id: 'autoplay', label: 'Disable Autoplay', default: true, attr: null },
     { id: 'annotations', label: 'Disable Annotations', default: true, attr: 'annotations' },
     { id: 'educational', label: 'Educational videos only', default: false, attr: 'educational' },
+    { id: 'adultSites', label: 'Block adult sites', default: false, attr: null, section: 'web' },
   ];
 
   const byIdMap = new Map(FEATURES.map((f) => [f.id, f]));

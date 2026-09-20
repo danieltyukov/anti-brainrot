@@ -1,0 +1,92 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(180deg, #73b8ee 0%, #b2dcfa 45%, #d7efff 100%);
+  color: #1a1a2e;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  max-width: 520px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 20px;
+  padding: 32px 36px;
+  box-shadow: 0 20px 50px rgba(10, 18, 32, 0.15);
+  text-align: center;
+}
+
+.brand {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 14px;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+  line-height: 1.15;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0 0 10px;
+  color: #2c3e50;
+}
+
+p b {
+  color: #1a1a2e;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 22px 0 10px;
+}
+
+button,
+a.button {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 2px solid #1a1a2e;
+  background: #1a1a2e;
+  color: #eceade;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+a.button {
+  background: transparent;
+  color: #1a1a2e;
+}
+
+.hint {
+  font-size: 13px;
+  opacity: 0.75;
+  margin: 0;
+}

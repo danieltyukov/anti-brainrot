@@ -278,6 +278,12 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 - [x] Step 5: E2E: open an Education video (allowed), an Entertainment video (blocked), navigate between them via search without reload, toggle the feature in the popup while on a blocked page (overlay disappears), reload on blocked page (overlay returns).
 - [x] Step 6: Commit `feat: educational videos only mode`, tag `v0.3.0`.
 
+## Task 6c: Tighten any time, loosen only while off (done)
+
+Rule from spec section 4c. `settings.isLoosening` plus `LockedError` in
+`settings.update`; popup disables active toggles while on; options page
+surfaces the refusal in its status line. Covered by tests and E2E.
+
 ## Task 6b: Adult site blocker
 
 **Files:** `extension/lib/blocker.js`, `test/blocker.test.js`,
@@ -285,15 +291,15 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 `extension/blocked/blocked.html|css|js`, changes to `manifest.json`,
 `background.js`, `lib/features.js`, `lib/settings.js`, popup and options.
 
-- [ ] Step 1: registry entry `adultSites` (section `web`, default false, attr null). Settings section `blocker` with `blockedDomains` and `allowedDomains` (normalized string lists). Tests for both.
-- [ ] Step 2: tests for `normalizeDomain`: `'https://www.Example.com/x'` -> `'example.com'`; `'sub.example.co.uk'` stays; `'not a domain'` -> null; `'localhost'` -> null. `parseDomainList('a.com\nA.com, b.org')` -> `['a.com','b.org']`. `dynamicRules({blockedDomains:['x.com'], allowedDomains:['y.com']})` -> two rules, the allow rule with higher priority. `blockedUrlFrom('chrome-extension://id/blocked/blocked.html?u=https://x.com/a?b=1&c=2')` -> `'https://x.com/a?b=1&c=2'`.
-- [ ] Step 3: implement `blocker.js`, tests pass, commit `feat: blocker domain helpers`.
+- [x] Step 1: registry entry `adultSites` (section `web`, default false, attr null). Settings section `blocker` with `blockedDomains` and `allowedDomains` (normalized string lists). Tests for both.
+- [x] Step 2: tests for `normalizeDomain`: `'https://www.Example.com/x'` -> `'example.com'`; `'sub.example.co.uk'` stays; `'not a domain'` -> null; `'localhost'` -> null. `parseDomainList('a.com\nA.com, b.org')` -> `['a.com','b.org']`. `dynamicRules({blockedDomains:['x.com'], allowedDomains:['y.com']})` -> two rules, the allow rule with higher priority. `blockedUrlFrom('chrome-extension://id/blocked/blocked.html?u=https://x.com/a?b=1&c=2')` -> `'https://x.com/a?b=1&c=2'`.
+- [x] Step 3: implement `blocker.js`, tests pass, commit `feat: blocker domain helpers`.
 - [ ] Step 4: `scripts/build-adult-list.mjs` (Node, no deps): downloads the Sinfonietta pornography hosts list, the blocklistproject porn list and the Tranco top 1M, keeps domains present in Tranco, adds `scripts/adult-core.txt` (hand-curated, always included), prunes subdomains whose parent is present, sorts, writes `extension/rules/adult.json` with rule 1 = requestDomains redirect and rules 2..n = keyword regex redirects. Target under 15,000 domains and under 400 KB. Prints counts. Record the source URLs and licences in `docs/BLOCKLIST.md`.
 - [ ] Step 5: manifest: `optional_host_permissions: ["<all_urls>"]`, ruleset `adult` with `enabled: false`, `web_accessible_resources` not needed (redirect target is an extension page, which is allowed for DNR redirects).
-- [ ] Step 6: `background.js`: `syncBlocker(settings)` enables or disables the `adult` ruleset and replaces dynamic rules from `blocker.dynamicRules`. Called on install, startup and settings change.
-- [ ] Step 7: `blocked/blocked.html`: theme, hostname from `blockedUrlFrom(location.href)`, Back button (`history.back()` with a fallback to closing the tab via `window.close()`).
+- [x] Step 6: `background.js`: `syncBlocker(settings)` enables or disables the `adult` ruleset and replaces dynamic rules from `blocker.dynamicRules`. Called on install, startup and settings change.
+- [x] Step 7: `blocked/blocked.html`: theme, hostname from `blockedUrlFrom(location.href)`, Back button (`history.back()` with a fallback to closing the tab via `window.close()`).
 - [ ] Step 8: popup: "Everywhere" group with the toggle. On switching on, call `chrome.permissions.request({origins:['<all_urls>']})`; only write the setting when granted. Show a one-line note under the toggle when not granted.
-- [ ] Step 9: options: "Blocked sites" section with two textareas (blocked, allowed), the removal restriction while the filter is on, and a hint about it.
+- [x] Step 9: options: "Blocked sites" section with two textareas (blocked, allowed), the removal restriction while the filter is on, and a hint about it.
 - [ ] Step 10: E2E: open a known adult domain and a keyword hostname, both land on the block page with the hostname shown; turn the feature off through the countdown and confirm the site loads; add a custom domain (example.org) and confirm it is blocked; add it to the allow list only after turning the filter off.
 - [ ] Step 11: commit `feat: adult site blocker`, tag `v0.4.0`.
 
@@ -301,9 +307,9 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 
 **Files:** `extension/options/options.html|css|js`
 
-- [ ] Step 1: Sections: Educational mode (enable toggle, category checkboxes from `CATEGORIES`, channel textarea), Filter (delay select disabled while on with hint), Appearance (theme radios), Data (Export JSON download, Import JSON file input, Reset with confirm via inline two-step button, not `window.confirm`). All changes save immediately and show a small "Saved" note.
-- [ ] Step 2: E2E: change categories and verify a watch page decision changes without reload; import a file; reset.
-- [ ] Step 3: Commit `feat: options page`.
+- [x] Step 1: Sections: Educational mode (enable toggle, category checkboxes from `CATEGORIES`, channel textarea), Filter (delay select disabled while on with hint), Appearance (theme radios), Data (Export JSON download, Import JSON file input, Reset with confirm via inline two-step button, not `window.confirm`). All changes save immediately and show a small "Saved" note.
+- [x] Step 2: E2E: change categories and verify a watch page decision changes without reload; import a file; reset.
+- [x] Step 3: Commit `feat: options page`.
 
 ## Task 8: Logo and icons
 

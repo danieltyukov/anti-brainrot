@@ -1,1 +1,90 @@
-<!doctype html><title>Anti-Brainrot options</title><p>Options arrive in Task 7.</p>
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anti-Brainrot options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header class="top">
+    <img src="../icons/icon-48.png" width="28" height="28" alt="">
+    <h1>anti-brainrot <span class="sub">options</span></h1>
+    <span id="status" class="status" aria-live="polite"></span>
+  </header>
+
+  <main>
+    <p id="lock-banner" class="banner" hidden>
+      The filter is on. You can tighten anything right now. Loosening (allowing more) needs the filter off first, which takes your unlock delay in the popup.
+    </p>
+
+    <section class="card" id="sec-educational">
+      <h2>Educational videos only</h2>
+      <p class="muted">Only videos in the allowed categories, or from allowed channels, can play. Everything else is paused behind a block screen. Feeds and search results still list every video; the gate is on the watch page.</p>
+      <label class="row">
+        <input type="checkbox" id="edu-enabled">
+        <span>Enable educational mode</span>
+      </label>
+      <h3>Allowed categories</h3>
+      <div id="categories" class="grid"></div>
+      <h3>Always allowed channels</h3>
+      <p class="muted small">One per line: @handle, channel URL, channel id or the exact channel name.</p>
+      <textarea id="channels" rows="5" spellcheck="false" placeholder="@3blue1brown"></textarea>
+      <div class="actions">
+        <button id="save-channels" class="primary" type="button">Save channels</button>
+      </div>
+    </section>
+
+    <section class="card" id="sec-blocker">
+      <h2>Block adult sites</h2>
+      <p class="muted">Redirects known adult sites to a block page. Uses a list that ships inside the extension, plus your own entries. Turn it on from the popup (Chrome asks for permission to act on all sites the first time).</p>
+      <h3>Also block these sites</h3>
+      <textarea id="blocked-domains" rows="4" spellcheck="false" placeholder="example.com"></textarea>
+      <h3>Never block these sites</h3>
+      <p class="muted small">For false positives. Allow entries win over the built-in list.</p>
+      <textarea id="allowed-domains" rows="3" spellcheck="false" placeholder="example.org"></textarea>
+      <div class="actions">
+        <button id="save-domains" class="primary" type="button">Save sites</button>
+      </div>
+    </section>
+
+    <section class="card" id="sec-filter">
+      <h2>Filter and timer</h2>
+      <p class="muted">Turning the filter off runs a countdown inside the popup. Closing the popup cancels it. Shorts stay hidden no matter what.</p>
+      <label class="row between">
+        <span>Unlock delay</span>
+        <select id="delay"></select>
+      </label>
+      <p id="delay-hint" class="muted small"></p>
+    </section>
+
+    <section class="card" id="sec-appearance">
+      <h2>Appearance</h2>
+      <div id="theme" class="radios"></div>
+    </section>
+
+    <section class="card" id="sec-data">
+      <h2>Settings data</h2>
+      <div class="actions">
+        <button id="export" class="secondary" type="button">Export JSON</button>
+        <label class="secondary file-button">Import JSON<input type="file" id="import" accept="application/json,.json" hidden></label>
+        <button id="reset" class="secondary danger" type="button">Reset to defaults</button>
+      </div>
+      <p id="data-note" class="muted small"></p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <a href="https://github.com/danieltyukov/anti-brainrot" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/danieltyukov/anti-brainrot/issues" target="_blank" rel="noopener">Report issue</a>
+    <a href="https://danieltyukov.github.io/anti-brainrot/" target="_blank" rel="noopener">Website</a>
+  </footer>
+
+  <script src="../lib/features.js"></script>
+  <script src="../lib/settings.js"></script>
+  <script src="../lib/education.js"></script>
+  <script src="../lib/blocker.js"></script>
+  <script src="../lib/countdown.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

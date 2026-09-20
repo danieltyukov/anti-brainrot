@@ -17,6 +17,7 @@
     "test": "node --test",
     "check": "node scripts/check.mjs",
     "build": "bash scripts/build.sh",
-    "icons": "bash scripts/render-icons.sh"
+    "icons": "bash scripts/render-icons.sh",
+    "blocklist": "node scripts/build-adult-list.mjs"
   }
 }
