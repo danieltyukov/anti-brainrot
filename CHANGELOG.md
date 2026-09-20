@@ -5,6 +5,20 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+### Added
+- Sub-options from Unhook: Hide Profile Photos under comments; Hide Buttons
+  Bar, Hide Channel and Hide Description under video info.
+- Search "Shorts" filter chip hidden, up next countdown hidden with autoplay
+  off, unread count stripped from the tab title with notifications hidden,
+  logo click goes straight to Subscriptions.
+- Popup completes the site blocker switch after the permission prompt even
+  when the prompt closes the popup.
+
+### Fixed
+- Hide Video Sidebar now also hides the parts YouTube moves below the video
+  in the one-column layout.
+- An allowed video no longer stays paused after the educational check.
+
 ## [0.4.0] - 2026-09-20
 
 ### Added

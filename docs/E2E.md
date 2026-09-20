@@ -43,6 +43,8 @@ and a Music channel; More from YouTube links to `/premium`, music and kids.
 | Hide Video Info | Description and bottom row hidden, title and channel visible |
 | Hide Video Sidebar at 900 px (one-column layout) | Recommendations that YouTube moves below the video are hidden too (fixed in 0.4.x) |
 | Educational mode, allowed video after reload | Plays without a manual resume |
+| Search "Shorts" filter chip | Tagged by content.js and hidden |
+| Logo click with redirect on | Goes straight to `/feed/subscriptions`, no home flash |
 
 Not verifiable without a signed-in account in the test browser: notification
 bell hiding, live chat hiding, subscriptions channel list hiding, playlist
