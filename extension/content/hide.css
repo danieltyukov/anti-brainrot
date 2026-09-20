@@ -122,7 +122,8 @@ html[data-abr-mixes] ytd-compact-radio-renderer,
 html[data-abr-mixes] ytd-rich-item-renderer:has(a[href*="list=RD"]),
 html[data-abr-mixes] yt-lockup-view-model:has(a[href*="list=RD"]),
 html[data-abr-mixes] ytd-grid-playlist-renderer:has(a[href*="list=RD"]),
-html[data-abr-mixes] ytd-playlist-renderer:has(a[href*="list=RD"]) {
+html[data-abr-mixes] ytd-playlist-renderer:has(a[href*="list=RD"]),
+html[data-abr-mixes] ytd-search ytd-video-renderer:has(a#thumbnail[href*="list=RD"]) {
   display: none !important;
 }
 

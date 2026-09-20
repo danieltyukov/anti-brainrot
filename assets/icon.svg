@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Unrot toolbar and store icon (48 px and 128 px): the mark on a sky blue
+  <!-- Anti-Brainrot toolbar and store icon (48 px and 128 px): the mark on a sky blue
        rounded square. Corner radius is 22 percent of the tile. -->
   <rect id="tile" width="128" height="128" rx="28" fill="#73b8ee"/>
   <!-- Same path data as assets/logo.svg, scaled so the mark spans about 63

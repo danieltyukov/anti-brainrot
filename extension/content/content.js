@@ -194,6 +194,10 @@
       meta = null;
     }
     if (!meta || !meta.videoId) return;
+    if (!meta.channelHandle) {
+      const owner = document.querySelector('ytd-watch-metadata #owner a[href^="/@"]');
+      if (owner) meta.channelHandle = owner.getAttribute('href').slice(1);
+    }
     currentMeta = meta;
     evaluateEducation();
   }

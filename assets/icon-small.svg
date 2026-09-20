@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Unrot toolbar icon for 16 px and 32 px. Same blade as assets/icon.svg,
+  <!-- Anti-Brainrot toolbar icon for 16 px and 32 px. Same blade as assets/icon.svg,
        but the mark fills 72 percent of the tile, the stem is shorter and
        stockier, and the midrib is wider so it survives the downscale. -->
   <rect id="tile" width="128" height="128" rx="28" fill="#73b8ee"/>
