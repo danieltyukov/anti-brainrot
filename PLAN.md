@@ -204,7 +204,7 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 
 **Files:** `extension/content/hide.css`, `extension/content/content.js`
 
-- [ ] Step 1: `hide.css`. Group rules by feature with a comment header per feature. Unconditional Shorts block first. Use `display: none !important`. Selectors to start from (verify live and adjust):
+- [x] Step 1: `hide.css`. Group rules by feature with a comment header per feature. Unconditional Shorts block first. Use `display: none !important`. Selectors to start from (verify live and adjust):
   - Shorts: `ytd-guide-entry-renderer:has(a[title="Shorts"])`, `ytd-mini-guide-entry-renderer[aria-label="Shorts"]`, `ytd-rich-shelf-renderer[is-shorts]`, `ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])`, `ytd-reel-shelf-renderer`, `ytd-item-section-renderer:has(> #contents > ytd-reel-shelf-renderer:only-child)`, `grid-shelf-view-model`, `ytd-rich-item-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"])`, `ytd-video-renderer:has(a[href^="/shorts/"])`, `ytd-grid-video-renderer:has(a[href^="/shorts/"])`, `ytd-reel-item-renderer`, `ytd-notification-renderer:has(a[href*="/shorts/"])`, `yt-tab-shape[tab-title="Shorts"]`, `tp-yt-paper-tab:has(> .tab-content:is([title="Shorts"]))`, `ytd-compact-video-renderer:has(a[href^="/shorts/"])`, `yt-lockup-view-model:has(a[href^="/shorts/"])`.
   - Home feed: `html[data-abr-home-feed] ytd-browse[page-subtype="home"] #primary > ytd-rich-grid-renderer`, `... ytd-feed-filter-chip-bar-renderer`.
   - Sidebar: `html[data-abr-sidebar] ytd-watch-flexy #secondary`.
@@ -225,7 +225,7 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
   - More from YouTube: `html[data-abr-more-from-youtube] ytd-guide-section-renderer:has(a[href="/premium"])`.
   - Subscriptions: `html[data-abr-subscriptions] ytd-guide-section-renderer:has(a[href="/feed/channels"]), ytd-guide-entry-renderer:has(a[href="/feed/subscriptions"]), ytd-mini-guide-entry-renderer[aria-label="Subscriptions"]`.
   - Annotations: `html[data-abr-annotations] .ytp-cards-teaser, .ytp-cards-button, .iv-branding, .ytp-paid-content-overlay`.
-- [ ] Step 2: `content.js` per spec 5.1 to 5.3. Structure:
+- [x] Step 2: `content.js` per spec 5.1 to 5.3. Structure:
   ```js
   (() => {
     const { settings: S, shorts } = globalThis.AntiBrainrot;
@@ -245,16 +245,16 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
     window.addEventListener('popstate', onNavigate);
   })();
   ```
-- [ ] Step 3: Load in Chrome. Walk the E2E list in `docs/E2E.md` for every CSS feature, toggling via the popup once it exists (until then via `chrome-ext eval <id> "chrome.storage.sync.set(...)"`). Fix selectors as needed. Record findings in `docs/E2E.md`.
-- [ ] Step 4: Commit `feat: hiding rules and content runtime`, tag `v0.1.0`, push tag.
+- [x] Step 3: Load in Chrome. Walk the E2E list in `docs/E2E.md` for every CSS feature, toggling via the popup once it exists (until then via `chrome-ext eval <id> "chrome.storage.sync.set(...)"`). Fix selectors as needed. Record findings in `docs/E2E.md`.
+- [x] Step 4: Commit `feat: hiding rules and content runtime`, tag `v0.1.0`, push tag.
 
 ## Task 5: Countdown library and popup
 
 **Files:** `extension/lib/countdown.js`, `test/countdown.test.js`,
 `extension/popup/popup.html`, `popup.css`, `popup.js`
 
-- [ ] Step 1: tests: `start(5000, 1000)` -> remaining 5000; `tick(state, 3500)` -> 2500 counting; `tick(state, 6000)` -> 0 done; `format(299000)` -> `'4:59'`; `format(7000)` -> `'0:07'`; `format(3600000)` -> `'1:00:00'`; `delayLabel(0)` -> `'Instant'`, `delayLabel(300)` -> `'5 minutes'`, `delayLabel(3600)` -> `'1 hour'`.
-- [ ] Step 2: implement, tests pass, commit `feat: countdown state machine`.
+- [x] Step 1: tests: `start(5000, 1000)` -> remaining 5000; `tick(state, 3500)` -> 2500 counting; `tick(state, 6000)` -> 0 done; `format(299000)` -> `'4:59'`; `format(7000)` -> `'0:07'`; `format(3600000)` -> `'1:00:00'`; `delayLabel(0)` -> `'Instant'`, `delayLabel(300)` -> `'5 minutes'`, `delayLabel(3600)` -> `'1 hour'`.
+- [x] Step 2: implement, tests pass, commit `feat: countdown state machine`.
 - [ ] Step 3: popup. Layout 360 px wide, max height 560 px, scrollable list.
   - Header: icon, "Anti-Brainrot", theme button (cycles system, light, dark), power button.
   - Filter-off panel: text "Filter is off", select of `DELAY_CHOICES` labelled by `delayLabel`, primary button "Turn on". Selecting writes `unlockDelaySec`; button writes `focus.enabled=true`.
