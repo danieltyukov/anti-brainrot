@@ -5,6 +5,19 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-09-20
+
+### Fixed
+- Signed-in YouTube: the "You" section of the guide, with History,
+  Playlists, Watch later and Liked videos, disappeared with the filter on.
+  Its "Your videos" entry links to YouTube Studio, which the Hide More from
+  YouTube rule matched. The rule now leaves any section that holds History,
+  Playlists or You alone.
+
+### Added
+- Hide History toggle, off by default: hides the History entry in the guide
+  and the History shelf on the You page.
+
 ## [1.4.0] - 2026-09-20
 
 ### Changed

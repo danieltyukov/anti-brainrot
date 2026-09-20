@@ -33,7 +33,7 @@ test('roots keep registry order and exclude children', () => {
     [
       'homeFeed', 'sidebar', 'endScreenFeed', 'endScreenCards', 'shorts', 'comments',
       'mixes', 'merch', 'videoInfo', 'topHeader', 'inaptSearch', 'explore',
-      'moreFromYouTube', 'subscriptions', 'autoplay', 'annotations', 'thumbnails', 'metrics', 'chips',
+      'moreFromYouTube', 'subscriptions', 'history', 'autoplay', 'annotations', 'thumbnails', 'metrics', 'chips',
       'richSections', 'searchSuggestions', 'grayscale', 'educational', 'adultSites', 'distractions', 'schedule',
     ],
   );

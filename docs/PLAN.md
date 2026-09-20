@@ -150,6 +150,7 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 | inaptSearch | Hide Inapt Search Results | true | inapt-search | | |
 | explore | Hide Explore, Trending | true | explore | | |
 | moreFromYouTube | Hide More from YouTube | true | more-from-youtube | | |
+| history | Hide History | false | history | | |
 | subscriptions | Hide Subscriptions | false | subscriptions | | |
 | autoplay | Disable Autoplay | true | null (JS) | | |
 | annotations | Disable Annotations | true | annotations | | |

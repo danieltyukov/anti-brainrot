@@ -180,3 +180,17 @@ SwiftShader's Vulkan path, so `/data/local/tmp/chrome-command-line` got
 | Filter off, rule removal | Chrome's rule removed while off, refused while on |
 | Home and Progress | Home strip reads filter on, blocks and timed use; Progress lists wikipedia.org and Chrome under most used timed apps and sites, and wikipedia.org, Calendar and Chrome under most blocked |
 | Unit tests | 29 pass: rules per app and site, loosening per rule, sessions capped by the minutes left, usage, streaks, the 1.3 list migration and the distracting sites migration |
+
+## 2026-09-20, Chrome 153, version 1.4.1
+
+Signed-in guide regression, reproduced in the logged-out test browser with a
+detached document built like the signed-in "You" section (History,
+Playlists, Your videos linking to Studio, Watch later) next to a real "More
+from YouTube" section.
+
+| Check | Result |
+| --- | --- |
+| Old More from YouTube rule | Matched both sections, so the "You" section with History went with it |
+| New rule | Matches only the More from YouTube section; a section holding History, Playlists or You is left alone |
+| Hide History toggle | Listed in the popup after Hide Subscriptions; with its attribute set, the guide's History entry is `display: none`, and visible again without it |
+| Real guide, logged out | History visible with the filter on and the toggle off |

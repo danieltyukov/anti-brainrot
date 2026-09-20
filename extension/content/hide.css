@@ -211,10 +211,19 @@ html[data-abr-explore] ytd-mini-guide-entry-renderer:has(a[href^="/feed/trending
 html[data-abr-explore] ytd-guide-entry-renderer:has(a[href^="/feed/trending"], a[href="/feed/explore"]) {
   display: none !important;
 }
-/* More from YouTube: Premium, Music, Kids, Studio */
+/* More from YouTube: Premium, Music, Kids, Studio. The signed-in "You"
+   section also links to Studio ("Your videos"), so a section with History
+   or Playlists in it is never this one. */
 html[data-abr-more-from-youtube] ytd-guide-section-renderer:has(
   a[href="/premium"], a[href^="https://music.youtube.com"],
-  a[href^="https://www.youtubekids.com"], a[href^="https://studio.youtube.com"]) {
+  a[href^="https://www.youtubekids.com"], a[href^="https://studio.youtube.com"]
+):not(:has(a[href^="/feed/history"], a[href^="/feed/playlists"], a[href^="/feed/you"])) {
+  display: none !important;
+}
+/* History: the guide entry and the "You" page shelf */
+html[data-abr-history] ytd-guide-entry-renderer:has(a[href^="/feed/history"]),
+html[data-abr-history] ytd-mini-guide-entry-renderer:has(a[href^="/feed/history"]),
+html[data-abr-history] ytd-browse[page-subtype="you"] ytd-rich-section-renderer:has(a[href^="/feed/history"]) {
   display: none !important;
 }
 /* Subscriptions: the feed entry and the channel list */

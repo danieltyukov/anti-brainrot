@@ -37,6 +37,7 @@
     { id: 'explore', label: 'Hide Explore, Trending', default: true, attr: 'explore' },
     { id: 'moreFromYouTube', label: 'Hide More from YouTube', default: true, attr: 'more-from-youtube' },
     { id: 'subscriptions', label: 'Hide Subscriptions', default: false, attr: 'subscriptions' },
+    { id: 'history', label: 'Hide History', default: false, attr: 'history' },
     { id: 'autoplay', label: 'Disable Autoplay', default: true, attr: 'autoplay' },
     { id: 'annotations', label: 'Disable Annotations', default: true, attr: 'annotations' },
     { id: 'thumbnails', label: 'Hide Thumbnails', default: false, attr: 'thumbnails' },
