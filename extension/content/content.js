@@ -90,6 +90,8 @@
   // Send the logo to Subscriptions before YouTube's router sees the click.
   function onLogoClick(event) {
     if (!settings || !S.isActive(settings, 'redirectHome')) return;
+    // Leave modified clicks (new tab, new window) to the browser.
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = event.target && event.target.closest && event.target.closest('a#logo, ytd-topbar-logo-renderer a');
     if (!link) return;
     event.preventDefault();
