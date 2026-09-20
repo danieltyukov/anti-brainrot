@@ -22,6 +22,7 @@
   let settings = null;
   let currentMeta = null;
   let blocked = false;
+  let waitingForMeta = false;
   let pausedWhileWaiting = false;
   let autoplayTimer = null;
   let metaTimer = null;
@@ -221,14 +222,16 @@
 
   function evaluateEducation() {
     if (!settings || !S.isActive(settings, 'educational') || !isWatchPage()) {
+      waitingForMeta = false;
       unblock();
       return;
     }
     const id = currentVideoId();
     if (!currentMeta || currentMeta.videoId !== id) {
-      // Fail closed while we wait for metadata: pause and ask the bridge. If
-      // the bridge never answers, show the block screen rather than a silent
-      // paused player.
+      // Fail closed while we wait for metadata: pause now, keep pausing
+      // through the play guard below, and ask the bridge. If the bridge never
+      // answers, show the block screen rather than a silent paused player.
+      waitingForMeta = true;
       if (pauseVideo()) pausedWhileWaiting = true;
       requestMeta();
       clearTimeout(metaTimer);
@@ -240,6 +243,7 @@
       return;
     }
     clearTimeout(metaTimer);
+    waitingForMeta = false;
     const decision = U.education.decide(currentMeta, settings.educational);
     if (decision.allow) {
       unblock();
@@ -265,9 +269,16 @@
     evaluateEducation();
   }
 
-  // Keep a blocked video paused even if YouTube or the user presses play.
+  // Keep a blocked video paused even if YouTube or the user presses play, and
+  // keep an undecided one paused while its metadata is on the way.
   document.addEventListener('play', (event) => {
-    if (blocked && event.target && event.target.tagName === 'VIDEO') event.target.pause();
+    if (!event.target || event.target.tagName !== 'VIDEO') return;
+    if (blocked) {
+      event.target.pause();
+    } else if (waitingForMeta) {
+      event.target.pause();
+      pausedWhileWaiting = true;
+    }
   }, true);
 
   // ---------------------------------------------------------------- wiring
@@ -277,6 +288,8 @@
     clearTimeout(metaTimer);
     currentMeta = null;
     pausedWhileWaiting = false;
+    // Closed until the next page has been judged.
+    waitingForMeta = Boolean(settings && S.isActive(settings, 'educational'));
     redirectIfNeeded();
   }
 

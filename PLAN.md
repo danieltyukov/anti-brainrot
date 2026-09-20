@@ -98,7 +98,6 @@ AntiBrainrot.settings.activeAttributes(settings)    // string[] of attr names (w
 }
 
 // lib/blocker.js
-AntiBrainrot.blocker.KEYWORDS              // hostname keywords used by rules/adult.json
 AntiBrainrot.blocker.normalizeDomain(entry) // 'https://www.Example.com/x' -> 'example.com', null when invalid
 AntiBrainrot.blocker.parseDomainList(text)  // string[] unique normalized domains
 AntiBrainrot.blocker.BLOCK_PAGE             // '/blocked/blocked.html'

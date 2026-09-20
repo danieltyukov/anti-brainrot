@@ -171,6 +171,36 @@ test('update refuses loosening changes while the filter is on', async () => {
   removeChromeMock();
 });
 
+test('overlapping updates are serialised and both land', async () => {
+  const { store } = installChromeMock();
+  const off = S.defaults();
+  off.focus.enabled = false;
+  await S.save(off);
+  await Promise.all([
+    S.update({ features: { comments: false } }),
+    S.update({ features: { mixes: false } }),
+    S.update({ theme: 'dark' }),
+  ]);
+  assert.equal(store.settings.features.comments, false);
+  assert.equal(store.settings.features.mixes, false);
+  assert.equal(store.settings.theme, 'dark');
+
+  // A refused update must not break the queue for the next one.
+  await S.update({ focus: { enabled: true } });
+  const results = await Promise.allSettled([
+    S.update({ features: { comments: true } }),
+    S.update({ features: { mixes: true } }),
+    S.update({ features: { playlist: false } }),
+  ]);
+  assert.deepEqual(results.map((r) => r.status), ['fulfilled', 'fulfilled', 'fulfilled']);
+  const after = await S.load();
+  assert.equal(after.features.comments, true);
+  assert.equal(after.features.mixes, true);
+  await assert.rejects(S.update({ features: { comments: false } }), S.LockedError);
+  assert.equal((await S.update({ theme: 'light' })).theme, 'light', 'queue survives a LockedError');
+  removeChromeMock();
+});
+
 test('onChange fires with normalized settings for the settings key only', async () => {
   const { listeners } = installChromeMock();
   const seen = [];

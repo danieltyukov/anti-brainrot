@@ -35,6 +35,7 @@ test('dynamicRules builds a redirect rule and a higher priority allow rule', () 
   assert.equal(allow.id, 2000);
   assert.equal(allow.action.type, 'allow');
   assert.ok(allow.priority > block.priority);
+  assert.ok(block.priority >= 2, 'must beat the bundled allow rule in rules/adult.json');
   assert.deepEqual(allow.condition.requestDomains, ['z.com']);
 });
 

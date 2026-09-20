@@ -49,9 +49,11 @@
     const allowed = parseDomainList((lists.allowedDomains || []).join('\n'));
     const rules = [];
     if (blocked.length > 0) {
+      // Priority 2 so a user's own entry beats the bundled allow rule for
+      // benign hostnames that match a keyword (rules/adult.json rule 7).
       rules.push({
         id: DYNAMIC_BLOCK_ID,
-        priority: 1,
+        priority: 2,
         action: redirectAction(extensionId),
         condition: { requestDomains: blocked, regexFilter: '^https?://.*', resourceTypes: ['main_frame'] },
       });
@@ -59,7 +61,7 @@
     if (allowed.length > 0) {
       rules.push({
         id: DYNAMIC_ALLOW_ID,
-        priority: 2,
+        priority: 3,
         action: { type: 'allow' },
         condition: { requestDomains: allowed, resourceTypes: ['main_frame'] },
       });

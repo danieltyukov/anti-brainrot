@@ -163,15 +163,22 @@
   }
 
   // Applies a partial change. Throws LockedError when the filter is on, stays
-  // on, and the change would loosen it.
-  async function update(patch) {
-    const current = await load();
-    const merged = normalize(merge(current, patch));
-    if (current.focus.enabled && merged.focus.enabled && isLoosening(current, merged)) {
-      throw new LockedError();
-    }
-    await save(merged);
-    return merged;
+  // on, and the change would loosen it. Calls are serialised so that two
+  // overlapping updates (two quick clicks, or the popup and the options page)
+  // cannot read the same stale snapshot and overwrite each other.
+  let queue = Promise.resolve();
+  function update(patch) {
+    const run = queue.then(async () => {
+      const current = await load();
+      const merged = normalize(merge(current, patch));
+      if (current.focus.enabled && merged.focus.enabled && isLoosening(current, merged)) {
+        throw new LockedError();
+      }
+      await save(merged);
+      return merged;
+    });
+    queue = run.catch(() => {});
+    return run;
   }
 
   function onChange(cb) {
