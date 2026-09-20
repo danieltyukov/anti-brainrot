@@ -278,6 +278,17 @@ figcaption {
 
 .shots .wide { max-width: 820px; margin: 0 auto; }
 
+.shots .phones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 270px));
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.shots > p { max-width: 820px; margin: 0 0 1rem; }
+.shots > .limits { max-width: 820px; margin: 0; }
+
 figure.small { max-width: 380px; margin-top: 1.75rem; }
 
 /* Two columns */
@@ -340,6 +351,7 @@ footer img { width: 160px; height: auto; }
   body { font-size: 1rem; }
   .features { grid-template-columns: 1fr; gap: 1.75rem; }
   .shots .pair { grid-template-columns: minmax(0, 360px); gap: 1.5rem; }
+  .shots .phones { grid-template-columns: minmax(0, 300px); gap: 1.5rem; }
   .hero { min-height: calc(100vh - 4.5rem); padding-bottom: 3rem; }
   .mark { margin-bottom: 1.75rem; }
   .cloud { min-width: 110px; }

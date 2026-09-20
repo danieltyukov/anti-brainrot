@@ -201,6 +201,30 @@
       </div>
     </section>
 
+    <section class="wrap shots" aria-labelledby="android-heading">
+      <h2 id="android-heading">On the phone</h2>
+      <p>The Android app is the same idea with the phone's own tools. An accessibility service recognises the Shorts, Reels and Spotlight players by their view ids and presses Back, and puts a block screen over the apps on your list. A DNS-only VPN answers lookups for adult and distracting hosts with "no such name" and forwards everything else to the network's resolver, so no traffic leaves the phone through the app. The friction timer, locked hours, Lock for N hours and the loosen-only-while-off rule are the same as in the extension. Strict mode closes the Settings pages that could disable the app while the filter is on.</p>
+      <div class="phones">
+        <figure>
+          <img src="assets/screenshots/android-home.png" alt="The Home tab of the Android app: a card that reads Filter is on, Locked until 17:00, a Lock for row set to 2 hours, a disabled Locked button, and today's counters" width="540" height="1200" loading="lazy">
+          <figcaption>Home, during locked hours.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/android-block.png" alt="The block screen over Chrome: Take a breath, Chrome is on your blocked list, a ten second countdown, an intention field, the budget left today and a Continue for 5 minutes button next to Keep it blocked" width="540" height="1200" loading="lazy">
+          <figcaption>A blocked app in pause mode.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/android-apps.png" alt="The Apps tab: YouTube Shorts marked always on, switches for Instagram Reels, Facebook Reels and Snapchat Spotlight, and the blocked apps settings for mode, pause, pass length and daily budget" width="540" height="1200" loading="lazy">
+          <figcaption>Feeds and blocked apps.</figcaption>
+        </figure>
+      </div>
+      <ul class="limits">
+        <li>Feed detection depends on view ids inside the apps, which change with updates. The counters on Home show whether feeds are still being closed.</li>
+        <li>A DNS filter sees hosts, not paths, so site rules are whole sites. Private DNS and browsers with their own DNS over HTTPS setting bypass it; the app warns when Private DNS is on.</li>
+        <li>Sideloaded apps on Android 13 and later need the Allow restricted settings step before the accessibility service can be turned on. The Setup screen walks through it.</li>
+      </ul>
+    </section>
+
     <section class="wrap install" id="install" aria-labelledby="install-heading">
       <h2 id="install-heading">Install</h2>
       <h3>Android</h3>

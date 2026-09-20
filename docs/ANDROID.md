@@ -71,7 +71,12 @@ real app refuses to run. Release builds are signed in CI from the
 
 ## Known limits
 
-- Browsers with their own DNS over HTTPS setting bypass a local DNS filter.
+- Browsers with their own DNS over HTTPS setting bypass a local DNS filter,
+  and so does Private DNS in the system settings; the Sites tab warns when
+  Private DNS is on.
+- Strict mode leaves any Settings page that shows the app's name, which
+  includes the accessibility service list itself while the filter is on.
+  Manage other services while the filter is off.
 - View ids change with app updates. The counters on the Home screen show
   whether feeds are still being closed; the ids live in one list in
   `BlockerAccessibilityService.kt`.

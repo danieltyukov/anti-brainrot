@@ -88,3 +88,42 @@ The permission prompt for Block adult sites is native Chrome UI and cannot
 be clicked from DevTools. The blocker mechanics were verified with the
 permission pre-granted in a test manifest; the shipped manifest requests it
 optionally from the popup.
+
+## 2026-09-20, Android 15 emulator (Pixel AVD, API 35), version 1.2.0
+
+Run with `adb`, `android/scripts/emu.sh` and the debug build. The real
+YouTube app on the image refuses to run without an update it cannot get, so
+the Shorts detector was exercised with the stand-in app under
+`android/fakeyoutube`, which uses the same view ids and a fork's package name
+(`app.revanced.android.youtube`). The accessibility service must be turned
+off and on again (or the device rebooted) after every reinstall; Android does
+not rebind it otherwise, and the Setup and Home screens now say so.
+
+| Check | Result |
+| --- | --- |
+| Setup screen | Lists the accessibility service, overlay, notification access and battery rows with the right states; restricted settings hint on Android 13 or later |
+| Blocked app (Chrome) with the filter on | Block screen over Chrome within a second, blocks counter incremented |
+| Pause mode | Countdown counts only while the block screen is in front; Continue disabled until zero; pass of 5 minutes granted, budget debited to 25; Chrome reopens without a block during the pass |
+| Keep it blocked | Home screen, Chrome gone |
+| Shorts stand-in | ShortsActivity closed by Back within a second (view ids `reel_player_page_container` and friends); WatchActivity with `watch_player` left alone (negative signal); feeds closed counter incremented |
+| Stand-in HomeActivity | Never closed (no fullscreen feed ids) |
+| Adult site filter | VPN consent dialog, then `tun0` up; `nslookup xvideos.com` returns no such name, `nslookup example.com` resolves |
+| Turn off with a 5 minute delay | State stayed on through the countdown and turned off at about 290 s; leaving the screen at 15 s cancelled it |
+| Turn off with a 30 s delay | Off after the countdown; `unlockDelaySec` kept at 30 |
+| Delay picker | Disabled while on; set at turn-on |
+| Locked hours with today enabled | Filter forced on within 16 s by the service ticker; Home reads "Locked until 17:00", Turn off replaced by a disabled Locked button |
+| Disabling the schedule while locked | Refused: "The filter is on. Loosening it needs the filter off first." |
+| Day chips | Wrap onto two rows; Sat and Sun reachable at 1080 px width |
+| Lock for 8 hours | `lockUntil` set to now plus 8 h, Home reads "Locked until 22:24" |
+| Strict mode, filter on | App info page and the Accessibility settings page left within a second (6 guard hits); Wi-Fi settings page stays |
+| Strict mode, filter off | App info page stays |
+| Reinstall regression | Chrome block and Shorts stand-in still work after the rebuild |
+
+Found and fixed while testing: `findAccessibilityNodeInfosByText` returns
+nothing inside Compose screens, and the Android 15 App info page is one, so
+the strict mode guard now walks the node tree itself. The schedule's day chips
+overflowed the card; they wrap now. The More tab could read "1 passes used".
+
+Not verifiable on this host: the real YouTube, Instagram, Facebook and
+Snapchat apps (no Play sign-in on the AVD); notification hiding from a real
+blocked app; Private DNS interaction on a physical network.
