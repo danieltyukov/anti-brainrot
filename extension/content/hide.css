@@ -225,6 +225,76 @@ html[data-abr-subscriptions] ytd-mini-guide-entry-renderer:has(a[href="/feed/sub
 }
 
 /* ------------------------------------------------------------------ */
+/* Extras: thumbnails, metrics, chips, shelves, suggestions, grayscale */
+/* ------------------------------------------------------------------ */
+html[data-abr-thumbnails] ytd-thumbnail,
+html[data-abr-thumbnails] yt-thumbnail-view-model,
+html[data-abr-thumbnails] ytd-playlist-thumbnail,
+html[data-abr-thumbnails] yt-collection-thumbnail-view-model,
+html[data-abr-thumbnails] ytd-video-preview,
+html[data-abr-thumbnails] .ytp-videowall-still-image,
+html[data-abr-thumbnails] ytd-rich-item-renderer #thumbnail {
+  display: none !important;
+}
+/* Blur instead of hide: titles stay readable, the clickbait pull goes */
+html[data-abr-thumbnails-blur] ytd-thumbnail img,
+html[data-abr-thumbnails-blur] yt-thumbnail-view-model img,
+html[data-abr-thumbnails-blur] ytd-playlist-thumbnail img,
+html[data-abr-thumbnails-blur] .ytp-videowall-still-image,
+html[data-abr-thumbnails-blur] ytd-rich-item-renderer #thumbnail img {
+  filter: blur(14px) saturate(0.6) !important;
+  transform: scale(1.1);
+}
+/* Metrics: view counts, dates, likes, subscriber and comment counts, durations */
+html[data-abr-metrics] #metadata-line,
+html[data-abr-metrics] ytd-video-meta-block #metadata-line,
+html[data-abr-metrics] yt-content-metadata-view-model .yt-content-metadata-view-model__metadata-row:not(:first-child),
+html[data-abr-metrics] yt-content-metadata-view-model .ytContentMetadataViewModelMetadataRow:not(:first-child),
+html[data-abr-metrics] ytd-watch-info-text,
+html[data-abr-metrics] ytd-watch-metadata #info-container,
+html[data-abr-metrics] #owner-sub-count,
+html[data-abr-metrics] ytd-comments-header-renderer #count,
+html[data-abr-metrics] segmented-like-dislike-button-view-model .yt-spec-button-shape-next__button-text-content,
+html[data-abr-metrics] segmented-like-dislike-button-view-model .ytSpecButtonShapeNextButtonTextContent,
+html[data-abr-metrics] like-button-view-model .yt-spec-button-shape-next__button-text-content,
+html[data-abr-metrics] like-button-view-model .ytSpecButtonShapeNextButtonTextContent,
+html[data-abr-metrics] ytd-thumbnail-overlay-time-status-renderer,
+html[data-abr-metrics] yt-thumbnail-badge-view-model,
+html[data-abr-metrics] yt-thumbnail-bottom-overlay-view-model,
+html[data-abr-metrics] .ytp-videowall-still-info-duration,
+html[data-abr-metrics] ytd-video-view-count-renderer,
+html[data-abr-metrics] #view-count {
+  display: none !important;
+}
+/* Filter chips on browse pages (home, subscriptions), not search filters */
+html[data-abr-chips] ytd-browse ytd-feed-filter-chip-bar-renderer,
+html[data-abr-chips] ytd-browse yt-chip-cloud-renderer {
+  display: none !important;
+}
+/* Posts, news, playables and other non-video shelves on browse pages */
+html[data-abr-rich-sections] ytd-browse ytd-rich-section-renderer,
+html[data-abr-rich-sections] ytd-browse ytd-rich-shelf-renderer:not([is-shorts]),
+html[data-abr-rich-sections] ytd-post-renderer,
+html[data-abr-rich-sections] ytd-backstage-post-thread-renderer,
+html[data-abr-rich-sections] ytd-rich-item-renderer:has(ytd-post-renderer, ytd-backstage-post-thread-renderer, ytd-mini-game-card-view-model, mini-game-card-view-model) {
+  display: none !important;
+}
+/* Search suggestions dropdown */
+html[data-abr-search-suggestions] .ytSearchboxComponentSuggestionsContainer,
+html[data-abr-search-suggestions] .ytSuggestionComponentSuggestionsContainer,
+html[data-abr-search-suggestions] ytd-masthead #search-suggestions,
+html[data-abr-search-suggestions] .sbdd_b,
+html[data-abr-search-suggestions] .gstl_50 {
+  display: none !important;
+}
+/* Grayscale the whole site */
+html[data-abr-grayscale] ytd-app,
+html[data-abr-grayscale] #movie_player:fullscreen,
+html[data-abr-grayscale] ytd-watch-flexy[fullscreen] #movie_player {
+  filter: grayscale(1) !important;
+}
+
+/* ------------------------------------------------------------------ */
 /* Educational mode block screen (inserted by content.js)              */
 /* ------------------------------------------------------------------ */
 html[data-abr-educational] #abr-block {

@@ -33,7 +33,8 @@ test('roots keep registry order and exclude children', () => {
     [
       'homeFeed', 'sidebar', 'endScreenFeed', 'endScreenCards', 'shorts', 'comments',
       'mixes', 'merch', 'videoInfo', 'topHeader', 'inaptSearch', 'explore',
-      'moreFromYouTube', 'subscriptions', 'autoplay', 'annotations', 'educational', 'adultSites',
+      'moreFromYouTube', 'subscriptions', 'autoplay', 'annotations', 'thumbnails', 'metrics', 'chips',
+      'richSections', 'searchSuggestions', 'grayscale', 'educational', 'adultSites', 'distractions', 'schedule',
     ],
   );
 });
@@ -47,6 +48,7 @@ test('children of sidebar are the four sidebar parts in order', () => {
   assert.deepEqual(features.children('topHeader').map((f) => f.id), ['notifications']);
   assert.deepEqual(features.children('comments').map((f) => f.id), ['commentAvatars']);
   assert.deepEqual(features.children('videoInfo').map((f) => f.id), ['videoButtons', 'videoChannel', 'videoDescription']);
+  assert.deepEqual(features.children('thumbnails').map((f) => f.id), ['thumbnailsBlur']);
   assert.deepEqual(features.children('mixes'), []);
 });
 
@@ -57,8 +59,8 @@ test('shorts is locked on and has no attribute', () => {
   assert.equal(shorts.attr, null);
 });
 
-test('adultSites is the only web-section feature', () => {
-  assert.deepEqual(features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id), ['adultSites']);
+test('web-section features', () => {
+  assert.deepEqual(features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id), ['adultSites', 'distractions', 'schedule']);
 });
 
 test('byId returns undefined for unknown ids', () => {

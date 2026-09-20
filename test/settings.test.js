@@ -17,6 +17,133 @@ test('defaults match the feature registry', () => {
   assert.deepEqual(d.educational.allowedCategories, ['Education', 'Science & Technology', 'Howto & Style']);
   assert.deepEqual(d.educational.allowedChannels, []);
   assert.deepEqual(d.blocker, { blockedDomains: [], allowedDomains: [] });
+  assert.equal(d.distractions.mode, 'pause');
+  assert.deepEqual(d.distractions.presets, [...S.DEFAULT_PRESETS]);
+  assert.equal(d.distractions.passMinutes, 5);
+  assert.equal(d.distractions.pauseSeconds, 10);
+  assert.equal(d.distractions.dailyBudgetMinutes, 30);
+  assert.equal(d.distractions.cooldownMinutes, 15);
+  assert.deepEqual(d.distractions.exceptions, []);
+  assert.equal(d.distractions.grayscaleAlways, false);
+  assert.equal(d.focus.lockUntil, 0);
+  assert.equal(d.focus.reason, '');
+  assert.deepEqual(d.schedule, { days: [1, 2, 3, 4, 5], start: '09:00', end: '17:00' });
+});
+
+test('ad hoc lock: isLockedNow, lockedUntilText and the update guard', async () => {
+  const s = S.defaults();
+  const now = new Date(2026, 8, 20, 10, 0);
+  s.focus.lockUntil = now.getTime() + 2 * 3600 * 1000;
+  assert.equal(S.isLockedNow(s, now), true);
+  assert.equal(S.lockedUntilText(s, now), '12:00');
+  s.focus.lockUntil = now.getTime() + 20 * 3600 * 1000;
+  assert.equal(S.lockedUntilText(s, now), 'tomorrow 06:00');
+  s.focus.lockUntil = now.getTime() - 1;
+  assert.equal(S.isLockedNow(s, now), false);
+  assert.equal(S.lockedUntilText(s, now), '');
+  const sched = S.defaults();
+  sched.features.schedule = true;
+  sched.schedule = { days: [0, 1, 2, 3, 4, 5, 6], start: '09:00', end: '17:00' };
+  assert.equal(S.lockedUntilText(sched, now), '17:00');
+  sched.focus.lockUntil = now.getTime() + 9 * 3600 * 1000;
+  assert.equal(S.lockedUntilText(sched, now), '19:00', 'the later of the two ends wins');
+
+  installChromeMock();
+  const locked = S.defaults();
+  locked.focus.lockUntil = Date.now() + 3600 * 1000;
+  await S.save(locked);
+  await assert.rejects(S.update({ focus: { enabled: false } }), (err) => err instanceof S.LockedError && /Locked until/.test(err.message));
+  await assert.rejects(S.update({ focus: { lockUntil: 0 } }), S.LockedError, 'shortening the lock is loosening');
+  const longer = await S.update({ focus: { lockUntil: Date.now() + 7200 * 1000 } });
+  assert.ok(longer.focus.lockUntil > locked.focus.lockUntil);
+  removeChromeMock();
+});
+
+test('patch writes through the queue without guards', async () => {
+  installChromeMock();
+  const on = S.defaults();
+  on.focus.enabled = true;
+  await S.save(on);
+  const r = await S.patch({ features: { comments: false } });
+  assert.equal(r.features.comments, false);
+  removeChromeMock();
+});
+
+test('normalize validates distractions and schedule', () => {
+  const n = S.normalize({
+    distractions: { mode: 'nuke', presets: ['tiktok', 7], custom: 'x', passMinutes: 7, pauseSeconds: 20, dailyBudgetMinutes: 60, grayscalePass: 'no', intention: false },
+    schedule: { days: [5, 5, 9, '1'], start: '25:00', end: '18:30' },
+  });
+  assert.equal(n.distractions.mode, 'pause');
+  assert.deepEqual(n.distractions.presets, ['tiktok']);
+  assert.deepEqual(n.distractions.custom, []);
+  assert.equal(n.distractions.passMinutes, 5, 'invalid choice keeps default');
+  assert.equal(n.distractions.pauseSeconds, 20);
+  assert.equal(n.distractions.dailyBudgetMinutes, 60);
+  assert.equal(n.distractions.grayscalePass, true);
+  assert.equal(n.distractions.intention, false);
+  assert.deepEqual(n.schedule.days, [1, 5]);
+  assert.equal(n.schedule.start, '09:00', 'invalid start keeps default');
+  assert.equal(n.schedule.end, '18:30');
+  const bad = S.normalize({ schedule: { start: '18:00', end: '09:00' } });
+  assert.deepEqual([bad.schedule.start, bad.schedule.end], ['09:00', '17:00'], 'start must precede end');
+});
+
+test('isLoosening covers distractions and the schedule', () => {
+  const base = S.defaults();
+  base.features.distractions = true;
+  base.features.schedule = true;
+  const tweak = (fn) => { const n = S.normalize(base); fn(n); return S.isLoosening(base, n); };
+  assert.equal(tweak(() => {}), false);
+  assert.equal(tweak((n) => { n.distractions.mode = 'block'; }), false, 'pause to block tightens');
+  const blockBase = S.normalize(base); blockBase.distractions.mode = 'block';
+  const toPause = S.normalize(blockBase); toPause.distractions.mode = 'pause';
+  assert.equal(S.isLoosening(blockBase, toPause), true, 'block to pause loosens');
+  assert.equal(tweak((n) => { n.distractions.presets = n.distractions.presets.slice(1); }), true, 'preset removed');
+  assert.equal(tweak((n) => { n.distractions.presets.push('twitch'); }), false, 'preset added');
+  assert.equal(tweak((n) => { n.distractions.custom = ['example.com']; }), false, 'custom added');
+  assert.equal(tweak((n) => { n.distractions.passMinutes = 10; }), true, 'longer pass');
+  assert.equal(tweak((n) => { n.distractions.passMinutes = 2; }), false, 'shorter pass');
+  assert.equal(tweak((n) => { n.distractions.pauseSeconds = 5; }), true, 'shorter pause');
+  assert.equal(tweak((n) => { n.distractions.dailyBudgetMinutes = 60; }), true, 'bigger budget');
+  assert.equal(tweak((n) => { n.distractions.grayscalePass = false; }), true);
+  assert.equal(tweak((n) => { n.distractions.intention = false; }), true);
+  assert.equal(tweak((n) => { n.distractions.exceptions = ['reddit.com/r/programming']; }), true, 'exception added');
+  assert.equal(tweak((n) => { n.distractions.cooldownMinutes = 5; }), true, 'shorter cooldown');
+  assert.equal(tweak((n) => { n.distractions.cooldownMinutes = 60; }), false, 'longer cooldown');
+  assert.equal(tweak((n) => { n.distractions.grayscaleAlways = true; }), false, 'always grayscale tightens');
+  assert.equal(tweak((n) => { n.schedule.days = [1, 2, 3, 4]; }), true, 'day removed');
+  assert.equal(tweak((n) => { n.schedule.days = [0, 1, 2, 3, 4, 5, 6]; }), false, 'days added');
+  assert.equal(tweak((n) => { n.schedule.start = '10:00'; }), true, 'later start');
+  assert.equal(tweak((n) => { n.schedule.end = '16:00'; }), true, 'earlier end');
+  assert.equal(tweak((n) => { n.schedule.start = '08:00'; n.schedule.end = '18:00'; }), false, 'wider window');
+  const off = S.normalize(base); off.features.schedule = false; off.features.distractions = false;
+  const offChanged = S.normalize(off); offChanged.schedule.days = [1]; offChanged.distractions.presets = [];
+  assert.equal(S.isLoosening(off, offChanged), false, 'lists do not matter while those features are off');
+});
+
+test('isLockedNow and the update guard during locked hours', async () => {
+  const s = S.defaults();
+  s.features.schedule = true;
+  s.schedule = { days: [1, 2, 3, 4, 5], start: '09:00', end: '17:00' };
+  const monday10 = new Date(2026, 8, 21, 10, 0);
+  const monday18 = new Date(2026, 8, 21, 18, 0);
+  const saturday10 = new Date(2026, 8, 19, 10, 0);
+  assert.equal(S.isLockedNow(s, monday10), true);
+  assert.equal(S.isLockedNow(s, monday18), false);
+  assert.equal(S.isLockedNow(s, saturday10), false);
+  s.features.schedule = false;
+  assert.equal(S.isLockedNow(s, monday10), false);
+
+  installChromeMock();
+  const locked = S.defaults();
+  locked.features.schedule = true;
+  locked.schedule = { days: [0, 1, 2, 3, 4, 5, 6], start: '00:00', end: '23:59' };
+  await S.save(locked);
+  await assert.rejects(S.update({ focus: { enabled: false } }), (err) => err instanceof S.LockedError && /Locked until 23:59/.test(err.message));
+  const stillOn = await S.load();
+  assert.equal(stillOn.focus.enabled, true);
+  removeChromeMock();
 });
 
 test('defaults returns a fresh object each time', () => {
@@ -79,7 +206,7 @@ test('activeAttributes lists attributes of active features in registry order', (
   assert.deepEqual(S.activeAttributes(S.defaults()), [
     'home-feed', 'sidebar-recommended', 'live-chat', 'fundraiser', 'end-screen-feed',
     'end-screen-cards', 'comments', 'mixes', 'merch', 'notifications', 'inapt-search',
-    'explore', 'more-from-youtube', 'autoplay', 'annotations',
+    'explore', 'more-from-youtube', 'autoplay', 'annotations', 'chips', 'rich-sections',
   ]);
   const off = S.defaults();
   off.focus.enabled = false;

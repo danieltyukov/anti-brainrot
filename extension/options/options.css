@@ -163,6 +163,16 @@ input[type="radio"] {
   accent-color: var(--accent);
 }
 
+input[type="text"] {
+  width: 100%;
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+}
+
 textarea,
 select {
   width: 100%;
@@ -228,6 +238,27 @@ input:disabled {
 .radios {
   display: flex;
   gap: 18px;
+}
+
+.radios.wrap-days {
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 6px 0 10px;
+}
+
+input[type="time"] {
+  font: inherit;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  margin-left: 10px;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
 }
 
 .radios label {

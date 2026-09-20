@@ -39,8 +39,17 @@
     { id: 'subscriptions', label: 'Hide Subscriptions', default: false, attr: 'subscriptions' },
     { id: 'autoplay', label: 'Disable Autoplay', default: true, attr: 'autoplay' },
     { id: 'annotations', label: 'Disable Annotations', default: true, attr: 'annotations' },
+    { id: 'thumbnails', label: 'Hide Thumbnails', default: false, attr: 'thumbnails' },
+    { id: 'thumbnailsBlur', label: 'Blur Thumbnails', default: false, attr: 'thumbnails-blur', parent: 'thumbnails', mode: 'when-parent-off' },
+    { id: 'metrics', label: 'Hide View Counts, Likes, Durations', default: false, attr: 'metrics' },
+    { id: 'chips', label: 'Hide Filter Chips', default: true, attr: 'chips' },
+    { id: 'richSections', label: 'Hide Posts, News, Games Shelves', default: true, attr: 'rich-sections' },
+    { id: 'searchSuggestions', label: 'Hide Search Suggestions', default: false, attr: 'search-suggestions' },
+    { id: 'grayscale', label: 'Grayscale YouTube', default: false, attr: 'grayscale' },
     { id: 'educational', label: 'Educational videos only', default: false, attr: 'educational' },
     { id: 'adultSites', label: 'Block adult sites', default: false, attr: null, section: 'web' },
+    { id: 'distractions', label: 'Block distracting sites', default: false, attr: null, section: 'web' },
+    { id: 'schedule', label: 'Locked hours', default: false, attr: null, section: 'web' },
   ];
 
   const byIdMap = new Map(FEATURES.map((f) => [f.id, f]));

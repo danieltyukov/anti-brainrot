@@ -69,10 +69,31 @@
     return rules;
   }
 
+  // The original URL is everything after the first "u=" in the query string.
+  // Static rules append it raw (regexSubstitution), content scripts append it
+  // percent-encoded; both forms are accepted.
   function blockedUrlFrom(href) {
     if (typeof href !== 'string') return null;
-    const i = href.indexOf('?u=');
-    return i < 0 ? null : href.slice(i + 3);
+    const i = href.search(/[?&]u=/);
+    if (i < 0) return null;
+    const raw = href.slice(i + 3);
+    if (/^https?:\/\//i.test(raw)) return raw;
+    try {
+      const decoded = decodeURIComponent(raw);
+      return /^https?:\/\//i.test(decoded) ? decoded : raw;
+    } catch {
+      return raw;
+    }
+  }
+
+  // 'adult' (default), 'block' or 'pause'.
+  function kindFrom(href) {
+    if (typeof href !== 'string') return 'adult';
+    const q = href.indexOf('?');
+    if (q < 0) return 'adult';
+    const head = href.slice(q + 1).split(/[?&]u=/)[0];
+    const kind = new URLSearchParams(head).get('kind');
+    return ['adult', 'block', 'pause'].includes(kind) ? kind : 'adult';
   }
 
   function hostOf(url) {
@@ -83,5 +104,5 @@
     }
   }
 
-  return Object.freeze({ BLOCK_PAGE, DYNAMIC_BLOCK_ID, DYNAMIC_ALLOW_ID, normalizeDomain, parseDomainList, dynamicRules, blockedUrlFrom, hostOf });
+  return Object.freeze({ BLOCK_PAGE, DYNAMIC_BLOCK_ID, DYNAMIC_ALLOW_ID, normalizeDomain, parseDomainList, dynamicRules, blockedUrlFrom, kindFrom, hostOf });
 })();

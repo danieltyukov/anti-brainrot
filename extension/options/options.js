@@ -2,7 +2,8 @@
 (() => {
   'use strict';
 
-  const { settings: S, education: E, blocker: B, countdown: C } = globalThis.AntiBrainrot;
+  const { settings: S, education: E, blocker: B, countdown: C, distractions: D } = globalThis.AntiBrainrot;
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const $ = (id) => document.getElementById(id);
   let settings = null;
   let statusTimer = null;
@@ -61,6 +62,7 @@
       option.selected = seconds === settings.focus.unlockDelaySec;
       select.appendChild(option);
     }
+    if (document.activeElement !== $('reason')) $('reason').value = settings.focus.reason;
     $('delay-hint').textContent = settings.focus.enabled
       ? 'The filter is on: the delay can be made longer now, shorter only once the filter is off.'
       : 'Applies the next time the filter is turned off.';
@@ -82,8 +84,83 @@
     }
   }
 
+  function renderSelect(id, choices, value, label) {
+    const select = $(id);
+    select.replaceChildren();
+    for (const v of choices) {
+      const option = document.createElement('option');
+      option.value = String(v);
+      option.textContent = label(v);
+      option.selected = v === value;
+      select.appendChild(option);
+    }
+  }
+
+  function renderDistractions() {
+    const d = settings.distractions;
+    const modes = $('dmode');
+    modes.replaceChildren();
+    for (const [mode, text] of [['pause', 'Pause, then a timed pass'], ['block', 'Block outright']]) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'dmode';
+      input.value = mode;
+      input.checked = d.mode === mode;
+      input.addEventListener('change', () => apply({ distractions: { mode } }));
+      label.append(input, document.createTextNode(text));
+      modes.appendChild(label);
+    }
+    const grid = $('presets');
+    grid.replaceChildren();
+    for (const preset of D.PRESETS) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = d.presets.includes(preset.id);
+      input.addEventListener('change', () => {
+        const next = D.PRESETS.map((p) => p.id).filter((id) => (id === preset.id ? input.checked : settings.distractions.presets.includes(id)));
+        apply({ distractions: { presets: next } });
+      });
+      label.append(input, document.createTextNode(preset.label));
+      grid.appendChild(label);
+    }
+    if (document.activeElement !== $('custom-patterns')) $('custom-patterns').value = d.custom.join('\n');
+    if (document.activeElement !== $('exceptions')) $('exceptions').value = d.exceptions.join('\n');
+    renderSelect('cooldown', S.COOLDOWN_CHOICES, d.cooldownMinutes, (v) => (v === 0 ? 'None' : C.delayLabel(v * 60)));
+    $('grayscale-always').checked = d.grayscaleAlways;
+    renderSelect('pause-seconds', S.PAUSE_CHOICES, d.pauseSeconds, (v) => `${v} seconds`);
+    renderSelect('pass-minutes', S.PASS_CHOICES, d.passMinutes, (v) => C.delayLabel(v * 60));
+    renderSelect('daily-budget', S.BUDGET_CHOICES, d.dailyBudgetMinutes, (v) => (v === 0 ? 'No passes' : v >= 1440 ? 'Unlimited' : C.delayLabel(v * 60)));
+    $('intention-on').checked = d.intention;
+    $('grayscale-pass').checked = d.grayscalePass;
+  }
+
+  function renderSchedule() {
+    $('schedule-enabled').checked = settings.features.schedule;
+    const box = $('days');
+    box.replaceChildren();
+    for (let day = 1; day <= 7; day += 1) {
+      const index = day % 7;
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = settings.schedule.days.includes(index);
+      input.addEventListener('change', () => {
+        const next = [0, 1, 2, 3, 4, 5, 6].filter((i) => (i === index ? input.checked : settings.schedule.days.includes(i)));
+        apply({ schedule: { days: next } });
+      });
+      label.append(input, document.createTextNode(DAYS[index]));
+      box.appendChild(label);
+    }
+    $('schedule-start').value = settings.schedule.start;
+    $('schedule-end').value = settings.schedule.end;
+  }
+
   function render() {
     document.documentElement.dataset.theme = settings.theme;
+    renderDistractions();
+    renderSchedule();
     $('lock-banner').hidden = !settings.focus.enabled;
     $('edu-enabled').checked = settings.features.educational;
     renderCategories();
@@ -116,6 +193,22 @@
   $('delay').addEventListener('change', (event) => {
     apply({ focus: { unlockDelaySec: Number(event.target.value) } });
   });
+
+  $('save-patterns').addEventListener('click', () => {
+    apply({ distractions: { custom: D.parseList($('custom-patterns').value), exceptions: D.parseList($('exceptions').value) } });
+  });
+  $('cooldown').addEventListener('change', (e) => apply({ distractions: { cooldownMinutes: Number(e.target.value) } }));
+  $('grayscale-always').addEventListener('change', (e) => apply({ distractions: { grayscaleAlways: e.target.checked } }));
+  $('reason').addEventListener('change', (e) => apply({ focus: { reason: e.target.value } }));
+  $('pause-seconds').addEventListener('change', (e) => apply({ distractions: { pauseSeconds: Number(e.target.value) } }));
+  $('pass-minutes').addEventListener('change', (e) => apply({ distractions: { passMinutes: Number(e.target.value) } }));
+  $('daily-budget').addEventListener('change', (e) => apply({ distractions: { dailyBudgetMinutes: Number(e.target.value) } }));
+  $('intention-on').addEventListener('change', (e) => apply({ distractions: { intention: e.target.checked } }));
+  $('grayscale-pass').addEventListener('change', (e) => apply({ distractions: { grayscalePass: e.target.checked } }));
+
+  $('schedule-enabled').addEventListener('change', (e) => apply({ features: { schedule: e.target.checked } }));
+  $('schedule-start').addEventListener('change', (e) => apply({ schedule: { start: e.target.value } }));
+  $('schedule-end').addEventListener('change', (e) => apply({ schedule: { end: e.target.value } }));
 
   $('export').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });

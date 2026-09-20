@@ -13,6 +13,7 @@
   let settings = null;
   let countdown = null;
   let timer = null;
+  let stats = null;
 
   // ---------------------------------------------------------------- helpers
 
@@ -93,6 +94,37 @@
     // changes are meant to happen.
   }
 
+  function renderLockRow() {
+    const on = settings.focus.enabled && countdown === null;
+    $('lock-row').hidden = !on;
+    const select = $('lock-hours');
+    if (select.options.length === 0) {
+      for (const h of S.LOCK_CHOICES) {
+        const option = document.createElement('option');
+        option.value = String(h);
+        option.textContent = h === 1 ? '1 hour' : `${h} hours`;
+        select.appendChild(option);
+      }
+      select.value = '2';
+    }
+  }
+
+  function localDayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function renderStats() {
+    const line = $('stats-line');
+    const s = stats && stats.day === localDayKey() ? stats : null;
+    if (!s || (s.blocks === 0 && s.passes === 0)) {
+      line.hidden = true;
+      return;
+    }
+    line.hidden = false;
+    line.textContent = `Today: blocked ${s.blocks} time${s.blocks === 1 ? '' : 's'}, ${s.passes} pass${s.passes === 1 ? '' : 'es'} used.`;
+  }
+
   function renderDelaySelect() {
     const select = $('delay');
     select.replaceChildren();
@@ -108,16 +140,26 @@
   function render() {
     applyTheme();
     const on = settings.focus.enabled;
+    const locked = on && S.isLockedNow(settings);
     document.body.classList.toggle('off', !on);
-    $('power').title = on ? 'Turn filter off' : 'Turn filter on';
+    $('power').title = locked ? `Locked hours until ${settings.schedule.end}` : on ? 'Turn filter off' : 'Turn filter on';
     $('power').setAttribute('aria-label', $('power').title);
+    $('power').disabled = locked;
 
     setPanel('panel-off', !on);
     setPanel('panel-countdown', on && countdown !== null);
 
     const note = $('delay-note');
     note.hidden = !on || countdown !== null;
-    note.textContent = `Filter is on with a ${C.delayLabel(settings.focus.unlockDelaySec).toLowerCase()} unlock delay. Add restrictions any time. Removing one needs the filter off.`;
+    note.textContent = locked
+      ? `Locked until ${S.lockedUntilText(settings)}. The filter cannot be turned off before then. Adding restrictions is still fine.`
+      : `Filter is on with a ${C.delayLabel(settings.focus.unlockDelaySec).toLowerCase()} unlock delay. Add restrictions any time. Removing one needs the filter off.`;
+    $('power').title = locked ? `Locked until ${S.lockedUntilText(settings)}` : $('power').title;
+    const reason = $('reason-line');
+    reason.hidden = !on || !settings.focus.reason;
+    reason.textContent = settings.focus.reason;
+    renderLockRow();
+    renderStats();
 
     renderDelaySelect();
     renderList();
@@ -135,19 +177,24 @@
     note.textContent = text;
   }
 
+  const NEEDS_ALL_SITES = new Set(['adultSites', 'distractions']);
+
   async function onToggle(feature, input) {
     if (feature.locked) return;
     const row = input.closest('.row');
-    if (feature.id === 'adultSites' && input.checked) {
+    if (NEEDS_ALL_SITES.has(feature.id) && input.checked) {
       let granted = false;
       try {
+        // The worker finishes the switch if Chrome's prompt closes the popup.
+        await chrome.storage.local.set({ pendingFeature: feature.id });
         granted = await chrome.permissions.request({ origins: ['<all_urls>'] });
       } catch {
         granted = false;
       }
+      await chrome.storage.local.remove('pendingFeature');
       if (!granted) {
         input.checked = false;
-        showNote(row, 'Blocking sites outside YouTube needs the permission Chrome just asked for.');
+        showNote(row, 'Acting on sites outside YouTube needs the permission Chrome just asked for.');
         return;
       }
     }
@@ -188,11 +235,23 @@
   function onPower() {
     if (!settings.focus.enabled) {
       turnOn();
+    } else if (S.isLockedNow(settings)) {
+      return;
     } else if (countdown) {
       stopCountdown();
       render();
     } else {
       beginCountdown();
+    }
+  }
+
+  async function lockForHours() {
+    const hours = Number($('lock-hours').value);
+    const lockUntil = Math.max(settings.focus.lockUntil, Date.now() + hours * 3600 * 1000);
+    try {
+      await S.update({ focus: { lockUntil } });
+    } catch (err) {
+      showNote($('lock-row'), err.message);
     }
   }
 
@@ -211,6 +270,17 @@
     render();
   });
   $('theme').addEventListener('click', cycleTheme);
+  $('lock').addEventListener('click', lockForHours);
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.stats) {
+      stats = changes.stats.newValue || null;
+      renderStats();
+    }
+  });
+  chrome.storage.local.get('stats').then((got) => {
+    stats = got.stats || null;
+    if (settings) renderStats();
+  });
   $('delay').addEventListener('change', () => {
     if (!settings.focus.enabled) S.update({ focus: { unlockDelaySec: Number($('delay').value) } });
   });

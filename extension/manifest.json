@@ -32,7 +32,9 @@
   },
   "permissions": [
     "storage",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "scripting",
+    "alarms"
   ],
   "host_permissions": [
     "*://www.youtube.com/*",
@@ -82,6 +84,16 @@
       ],
       "run_at": "document_start",
       "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "blocked/blocked.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

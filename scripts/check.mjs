@@ -13,6 +13,12 @@ if (manifest.version !== pkg.version) {
 }
 if (manifest.manifest_version !== 3) problems.push('manifest_version must be 3');
 if (!manifest.key) problems.push('manifest.key is missing; the block page redirect depends on the pinned id');
+if ((manifest.host_permissions || []).some((h) => h.includes('<all_urls>') || h === '*://*/*')) {
+  problems.push('host_permissions must stay YouTube only; all-sites access belongs in optional_host_permissions');
+}
+if (!(manifest.optional_host_permissions || []).includes('<all_urls>')) {
+  problems.push('optional_host_permissions must include <all_urls> for the site blocker');
+}
 
 // Pinned id derived from the public key, same way Chrome does it.
 const expectedId = createHash('sha256')

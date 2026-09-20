@@ -48,6 +48,43 @@
       </div>
     </section>
 
+    <section class="card" id="sec-distractions">
+      <h2>Distracting sites</h2>
+      <p class="muted">Feeds and short-video surfaces beyond YouTube. In pause mode a countdown and a short intention stand between you and the site, then you get a timed pass drawn from a daily budget. In block mode they are simply off. Turn the feature on from the popup (Chrome asks for permission to act on all sites the first time).</p>
+      <h3>Mode</h3>
+      <div id="dmode" class="radios"></div>
+      <h3>Built-in lists</h3>
+      <div id="presets" class="grid"></div>
+      <h3>Your own patterns</h3>
+      <p class="muted small">One per line. <code>site.com</code> blocks the whole site, <code>site.com/</code> only its front page, <code>site.com/path</code> everything under that path.</p>
+      <textarea id="custom-patterns" rows="4" spellcheck="false" placeholder="news.ycombinator.com/"></textarea>
+      <h3>Exceptions that stay open</h3>
+      <p class="muted small">Same grammar. Use it for the useful corner of a blocked site, for example <code>reddit.com/r/programming</code> or <code>netflix.com/browse/my-list</code>.</p>
+      <textarea id="exceptions" rows="3" spellcheck="false" placeholder="reddit.com/message"></textarea>
+      <div class="actions">
+        <button id="save-patterns" class="primary" type="button">Save patterns</button>
+      </div>
+      <h3>Passes</h3>
+      <label class="row between"><span>Pause before continuing</span><select id="pause-seconds"></select></label>
+      <label class="row between"><span>Length of one pass</span><select id="pass-minutes"></select></label>
+      <label class="row between"><span>Daily budget for passes</span><select id="daily-budget"></select></label>
+      <label class="row between"><span>Cooldown after a pass ends</span><select id="cooldown"></select></label>
+      <label class="row"><input type="checkbox" id="intention-on"><span>Ask what you need there before continuing</span></label>
+      <label class="row"><input type="checkbox" id="grayscale-pass"><span>Show the site in grayscale during a pass</span></label>
+      <label class="row"><input type="checkbox" id="grayscale-always"><span>Show these sites in grayscale always, even their allowed parts</span></label>
+    </section>
+
+    <section class="card" id="sec-schedule">
+      <h2>Locked hours</h2>
+      <p class="muted">During these hours the filter turns itself on and cannot be turned off, not even with the countdown.</p>
+      <label class="row"><input type="checkbox" id="schedule-enabled"><span>Enable locked hours</span></label>
+      <div id="days" class="radios wrap-days"></div>
+      <div class="row">
+        <label class="row between"><span>From</span><input type="time" id="schedule-start"></label>
+        <label class="row between"><span>Until</span><input type="time" id="schedule-end"></label>
+      </div>
+    </section>
+
     <section class="card" id="sec-filter">
       <h2>Filter and timer</h2>
       <p class="muted">Turning the filter off runs a countdown inside the popup. Closing the popup cancels it. Shorts stay hidden no matter what.</p>
@@ -56,6 +93,9 @@
         <select id="delay"></select>
       </label>
       <p id="delay-hint" class="muted small"></p>
+      <h3>Your reason</h3>
+      <p class="muted small">One line shown on every block and pause page, and in the popup. Written by you, for you.</p>
+      <input type="text" id="reason" maxlength="200" placeholder="Thesis due in March.">
     </section>
 
     <section class="card" id="sec-appearance">
@@ -85,6 +125,7 @@
   <script src="../lib/education.js"></script>
   <script src="../lib/blocker.js"></script>
   <script src="../lib/countdown.js"></script>
+  <script src="../lib/distractions.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

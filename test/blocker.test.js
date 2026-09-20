@@ -47,7 +47,12 @@ test('dynamicRules skips empty lists', () => {
 
 test('blockedUrlFrom reads the original URL back from the block page URL', () => {
   assert.equal(B.blockedUrlFrom('chrome-extension://id/blocked/blocked.html?u=https://x.com/a?b=1&c=2'), 'https://x.com/a?b=1&c=2');
+  assert.equal(B.blockedUrlFrom('chrome-extension://id/blocked/blocked.html?kind=pause&u=https://x.com/a?b=1&c=2'), 'https://x.com/a?b=1&c=2');
+  assert.equal(B.blockedUrlFrom('chrome-extension://id/blocked/blocked.html?kind=block&u=https%3A%2F%2Fx.com%2Fa%3Fb%3D1'), 'https://x.com/a?b=1');
   assert.equal(B.blockedUrlFrom('chrome-extension://id/blocked/blocked.html'), null);
+  assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?kind=pause&u=https://x.com/?kind=block'), 'pause');
+  assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?u=https://x.com/'), 'adult');
+  assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?kind=weird&u=https://x.com/'), 'adult');
   assert.equal(B.hostOf('https://www.x.com/a?b=1'), 'www.x.com');
   assert.equal(B.hostOf('garbage'), null);
 });

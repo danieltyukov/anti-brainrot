@@ -9,14 +9,39 @@
 <body>
   <main class="card">
     <div class="brand">anti-brainrot</div>
-    <h1>Not now</h1>
-    <p>Anti-Brainrot blocked <b id="host">this site</b>.</p>
-    <p class="muted">It is on the adult site list. To open it, turn the filter off in the popup and wait out your unlock delay.</p>
+    <p id="reason" class="reason" hidden></p>
+
+    <section id="view-adult" hidden>
+      <h1>Not now</h1>
+      <p>Anti-Brainrot blocked <b class="host">this site</b>.</p>
+      <p class="muted">It is on the adult site list. To open it, turn the filter off in the popup and wait out your unlock delay.</p>
+      <p class="hint">False positive? Add the site to the allow list in Anti-Brainrot options once the filter is off.</p>
+    </section>
+
+    <section id="view-block" hidden>
+      <h1>Not now</h1>
+      <p><b class="host">This site</b> is on your distracting sites list.</p>
+      <p class="muted">To open it, turn the filter off in the popup and wait out your unlock delay, or switch the list to pause mode in the options while the filter is off.</p>
+    </section>
+
+    <section id="view-pause" hidden>
+      <h1>Take a breath</h1>
+      <p>You are about to open <b class="host">this site</b>.</p>
+      <div id="countdown" class="countdown" aria-live="polite">10</div>
+      <label id="intention-wrap" class="intention" hidden>
+        <span>What do you need there?</span>
+        <input id="intention" type="text" maxlength="120" autocomplete="off" placeholder="One honest sentence">
+      </label>
+      <p id="budget" class="muted"></p>
+      <button id="continue" type="button" disabled>Continue</button>
+      <p id="exhausted" class="muted" hidden>Your daily budget for distracting sites is used up. It resets at midnight.</p>
+      <p id="cooldown" class="muted" hidden></p>
+    </section>
+
     <div class="actions">
-      <button id="back" type="button">Back</button>
+      <button id="back" type="button" class="secondary">Keep it blocked</button>
       <a class="button" href="https://www.youtube.com/feed/subscriptions">Subscriptions</a>
     </div>
-    <p class="hint">False positive? Add the site to the allow list in Anti-Brainrot options once the filter is off.</p>
   </main>
   <script src="../lib/blocker.js"></script>
   <script src="blocked.js"></script>
