@@ -36,11 +36,15 @@ object Enforcer {
 
     // Blocked outright, out of time for today, or timed without a running
     // session. The key is a package name or "site:" plus a rule host.
+    // Blocked outright, out of time for today, or, with the pause on, timed
+    // and not yet waited for. The key is a package name or "site:" plus a
+    // rule host.
     fun isBlocked(s: Settings, state: LocalState, key: String, now: Long = System.currentTimeMillis(), today: String = Passes.dayKey()): Boolean {
         if (!s.focus.enabled) return false
         val rule = Keys.ruleFor(s, key) ?: return false
         if (rule.mode == "block") return true
         if (Passes.secondsLeft(state, rule, key, today) <= 0) return true
+        if (!s.apps.pauseEnabled) return false
         return Passes.activePass(state, key, now) == null
     }
 
@@ -52,7 +56,7 @@ object Enforcer {
     // and forces the filter on during locked hours.
     suspend fun tick(app: App) {
         val settings = app.settings.get()
-        app.local.update { Passes.sweep(it, settings.apps) }
+        app.local.update { Passes.sweep(it) }
         if (Rules.isLockedNow(settings, LocalDateTime.now()) && !settings.focus.enabled) {
             app.settings.patch { it.copy(focus = it.focus.copy(enabled = true)) }
         }

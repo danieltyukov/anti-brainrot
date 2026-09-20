@@ -391,3 +391,9 @@ Not done: educational-only mode in the YouTube app (no category data), location 
 - [x] Apps tab lists rules for packages that are not installed, so they can be seen and changed; reinstalls keep their rule; the list reloads on resume.
 - [x] Prevent uninstall through a policy-free device admin; strict mode also leaves the uninstall dialog and the device admin page.
 - [x] Session notifications: time left while a timed app or site is in front, heads-up warning a minute before the block screen returns.
+
+## Task 16: Timers as plain limits (done 2026-09-21, v1.6.0)
+
+- [x] Sessions and cooldowns removed; a timed app or site opens on its own and is blocked when its minutes are gone.
+- [x] The pause is one optional switch (length and intention underneath); a waited pause stays valid while the app is in front and for a minute away.
+- [x] Apps tab settings card cut to how rules work, notifications and the install block; tests and docs updated.

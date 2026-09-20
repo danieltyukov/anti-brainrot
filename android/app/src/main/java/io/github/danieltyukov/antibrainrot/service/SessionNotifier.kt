@@ -16,8 +16,8 @@ import io.github.danieltyukov.antibrainrot.core.Progress
 import io.github.danieltyukov.antibrainrot.core.Settings
 
 // While a timed app or site is in front: a quiet notification with the time
-// left, and one heads-up warning a minute before the block screen returns,
-// so it never comes out of the blue.
+// left today, and one heads-up warning a minute before it runs out, so the
+// block screen never comes out of the blue.
 class SessionNotifier(private val context: Context) {
     private val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private var warnedFor = ""
@@ -30,14 +30,11 @@ class SessionNotifier(private val context: Context) {
         }
     }
 
-    // Seconds until the block screen returns for a key: the session's end
-    // or the day's limit, whichever is first. Null when nothing is running.
+    // Seconds of the day's limit left for a timed key, or null.
     fun secondsLeft(s: Settings, state: LocalState, key: String, now: Long = System.currentTimeMillis()): Int? {
         val rule = Keys.ruleFor(s, key) ?: return null
         if (rule.mode != "timer") return null
-        val pass = Passes.activePass(state, key, now) ?: return null
-        val session = ((pass - now) / 1000).toInt()
-        return minOf(session, Passes.secondsLeft(state, rule, key))
+        return Passes.secondsLeft(state, rule, key)
     }
 
     fun update(s: Settings, state: LocalState, keys: Set<String>, label: (String) -> String) {
@@ -48,12 +45,12 @@ class SessionNotifier(private val context: Context) {
         }
         val (k, left) = key
         val name = label(k)
-        val text = if (left >= 60) "${Progress.focusText(left)} left, then the block screen comes back." else "Less than a minute left."
+        val text = if (left >= 60) "${Progress.focusText(left)} left today." else "Less than a minute left today."
         manager.notify(ID_SESSION, build(SESSIONS, name, text, ongoing = true))
         showing = true
         if (left in 1..75 && warnedFor != k + ":" + (System.currentTimeMillis() / 3_600_000)) {
             warnedFor = k + ":" + (System.currentTimeMillis() / 3_600_000)
-            manager.notify(ID_WARNING, build(WARNINGS, "$name: one minute left", "Wrap up. The block screen comes back when the minute is over."))
+            manager.notify(ID_WARNING, build(WARNINGS, "$name: one minute left", "Wrap up. It is blocked for the rest of the day after that."))
         }
     }
 

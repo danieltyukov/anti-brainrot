@@ -89,7 +89,7 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
             }
         }
         if (empty) Appear(1) {
-            SectionCard("Nothing yet", "The counters fill in as the filter runs: how long it was on, block screens, time in timed apps, sessions. Check back tomorrow.") {}
+            SectionCard("Nothing yet", "The counters fill in as the filter runs: how long it was on, block screens, time in timed apps. Check back tomorrow.") {}
         }
         Appear(1) {
             SectionCard("Last $range days") {
@@ -100,7 +100,7 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     StatTile(Progress.focusText(animatedInt(summary.usageSeconds)), "In timed apps", Modifier.weight(1f), accent = Amber)
-                    StatTile(animatedInt(summary.passes).toString(), "Sessions, ${summary.passMinutes} min", Modifier.weight(1f))
+                    StatTile(animatedInt(summary.activeDays).toString(), "Days with an hour on", Modifier.weight(1f), accent = Leaf)
                 }
             }
         }
@@ -108,7 +108,7 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
             SectionCard("Filter on", "Hours per day the filter was on while the service ran.") {
                 BarChart(days.map { it.record.focusSeconds / 3600f }, labels)
                 Spacer(Modifier.height(6.dp))
-                Text("Best day: ${Progress.focusText(days.maxOf { it.record.focusSeconds })}. ${count(summary.activeDays, "day")} with an hour or more.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Best day: ${Progress.focusText(days.maxOf { it.record.focusSeconds })}.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Appear(3) {

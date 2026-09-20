@@ -53,12 +53,15 @@ class RulesTest {
         assertEquals(emptyMap<String, Rule>(), Settings.decode(off).sites.rules)
     }
 
-    @Test fun sessionSettings() {
-        assertTrue(loosens { it.copy(apps = it.apps.copy(passMinutes = 10)) })
-        assertFalse(loosens { it.copy(apps = it.apps.copy(passMinutes = 2)) })
-        assertTrue(loosens { it.copy(apps = it.apps.copy(pauseSeconds = 5)) })
-        assertTrue(loosens { it.copy(apps = it.apps.copy(cooldownMinutes = 5)) })
-        assertTrue(loosens { it.copy(apps = it.apps.copy(intention = false)) })
+    @Test fun pauseSettings() {
+        val paused = base.copy(apps = base.apps.copy(pauseEnabled = true))
+        assertTrue(Rules.isLoosening(paused, base))
+        assertFalse(Rules.isLoosening(base, paused))
+        assertTrue(Rules.isLoosening(paused, paused.copy(apps = paused.apps.copy(pauseSeconds = 5))))
+        assertFalse(Rules.isLoosening(paused, paused.copy(apps = paused.apps.copy(pauseSeconds = 60))))
+        assertTrue(Rules.isLoosening(paused, paused.copy(apps = paused.apps.copy(intention = false))))
+        // With the pause off its length and the intention do not matter.
+        assertFalse(loosens { it.copy(apps = it.apps.copy(pauseSeconds = 5, intention = false)) })
         val guarded = base.copy(preventUninstall = true, strictMode = true)
         assertTrue(Rules.isLoosening(guarded, guarded.copy(preventUninstall = false)))
         assertFalse(Rules.isLoosening(base, guarded))
@@ -128,12 +131,12 @@ class RulesTest {
     @Test fun normalizeFallsBack() {
         val n = Settings.normalize(Settings(
             focus = Focus(unlockDelaySec = 42),
-            apps = Apps(rules = mapOf("a" to Rule("nuke", 7), " " to Rule()), passMinutes = 7),
+            apps = Apps(rules = mapOf("a" to Rule("nuke", 7), " " to Rule()), pauseSeconds = 7),
             schedule = Schedule(start = "18:00", end = "09:00", days = listOf(0, 1, 9)),
         ))
         assertEquals(300, n.focus.unlockDelaySec)
         assertEquals(mapOf("a" to Rule("block", 30)), n.apps.rules)
-        assertEquals(5, n.apps.passMinutes)
+        assertEquals(10, n.apps.pauseSeconds)
         assertEquals(listOf(1), n.schedule.days)
         assertEquals("09:00", n.schedule.start)
     }

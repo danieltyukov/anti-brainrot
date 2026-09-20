@@ -196,6 +196,9 @@ class BlockerAccessibilityService : AccessibilityService() {
     // then meters whatever is in front now. Whole seconds only, and the
     // remainder carries over, so frequent calls do not lose time.
     private fun meter(front: String?) {
+        // The notification shade and other system surfaces are transient;
+        // treat them as still being in the app underneath.
+        if (front == "com.android.systemui") return
         val now = System.currentTimeMillis()
         val keys = meteredKeys
         if (keys.isNotEmpty()) {

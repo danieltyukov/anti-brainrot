@@ -78,8 +78,8 @@ Website: https://danieltyukov.github.io/anti-brainrot/
 ## Android app
 
 An app and site blocker in the spirit of AppBlock, as AntiBrainrot: every app
-and every site gets its own rule, blocked outright or a daily timer with a
-pause and sessions, an optional block on installing new apps, adult sites
+and every site gets its own rule, blocked outright or a daily timer, an
+optional pause before timed ones, an optional block on installing new apps, adult sites
 filtered at the DNS level, the friction timer, locked
 hours, Lock for N hours, strict mode, and a Progress tab with ninety days of
 counters, charts and a streak. Download `anti-brainrot-<version>.apk` from the

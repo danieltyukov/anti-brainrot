@@ -16,7 +16,6 @@ object Progress {
         val blocks: Int,
         val usageSeconds: Int,
         val passes: Int,
-        val passMinutes: Int,
         val activeDays: Int,
     )
 
@@ -37,7 +36,6 @@ object Progress {
         blocks = days.sumOf { it.record.blocks },
         usageSeconds = days.sumOf { it.record.usage.values.sum() },
         passes = days.sumOf { it.record.passes },
-        passMinutes = days.sumOf { it.record.passMinutes },
         activeDays = days.count { it.record.focusSeconds >= STREAK_MIN_SECONDS },
     )
 

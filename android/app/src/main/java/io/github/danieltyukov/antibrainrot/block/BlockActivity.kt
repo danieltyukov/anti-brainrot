@@ -83,9 +83,6 @@ import androidx.compose.ui.res.painterResource
 import io.github.danieltyukov.antibrainrot.R
 import io.github.danieltyukov.antibrainrot.ui.Ring
 import io.github.danieltyukov.antibrainrot.ui.theme.AntiBrainrotTheme
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 // The block screen, shown over a blocked app. Block mode only offers a way
 // out. Pause mode runs a countdown that pauses whenever this screen is not
@@ -161,8 +158,6 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
     val left = if (l != null && rule != null) Passes.secondsLeft(l, rule, key) else 0
     val exhausted = mode == "timer" && left <= 0
     val canPass = s != null && l != null && Passes.canPass(l, s, key)
-    val cooldown = l?.let { Passes.cooldownUntil(it, key) }
-    val session = if (s != null && l != null) Passes.sessionSeconds(l, s, key) else 0
     val total = s?.apps?.pauseSeconds ?: 10
 
     // Countdown only advances while this screen is resumed; leaving resets it.
@@ -235,8 +230,7 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
                     when {
                         mode == "block" -> Text("To open it, turn the filter off in AntiBrainrot and wait out your unlock delay.", color = Muted, textAlign = TextAlign.Center)
                         exhausted -> Text("It resets at midnight.", color = Muted, textAlign = TextAlign.Center)
-                        cooldown != null -> Text("Cooling down. The next session opens at ${timeText(cooldown)}.", color = Muted, textAlign = TextAlign.Center)
-                        !canPass -> Text("No session is possible right now.", color = Muted, textAlign = TextAlign.Center)
+                        !canPass -> Text("Nothing to wait for right now.", color = Muted, textAlign = TextAlign.Center)
                         else -> {
                             val progress = if (remaining < 0 || total == 0) 0f else 1f - remaining.toFloat() / total
                             Ring(progress, Modifier.size(124.dp), stroke = 8.dp, color = Ink, track = Ink.copy(alpha = 0.1f)) {
@@ -270,17 +264,17 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
                                         val current = app.local.get()
                                         val st = app.settings.get()
                                         if (Passes.canPass(current, st, key)) {
-                                            app.local.update { Passes.grant(it, st, key) }
+                                            app.local.update { Passes.grant(it, key) }
                                             onOpen()
                                         } else {
-                                            message = "Could not start a pass."
+                                            message = "No time left today."
                                         }
                                     }
                                 },
                                 enabled = ready,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Cream, disabledContainerColor = Ink.copy(alpha = 0.12f), disabledContentColor = Muted),
-                            ) { Text("Continue for ${Progress.focusText(session)}") }
+                            ) { Text("Continue") }
                         }
                     }
                     if (message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(message, color = Muted) }
@@ -291,6 +285,3 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
         }
     }
 }
-
-private fun timeText(ms: Long): String =
-    DateTimeFormatter.ofPattern("HH:mm").format(Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()))

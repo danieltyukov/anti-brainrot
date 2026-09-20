@@ -2,6 +2,11 @@ package io.github.danieltyukov.antibrainrot.ui.screens
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -51,7 +56,6 @@ import io.github.danieltyukov.antibrainrot.ui.RuleSheet
 import io.github.danieltyukov.antibrainrot.ui.ruleText
 import io.github.danieltyukov.antibrainrot.ui.SectionCard
 import io.github.danieltyukov.antibrainrot.ui.SwitchRow
-import io.github.danieltyukov.antibrainrot.ui.minutesLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -80,12 +84,15 @@ fun AppsScreen(vm: AppViewModel, s: Settings) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp)) {
         item {
             Appear(0) {
-                SectionCard("Timed and blocked apps", "Give each app its own rule: blocked outright, or a daily timer. A timed app opens after a short pause for one session, and only the time it is in front counts against its limit.") {
-                    ChoiceRow("Pause before continuing", s.apps.pauseSeconds, Settings.PAUSE_CHOICES, text = { "$it seconds" }) { v -> vm.update { it.copy(apps = it.apps.copy(pauseSeconds = v)) } }
-                    ChoiceRow("Length of one session", s.apps.passMinutes, Settings.PASS_CHOICES, text = { minutesLabel(it) }) { v -> vm.update { it.copy(apps = it.apps.copy(passMinutes = v)) } }
-                    ChoiceRow("Cooldown after a session", s.apps.cooldownMinutes, Settings.COOLDOWN_CHOICES, text = { minutesLabel(it) }) { v -> vm.update { it.copy(apps = it.apps.copy(cooldownMinutes = v)) } }
-                    SwitchRow("Ask what you need there", s.apps.intention) { v -> vm.update { it.copy(apps = it.apps.copy(intention = v)) } }
-                    SwitchRow("Hide their notifications", s.apps.blockNotifications, hint = "Needs notification access under Setup") { v -> vm.update { it.copy(apps = it.apps.copy(blockNotifications = v)) } }
+                SectionCard("How rules work", "Blocked apps get a block screen the moment they open. A timed app can be used for its minutes a day, counted while it is in front; when they are gone it is blocked until midnight, with a warning a minute before.") {
+                    SwitchRow("Pause before a timed app opens", s.apps.pauseEnabled, hint = "A short countdown first, each time you come back after a minute away. Off means timed apps just open.") { v -> vm.update { it.copy(apps = it.apps.copy(pauseEnabled = v)) } }
+                    AnimatedVisibility(s.apps.pauseEnabled, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                        Column {
+                            ChoiceRow("Pause length", s.apps.pauseSeconds, Settings.PAUSE_CHOICES, text = { "$it seconds" }) { v -> vm.update { it.copy(apps = it.apps.copy(pauseSeconds = v)) } }
+                            SwitchRow("Ask what you need there", s.apps.intention, hint = "An intention line before the app opens") { v -> vm.update { it.copy(apps = it.apps.copy(intention = v)) } }
+                        }
+                    }
+                    SwitchRow("Hide their notifications", s.apps.blockNotifications, hint = "Blocked apps, and timed apps that are out of time. Needs notification access under Setup.") { v -> vm.update { it.copy(apps = it.apps.copy(blockNotifications = v)) } }
                     SwitchRow("Block new app installs", s.apps.blockInstalls, hint = "The Play Store, other stores and the package installer are blocked while the filter is on. An app installed anyway starts out blocked.") { v -> vm.update { it.copy(apps = it.apps.copy(blockInstalls = v)) } }
                 }
             }

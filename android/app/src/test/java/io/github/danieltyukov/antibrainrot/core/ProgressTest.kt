@@ -12,18 +12,16 @@ class ProgressTest {
         focusHoursByBack.associate { (back, hours) -> today.minusDays(back.toLong()).toString() to DayRecord(focusSeconds = hours * 3600) }
 
     @Test fun countersLandInHistory() {
-        val apps = Settings(apps = Apps(rules = mapOf("com.android.chrome" to Rule("timer", 30)), passMinutes = 5))
         var s = Passes.recordBlock(LocalState(), "2026-09-20", "com.android.chrome")
         s = Passes.recordBlock(s, "2026-09-20", "com.android.chrome")
-        s = Passes.recordUsage(s, "com.android.chrome", 90, "2026-09-20")
+        s = Passes.recordUsage(s, "com.android.chrome", 90, 1000, "2026-09-20")
         s = Passes.recordFocus(s, 900, "2026-09-20")
-        s = Passes.grant(s, apps, "com.android.chrome", 1000, "2026-09-20")
+        s = Passes.grant(s, "com.android.chrome", 1000, "2026-09-20")
         val rec = s.history.getValue("2026-09-20")
         assertEquals(2, rec.blocks)
         assertEquals(90, rec.usage["com.android.chrome"])
         assertEquals(900, rec.focusSeconds)
         assertEquals(1, rec.passes)
-        assertEquals(5, rec.passMinutes)
         assertEquals(2, rec.byApp["com.android.chrome"])
         assertEquals(90, Progress.summary(Progress.days(s.history, 7, today)).usageSeconds)
     }

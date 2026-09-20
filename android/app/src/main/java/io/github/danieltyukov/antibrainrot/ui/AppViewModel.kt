@@ -51,7 +51,7 @@ class AppViewModel : ViewModel() {
                 val blocks = if (focus == 0) 0 else 2 + rnd.nextInt(9)
                 val passes = blocks / 3
                 d.toString() to DayRecord(
-                    blocks = blocks, passes = passes, passMinutes = passes * 5, focusSeconds = focus,
+                    blocks = blocks, passes = passes, focusSeconds = focus,
                     byApp = mapOf("com.android.chrome" to blocks / 2, "com.google.android.youtube" to blocks - blocks / 2).filterValues { it > 0 },
                     usage = mapOf("com.android.chrome" to rnd.nextInt(30 * 60), "com.google.android.youtube" to rnd.nextInt(60 * 60), "site:reddit.com" to rnd.nextInt(40 * 60)).filterValues { it > 0 },
                 )

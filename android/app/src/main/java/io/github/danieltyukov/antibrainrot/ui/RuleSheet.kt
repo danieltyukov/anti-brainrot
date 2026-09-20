@@ -109,7 +109,7 @@ fun RuleSheet(title: String, rule: Rule?, icon: @Composable () -> Unit, onDismis
                             }
                         }
                         Spacer(Modifier.height(8.dp))
-                        Text("Opens after the pause for one session at a time. Only time in front counts. When the minutes are gone it stays blocked until midnight.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Usable for these minutes a day, counted while it is in front. When they are gone it stays blocked until midnight. A warning comes a minute before.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     else -> Text("Not blocked and not timed.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

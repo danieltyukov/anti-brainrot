@@ -40,10 +40,9 @@ object Rules {
             if (ra.mode == "block" && rb.mode == "timer") return true
             if (ra.mode == "timer" && rb.mode == "timer" && rb.limitMinutes > ra.limitMinutes) return true
         }
-        if (b.apps.passMinutes > a.apps.passMinutes) return true
-        if (b.apps.pauseSeconds < a.apps.pauseSeconds) return true
-        if (b.apps.cooldownMinutes < a.apps.cooldownMinutes) return true
-        if (a.apps.intention && !b.apps.intention) return true
+        if (a.apps.pauseEnabled && !b.apps.pauseEnabled) return true
+        if (b.apps.pauseEnabled && b.apps.pauseSeconds < a.apps.pauseSeconds) return true
+        if (b.apps.pauseEnabled && a.apps.intention && !b.apps.intention) return true
         if (a.apps.blockNotifications && !b.apps.blockNotifications) return true
         if (a.apps.blockInstalls && !b.apps.blockInstalls) return true
         if (a.sites.adult && !b.sites.adult) return true

@@ -213,3 +213,17 @@ Not verifiable on this host: the Play Store (the Google APIs image has a
 stub without a launcher activity) and the package installer and uninstall
 dialogs, which cannot be started from the shell on this image; both are
 plain app windows handled by the same block and guard code as App info.
+
+## 2026-09-21, Android 15 emulator (Pixel AVD, API 35), version 1.6.0
+
+Timers as plain limits, the pause as an option.
+
+| Check | Result |
+| --- | --- |
+| Apps tab card | "How rules work" with the pause switch (off by default), its length and the intention line only while on, notifications and the install block |
+| Timed app, pause off | Clock (timer 5 min) opened directly, no block screen; the ongoing notification "Clock, 4m left today" was posted while it was in front |
+| Pause on | Switching it on while the filter was on was accepted (tightening); opening Clock showed the countdown, the intention line and Continue |
+| Pause memory | Back after 10 s away: no pause. Back after 75 s away: the pause again |
+| Limit used up | After 5 minutes of Clock in front the block screen came up on its own: "Time's up. You have used your 5 minutes in Clock for today." A heads-up "Clock: one minute left" had fired before. Clock stayed blocked after a reinstall of the app |
+| Shade | Opening the notification shade no longer counts as leaving the app: the ongoing time-left notification for a timed Camera was still there after expanding and collapsing it (the first run had cleared it) |
+| Unit tests | 30 pass: limits, kept-alive pauses, pause loosening rules, migrations |

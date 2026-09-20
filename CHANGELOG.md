@@ -5,6 +5,17 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-21
+
+### Changed
+- Android: timers are plain daily limits. A timed app or site opens on its
+  own and can be used for its minutes a day, counted while it is in front;
+  when they are gone it is blocked until midnight, with a warning a minute
+  before. Sessions, session length and cooldowns are gone. The pause before
+  opening is one optional switch, off by default, with its length and the
+  intention line underneath; when on, it shows again after a minute away.
+  The Apps tab's settings card reads "How rules work" and is half the size.
+
 ## [1.5.0] - 2026-09-20
 
 ### Added
