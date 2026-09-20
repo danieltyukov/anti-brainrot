@@ -368,3 +368,11 @@ friend-password unlock mode, allow-only mode during locked hours.
 - [x] Docs and site.
 
 Not done: educational-only mode in the YouTube app (no category data), location and Wi-Fi schedules, per-app time metering, allow-only mode.
+
+## Task 13: Android progress tracker and redesign (done 2026-09-20, v1.3.0)
+
+- [x] Day history in `LocalState` (ninety days: filter-on seconds, block screens per app, feeds closed, passes and minutes), every counter routed through `Passes.record`, old `Stats` migrated on decode, `Progress` aggregation with JVM tests.
+- [x] Filter-on time accumulated by the accessibility service ticker and flushed once a minute.
+- [x] Progress tab: 7, 30, 90 day ranges, summary tiles, bar charts (filter-on hours; block screens stacked with feeds closed), streak with the last seven days, most blocked apps. Debug builds can seed sample history.
+- [x] Name shown as AntiBrainrot; wordmark header with the leaf mark and a status pill; hero filter card that cross-fades between its off and on looks; countdown rings on Home and the block screen; staggered card entrances; animated tab changes, counters and permission states; typography and shapes. Locked hours moved to a Home card; the app list loads off the main thread.
+- [x] Emulator run of every screen and the regression set (docs/E2E.md), docs and site.

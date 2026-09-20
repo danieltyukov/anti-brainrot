@@ -127,3 +127,32 @@ overflowed the card; they wrap now. The More tab could read "1 passes used".
 Not verifiable on this host: the real YouTube, Instagram, Facebook and
 Snapchat apps (no Play sign-in on the AVD); notification hiding from a real
 blocked app; Private DNS interaction on a physical network.
+
+## 2026-09-20, Android 15 emulator (Pixel AVD, API 35), version 1.3.0
+
+Same setup as the 1.2.0 run. The uiautomator dump used by `emu.sh tap`
+waits for an idle screen, so during the countdown (the ring animates every
+second) taps went by coordinates instead.
+
+| Check | Result |
+| --- | --- |
+| Name and header | Launcher label, header wordmark, block screen and Setup read AntiBrainrot; the status pill reads On, Off or Locked with the lock icon |
+| Home, filter on | Blue hero card with the power ring, Lock for row, Turn off; Locked state shows the lock in the ring and a disabled Locked button |
+| Home, filter off | Surface card, empty ring, delay picker, Turn on |
+| Turn off with a 5 minute delay | Ring counts down with the seconds inside it and 4:57 below; off after 300 s |
+| Keep it on | Countdown cancelled, filter still on 34 s later (30 s delay) |
+| Turn off with a 30 s delay | Off after the countdown; Turn on afterwards leaves the delay at 30 s |
+| Today strip | Reads 1m filter on, 2 blocks, 1 feed closed after one block screen and one closed Short; opens Progress |
+| Progress, empty | Nothing yet card, zero tiles, empty bars with weekday labels |
+| Progress, seeded 60 days (debug button) | 7 day tiles 24h 19m, 24, 31, 6 passes 30 min; 30 day tiles 166h 7m, 154, 155, 41 passes 205 min; bars grow in on range change; date labels every 7 days at 30 and every 30 at 90; stacked blocks and feeds chart with legend; streak 2 with best 28 and seven dots; most blocked apps with icons and bars |
+| History on disk | Today's record holds blocks, feedsClosed, focusSeconds (60 after one minute of the filter on) and byApp counts |
+| Chrome block | Card slides in, icon pops, ring fills from 9 to 0, Continue enabled at Ready |
+| Shorts stand-in | Closed within a second, feeds closed counter incremented |
+| Strict mode | App info page left within a second |
+| Setup | Green check marks for granted rows; Notifications row reads the real permission state (was always Open on a fresh install) |
+| Apps tab | App list loads after the settings cards with a progress bar, rows reorder with animation when one is checked |
+| Locked hours card on Home | Chips and time buttons expand when the switch is on; Sun chip on the second row |
+| Unit tests | 24 pass, including history recording, pruning, streaks, top apps and the Stats migration |
+
+Not verifiable on this host: the animations' smoothness at 60 Hz (the
+emulator renders with SwiftShader), dark theme on a real display.

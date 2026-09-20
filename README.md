@@ -77,21 +77,22 @@ Website: https://danieltyukov.github.io/anti-brainrot/
 
 ## Android app
 
-The same rules on the phone: Shorts, Reels and Spotlight closed inside their
-apps, distracting apps behind a pause and a timed pass, adult and distracting
-sites filtered at the DNS level, the friction timer, locked hours, Lock for N
-hours, strict mode. Download `anti-brainrot-<version>.apk` from the
+The same rules on the phone, as AntiBrainrot: Shorts, Reels and Spotlight
+closed inside their apps, distracting apps behind a pause and a timed pass,
+adult and distracting sites filtered at the DNS level, the friction timer,
+locked hours, Lock for N hours, strict mode, and a Progress tab with ninety
+days of counters, charts and a streak. Download `anti-brainrot-<version>.apk` from the
 [latest release](https://github.com/danieltyukov/anti-brainrot/releases/latest),
 open it on the phone, allow installing from that source, then follow the
 Setup screen. Android 8 or newer. Details, permissions and limits in
 [docs/ANDROID.md](docs/ANDROID.md).
 
 <p align="center">
-  <img src="site/assets/screenshots/android-home.png" alt="The Home tab of the Android app during locked hours" width="240">
+  <img src="site/assets/screenshots/android-home.png" alt="The Home tab of the Android app with the filter on" width="240">
   &nbsp;
-  <img src="site/assets/screenshots/android-block.png" alt="The block screen over Chrome in pause mode" width="240">
+  <img src="site/assets/screenshots/android-progress.png" alt="The Progress tab with totals, a bar chart and a streak" width="240">
   &nbsp;
-  <img src="site/assets/screenshots/android-apps.png" alt="The Apps tab with feed switches and blocked app settings" width="240">
+  <img src="site/assets/screenshots/android-block.png" alt="The block screen over Chrome in pause mode with a countdown ring" width="240">
 </p>
 
 ## Install the extension

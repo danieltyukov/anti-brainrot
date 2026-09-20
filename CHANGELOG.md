@@ -5,6 +5,23 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-20
+
+### Added
+- Android: a Progress tab. The app keeps ninety days of daily counters (time
+  the filter was on, block screens, feeds closed, passes and their minutes,
+  block screens per app) and shows them as totals, bar charts over 7, 30 or
+  90 days, a streak of days with the filter on for at least an hour, and the
+  most blocked apps. Home shows today's three numbers and opens Progress.
+
+### Changed
+- Android: the app is called AntiBrainrot. New header with the leaf mark and
+  a status pill, a hero card for the filter that cross-fades between its off
+  and on looks, a countdown ring for the friction timer and on the block
+  screen, staggered card entrances, animated tab changes and counters,
+  refined typography and corner radii. Locked hours moved from their own tab
+  to a card on Home. The app list loads off the main thread.
+
 ## [1.2.0] - 2026-09-20
 
 ### Added

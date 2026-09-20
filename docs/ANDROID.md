@@ -1,12 +1,13 @@
-# Anti-Brainrot for Android
+# AntiBrainrot for Android
 
-The Android app brings the extension's rules to the phone: YouTube Shorts and
-the other short-video feeds are closed inside their apps, distracting apps sit
-behind a pause and a timed pass, adult and distracting sites are filtered at
-the DNS level, and the whole thing runs under the same friction timer, the
-same "tighten any time, loosen only while off" rule, the same locked hours and
-ad hoc locks. It is meant to replace AppBlock for one person's use and is not
-on Google Play; the APK is attached to every GitHub release.
+The Android app, called AntiBrainrot on the phone, brings the extension's
+rules to the phone: YouTube Shorts and the other short-video feeds are closed
+inside their apps, distracting apps sit behind a pause and a timed pass, adult
+and distracting sites are filtered at the DNS level, and the whole thing runs
+under the same friction timer, the same "tighten any time, loosen only while
+off" rule, the same locked hours and ad hoc locks. A Progress tab keeps ninety
+days of counters. It is meant to replace AppBlock for one person's use and is
+not on Google Play; the APK is attached to every GitHub release.
 
 ## What it does
 
@@ -19,12 +20,23 @@ on Google Play; the APK is attached to every GitHub release.
 | Friction timer | Turning the filter off runs the countdown on the Home screen; leaving the screen cancels it |
 | Locked hours, Lock for N hours | The service checks every 15 seconds and on every app switch; during a lock the switch is forced on and cannot be turned off |
 | Strict mode | While the filter is on, the Settings pages that could disable the app (its App info page, the accessibility page) are closed as they open |
-| Stats | Today's blocks, passes and closed feeds |
+| Progress | Ninety days of daily counters: time the filter was on while the service ran, block screens (per app too), feeds closed, passes and their minutes. Shown as totals over 7, 30 or 90 days, bar charts per day, a streak of days with the filter on for at least an hour, and the most blocked apps |
 
 What it does not do: educational-only mode (the YouTube app exposes no
 category), path-level website rules (a DNS filter sees hosts only), location
 or Wi-Fi conditions, per-app time metering (passes are charged up front
 instead), widgets.
+
+## Screens
+
+- Home: the filter card (state, unlock delay, Lock for N hours, the friction
+  timer with its ring), today's three numbers, locked hours, and the note
+  about what is always on.
+- Progress: the history, see the table above. Empty until the filter has run.
+- Apps: the short-video feed switches, blocked app settings, and the list of
+  installed apps.
+- Sites: the DNS filter, presets, own hosts and allow list.
+- More: the reason line, strict mode, theme, permissions, about.
 
 ## Compared with AppBlock
 
@@ -74,6 +86,8 @@ real app refuses to run. Release builds are signed in CI from the
 - Browsers with their own DNS over HTTPS setting bypass a local DNS filter,
   and so does Private DNS in the system settings; the Sites tab warns when
   Private DNS is on.
+- Filter-on time is counted by the accessibility service in 15 second ticks
+  and written once a minute, so it only covers time the service was running.
 - Strict mode leaves any Settings page that shows the app's name, which
   includes the accessibility service list itself while the filter is on.
   Manage other services while the filter is off.
