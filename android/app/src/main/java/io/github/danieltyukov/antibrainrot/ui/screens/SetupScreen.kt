@@ -2,7 +2,9 @@ package io.github.danieltyukov.antibrainrot.ui.screens
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -36,7 +38,18 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import io.github.danieltyukov.antibrainrot.ui.AppViewModel
 import io.github.danieltyukov.antibrainrot.ui.Permissions
+import io.github.danieltyukov.antibrainrot.ui.Appear
 import io.github.danieltyukov.antibrainrot.ui.SectionCard
+import io.github.danieltyukov.antibrainrot.ui.theme.Leaf
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material3.Icon
 
 @Composable
 fun SetupScreen(vm: AppViewModel, onDone: () -> Unit) {
@@ -49,11 +62,13 @@ fun SetupScreen(vm: AppViewModel, onDone: () -> Unit) {
     val overlay = remember(refresh) { Permissions.overlayGranted(context) }
     val notifAccess = remember(refresh) { Permissions.notificationAccess(context) }
     val battery = remember(refresh) { Permissions.batteryUnrestricted(context) }
-    var notificationsGranted by remember { mutableStateOf(Build.VERSION.SDK_INT < 33) }
+    var notificationsGranted by remember(refresh) {
+        mutableStateOf(Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+    }
     val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notificationsGranted = it }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
-        SectionCard("Setup", "Two permissions are required. The others make the app better.") {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 4.dp, bottom = 24.dp)) {
+        Appear(0) { SectionCard("Setup", "Two permissions are required. The others make the app better.") {
             PermissionRow("Accessibility service", "Required. Sees which app is in front, closes Shorts and Reels, shows the block screen.", accessibility) { context.startActivity(Permissions.accessibilityIntent()) }
             if (accessibility && !accessibilityRunning) {
                 Text("Enabled but not running. After an update Android waits for the switch to be turned off and on again, or for a restart, before it starts the service.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
@@ -61,7 +76,7 @@ fun SetupScreen(vm: AppViewModel, onDone: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
             }
             if (Permissions.needsRestrictedSettingsHint && !accessibility) {
-                Text("Sideloaded apps on Android 13 and later: if the switch is greyed out, open App info for Anti-Brainrot, tap the three dots, choose Allow restricted settings, then come back.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Sideloaded apps on Android 13 and later: if the switch is greyed out, open App info for AntiBrainrot, tap the three dots, choose Allow restricted settings, then come back.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 OutlinedButton(onClick = { context.startActivity(Permissions.appInfoIntent(context)) }) { Text("Open App info") }
                 Spacer(Modifier.height(8.dp))
             }
@@ -73,7 +88,7 @@ fun SetupScreen(vm: AppViewModel, onDone: () -> Unit) {
             PermissionRow("Unrestricted battery", "Keeps the services alive on phones that kill background apps.", battery) { context.startActivity(Permissions.batteryIntent(context)) }
             Spacer(Modifier.height(12.dp))
             Button(onClick = { vm.update { it.copy(onboarded = true) }; onDone() }, Modifier.fillMaxWidth(), enabled = accessibility && overlay) { Text("Continue") }
-        }
+        } }
     }
 }
 
@@ -85,7 +100,12 @@ private fun PermissionRow(title: String, text: String, granted: Boolean, onOpen:
             Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.width(12.dp))
-        if (granted) Text("On", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-        else OutlinedButton(onClick = onOpen) { Text("Open") }
+        AnimatedContent(targetState = granted, transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.7f)) togetherWith fadeOut() }, label = "granted") { ok ->
+            if (ok) Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = Leaf, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("On", color = Leaf, fontWeight = FontWeight.SemiBold)
+            } else OutlinedButton(onClick = onOpen) { Text("Open") }
+        }
     }
 }

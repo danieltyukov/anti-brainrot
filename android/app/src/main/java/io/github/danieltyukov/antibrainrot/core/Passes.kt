@@ -22,26 +22,38 @@ object Passes {
         return apps.passMinutes > 0 && budgetLeft(state, apps, today) >= apps.passMinutes
     }
 
-    // A granted pass: new state with the pass, the budget debit and the counter.
-    fun grant(state: LocalState, apps: Apps, key: String, now: Long = System.currentTimeMillis(), today: String = dayKey()): LocalState {
-        val used = if (state.budget.day == today) state.budget.usedMinutes else 0
-        val stats = if (state.stats.day == today) state.stats else Stats(day = today)
+    // Every counter goes through here: today's record in the history is
+    // changed, the history is trimmed, and the Stats mirror is refreshed.
+    private fun record(state: LocalState, today: String, change: (DayRecord) -> DayRecord): LocalState {
+        val rec = change(state.history[today] ?: DayRecord())
+        val history = Progress.prune(state.history + (today to rec), today)
         return state.copy(
-            passes = state.passes + (key to now + apps.passMinutes * 60_000L),
-            budget = Budget(day = today, usedMinutes = used + apps.passMinutes),
-            stats = stats.copy(passes = stats.passes + 1),
+            history = history,
+            stats = Stats(day = today, blocks = rec.blocks, passes = rec.passes, feedsClosed = rec.feedsClosed),
         )
     }
 
-    fun recordBlock(state: LocalState, today: String = dayKey()): LocalState {
-        val stats = if (state.stats.day == today) state.stats else Stats(day = today)
-        return state.copy(stats = stats.copy(blocks = stats.blocks + 1))
+    // A granted pass: new state with the pass, the budget debit and the counters.
+    fun grant(state: LocalState, apps: Apps, key: String, now: Long = System.currentTimeMillis(), today: String = dayKey()): LocalState {
+        val used = if (state.budget.day == today) state.budget.usedMinutes else 0
+        val next = state.copy(
+            passes = state.passes + (key to now + apps.passMinutes * 60_000L),
+            budget = Budget(day = today, usedMinutes = used + apps.passMinutes),
+        )
+        return record(next, today) { it.copy(passes = it.passes + 1, passMinutes = it.passMinutes + apps.passMinutes) }
     }
 
-    fun recordFeedClosed(state: LocalState, today: String = dayKey()): LocalState {
-        val stats = if (state.stats.day == today) state.stats else Stats(day = today)
-        return state.copy(stats = stats.copy(feedsClosed = stats.feedsClosed + 1))
-    }
+    fun recordBlock(state: LocalState, today: String = dayKey(), pkg: String? = null): LocalState =
+        record(state, today) {
+            val byApp = if (pkg == null) it.byApp else it.byApp + (pkg to (it.byApp[pkg] ?: 0) + 1)
+            it.copy(blocks = it.blocks + 1, byApp = byApp)
+        }
+
+    fun recordFeedClosed(state: LocalState, today: String = dayKey()): LocalState =
+        record(state, today) { it.copy(feedsClosed = it.feedsClosed + 1) }
+
+    fun recordFocus(state: LocalState, seconds: Int, today: String = dayKey()): LocalState =
+        if (seconds <= 0) state else record(state, today) { it.copy(focusSeconds = it.focusSeconds + seconds) }
 
     // Drops expired passes and starts cooldowns for them.
     fun sweep(state: LocalState, apps: Apps, now: Long = System.currentTimeMillis()): LocalState {

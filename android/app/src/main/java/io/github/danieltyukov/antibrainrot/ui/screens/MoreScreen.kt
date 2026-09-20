@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,47 +25,51 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.github.danieltyukov.antibrainrot.BuildConfig
-import io.github.danieltyukov.antibrainrot.core.LocalState
-import io.github.danieltyukov.antibrainrot.core.Passes
 import io.github.danieltyukov.antibrainrot.core.Settings
+import io.github.danieltyukov.antibrainrot.ui.Appear
 import io.github.danieltyukov.antibrainrot.ui.AppViewModel
 import io.github.danieltyukov.antibrainrot.ui.ChoiceRow
 import io.github.danieltyukov.antibrainrot.ui.SectionCard
-import io.github.danieltyukov.antibrainrot.ui.count
 import io.github.danieltyukov.antibrainrot.ui.SwitchRow
 
 @Composable
-fun MoreScreen(vm: AppViewModel, s: Settings, l: LocalState?, onSetup: () -> Unit) {
+fun MoreScreen(vm: AppViewModel, s: Settings, onSetup: () -> Unit) {
     val context = LocalContext.current
     var reason by remember(s.focus.reason) { mutableStateOf(s.focus.reason) }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
-        SectionCard("Today") {
-            val stats = l?.stats
-            val today = stats != null && stats.day == Passes.dayKey()
-            val blocks = if (today) stats!!.blocks else 0
-            val passes = if (today) stats!!.passes else 0
-            val feeds = if (today) stats!!.feedsClosed else 0
-            val left = l?.let { Passes.budgetLeft(it, s.apps) } ?: s.apps.dailyBudgetMinutes
-            Text("Blocked apps ${count(blocks, "time")}, ${count(passes, "pass", "passes")} used, Shorts and Reels closed ${count(feeds, "time")}, ${count(left, "minute")} of pass budget left.")
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 4.dp, bottom = 24.dp)) {
+        Appear(0) {
+            SectionCard("Your reason", "One line shown on every block screen. Written by you, for you.") {
+                OutlinedTextField(reason, { reason = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = { Text("Thesis due in March.") }, shape = MaterialTheme.shapes.medium)
+                Spacer(Modifier.height(10.dp))
+                Button(onClick = { vm.update { it.copy(focus = it.focus.copy(reason = reason)) } }, Modifier.fillMaxWidth(), enabled = reason != s.focus.reason) { Text("Save") }
+            }
         }
-        SectionCard("Your reason", "One line shown on every block screen. Written by you, for you.") {
-            OutlinedTextField(reason, { reason = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = { Text("Thesis due in March.") })
-            Spacer(Modifier.height(8.dp))
-            Button(onClick = { vm.update { it.copy(focus = it.focus.copy(reason = reason)) } }, Modifier.fillMaxWidth()) { Text("Save") }
+        Appear(1) {
+            SectionCard("Strict mode", "While the filter is on, the Settings pages that could disable AntiBrainrot (its App info page, the accessibility page) are closed as soon as they open. Turning strict mode off waits until the filter is off.") {
+                SwitchRow("Strict mode", s.strictMode) { v -> vm.update { it.copy(strictMode = v) } }
+            }
         }
-        SectionCard("Strict mode", "While the filter is on, the Settings pages that could disable Anti-Brainrot (its app info page, the accessibility page) are closed as soon as they open. Turning strict mode off waits until the filter is off.") {
-            SwitchRow("Strict mode", s.strictMode) { v -> vm.update { it.copy(strictMode = v) } }
+        Appear(2) {
+            SectionCard("Appearance") {
+                ChoiceRow("Theme", s.theme, Settings.THEMES, text = { it.replaceFirstChar { c -> c.uppercase() } }) { v -> vm.update { it.copy(theme = v) } }
+            }
         }
-        SectionCard("Appearance") {
-            ChoiceRow("Theme", s.theme, Settings.THEMES, text = { it.replaceFirstChar { c -> c.uppercase() } }) { v -> vm.update { it.copy(theme = v) } }
+        Appear(3) {
+            SectionCard("Setup and permissions", "The accessibility service and the overlay are required; the rest make the app better.") {
+                OutlinedButton(onClick = onSetup) { Text("Check permissions") }
+            }
         }
-        SectionCard("Setup and permissions") {
-            TextButton(onClick = onSetup) { Text("Check permissions") }
+        Appear(4) {
+            SectionCard("About") {
+                Text("AntiBrainrot ${BuildConfig.VERSION_NAME}. Open source, MIT. No accounts, no analytics, no network calls of its own.", style = MaterialTheme.typography.bodyMedium)
+                TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/danieltyukov/anti-brainrot"))) }) { Text("Source on GitHub") }
+                TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://danieltyukov.github.io/anti-brainrot/"))) }) { Text("Website") }
+            }
         }
-        SectionCard("About") {
-            Text("Anti-Brainrot ${BuildConfig.VERSION_NAME}. Open source, MIT. No accounts, no analytics, no network calls of its own.", style = MaterialTheme.typography.bodyMedium)
-            TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/danieltyukov/anti-brainrot"))) }) { Text("Source on GitHub") }
-            TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://danieltyukov.github.io/anti-brainrot/"))) }) { Text("Website") }
+        if (BuildConfig.DEBUG) Appear(5) {
+            SectionCard("Debug build", "Not in the release. Fills sixty days of made-up history so the Progress screen can be checked.") {
+                OutlinedButton(onClick = { vm.seedHistory() }) { Text("Seed sample history") }
+            }
         }
     }
 }

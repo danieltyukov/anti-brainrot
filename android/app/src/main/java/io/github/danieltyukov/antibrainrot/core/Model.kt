@@ -131,8 +131,23 @@ data class Settings(
 @Serializable
 data class Budget(val day: String = "", val usedMinutes: Int = 0)
 
+// Today's counters, kept for the screens that only need today. The same
+// numbers also live in LocalState.history under today's key.
 @Serializable
 data class Stats(val day: String = "", val blocks: Int = 0, val passes: Int = 0, val feedsClosed: Int = 0)
+
+// One day of the progress history.
+@Serializable
+data class DayRecord(
+    val blocks: Int = 0,
+    val passes: Int = 0,
+    val passMinutes: Int = 0,
+    val feedsClosed: Int = 0,
+    // Seconds the filter was on while the service ran.
+    val focusSeconds: Int = 0,
+    // Block screens per package.
+    val byApp: Map<String, Int> = emptyMap(),
+)
 
 @Serializable
 data class LocalState(
@@ -141,14 +156,25 @@ data class LocalState(
     val cooldowns: Map<String, Long> = emptyMap(),
     val budget: Budget = Budget(),
     val stats: Stats = Stats(),
+    // ISO date to that day's counters, the last Progress.HISTORY_DAYS days.
+    val history: Map<String, DayRecord> = emptyMap(),
 ) {
     companion object {
         fun decode(text: String?): LocalState =
             if (text.isNullOrBlank()) LocalState() else try {
-                Settings.json.decodeFromString(serializer(), text)
+                migrate(Settings.json.decodeFromString(serializer(), text))
             } catch (e: Exception) {
                 LocalState()
             }
+
+        // State written before the history existed only had today's Stats;
+        // carry them into the history so the first day is not lost.
+        fun migrate(state: LocalState): LocalState {
+            val st = state.stats
+            if (st.day.isBlank() || st.day in state.history) return state
+            if (st.blocks == 0 && st.passes == 0 && st.feedsClosed == 0) return state
+            return state.copy(history = state.history + (st.day to DayRecord(blocks = st.blocks, passes = st.passes, feedsClosed = st.feedsClosed)))
+        }
     }
 
     fun encode(): String = Settings.json.encodeToString(serializer(), this)

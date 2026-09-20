@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The leaf-as-play mark, the same path as site/assets/logo.svg. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path
+        android:fillColor="#FF1A1A2E"
+        android:fillType="evenOdd"
+        android:pathData="M 165 110 C 225 106 281 127 331 157 C 356 173 381 193 403 210 C 426 227 446 241 466 252 C 472 254 472 258 466 260 C 446 273 426 292 403 309 C 381 326 355 341 330 356 C 280 387 225 407 165 402 C 135 400 109 376 109 342 C 105 318 103 294 103 273 C 89 275 71 277 59 275 C 43 278 37 252 53 249 C 69 244 87 240 103 239 C 103 214 105 188 109 162 C 109 134 135 112 165 110 Z M 117 238 C 185 228 335 218 409 240 C 335 240 185 262 117 274 C 109 271 109 241 117 238 Z" />
+</vector>

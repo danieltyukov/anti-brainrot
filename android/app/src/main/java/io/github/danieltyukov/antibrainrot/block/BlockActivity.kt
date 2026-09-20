@@ -58,6 +58,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import io.github.danieltyukov.antibrainrot.R
+import io.github.danieltyukov.antibrainrot.ui.Ring
+import io.github.danieltyukov.antibrainrot.ui.theme.AntiBrainrotTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -149,60 +170,97 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
         if (s != null && l != null && Passes.activePass(l, pkg) != null) onOpen()
     }
 
-    Box(Modifier.fillMaxSize().background(SkyGradient), contentAlignment = Alignment.Center) {
-        Column(
-            Modifier.fillMaxWidth().padding(24.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xB8FFFFFF)).padding(28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text("ANTI-BRAINROT", color = Muted, fontSize = 12.sp, letterSpacing = 2.sp)
-            if (!s?.focus?.reason.isNullOrBlank()) {
-                Spacer(Modifier.height(8.dp))
-                Text(s!!.focus.reason, color = Muted, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
-            }
-            Spacer(Modifier.height(16.dp))
-            icon?.let { Image(BitmapPainter(it.toBitmap(128, 128).asImageBitmap()), contentDescription = null, Modifier.size(56.dp)) }
-            Spacer(Modifier.height(12.dp))
-            Text(if (mode == "pause" && canPass) "Take a breath" else "Not now", color = Ink, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(8.dp))
-            Text("$label is on your blocked list.", color = Ink, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(12.dp))
-            when {
-                mode == "block" -> Text("To open it, turn the filter off in Anti-Brainrot and wait out your unlock delay.", color = Muted, textAlign = TextAlign.Center)
-                cooldown != null -> Text("Cooling down. The next pass for this app opens at ${timeText(cooldown)}.", color = Muted, textAlign = TextAlign.Center)
-                !canPass -> Text("Your daily budget for passes is used up. It resets at midnight.", color = Muted, textAlign = TextAlign.Center)
-                else -> {
-                    Text(if (remaining > 0) "$remaining" else if (remaining == 0) "Ready" else "Come back to this screen", color = Ink, fontSize = 48.sp, fontWeight = FontWeight.SemiBold)
-                    if (s?.apps?.intention == true) {
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(intention, { intention = it }, Modifier.fillMaxWidth(), label = { Text("What do you need there?") }, singleLine = true)
+    // The card slides up and the app icon pops once it is there.
+    val shown = remember { MutableTransitionState(false).apply { targetState = true } }
+    var pop by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { delay(150); pop = true }
+    val iconScale by animateFloatAsState(if (pop) 1f else 0.5f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow), label = "icon")
+
+    AntiBrainrotTheme("light") {
+        Box(Modifier.fillMaxSize().background(SkyGradient), contentAlignment = Alignment.Center) {
+            AnimatedVisibility(
+                visibleState = shown,
+                enter = fadeIn(tween(320)) + slideInVertically(tween(440, easing = FastOutSlowInEasing)) { it / 6 } + scaleIn(tween(440, easing = FastOutSlowInEasing), initialScale = 0.94f),
+            ) {
+                Column(
+                    Modifier.fillMaxWidth().padding(24.dp).clip(RoundedCornerShape(28.dp)).background(Color(0xC4FFFFFF)).padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_mark), contentDescription = null, Modifier.size(18.dp), tint = Ink)
+                        Spacer(Modifier.size(6.dp))
+                        Text("AntiBrainrot", color = Muted, style = MaterialTheme.typography.labelLarge)
                     }
-                    Spacer(Modifier.height(8.dp))
-                    Text("Budget left today: ${l?.let { Passes.budgetLeft(it, s!!.apps) } ?: 0} minutes.", color = Muted)
+                    if (!s?.focus?.reason.isNullOrBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(s!!.focus.reason, color = Muted, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
+                    }
+                    Spacer(Modifier.height(18.dp))
+                    icon?.let {
+                        Image(
+                            BitmapPainter(it.toBitmap(128, 128).asImageBitmap()), contentDescription = null,
+                            Modifier.size(60.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale },
+                        )
+                    }
                     Spacer(Modifier.height(12.dp))
-                    val ready = remaining == 0 && (s?.apps?.intention != true || intention.trim().length >= 3)
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                val current = app.local.get()
-                                val st = app.settings.get()
-                                if (Passes.canPass(current, st.apps, pkg)) {
-                                    app.local.update { Passes.grant(it, st.apps, pkg) }
-                                    onOpen()
-                                } else {
-                                    message = "Could not start a pass."
+                    Text(if (mode == "pause" && canPass) "Take a breath" else "Not now", color = Ink, style = MaterialTheme.typography.headlineMedium)
+                    Spacer(Modifier.height(6.dp))
+                    Text("$label is on your blocked list.", color = Ink, textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(16.dp))
+                    when {
+                        mode == "block" -> Text("To open it, turn the filter off in AntiBrainrot and wait out your unlock delay.", color = Muted, textAlign = TextAlign.Center)
+                        cooldown != null -> Text("Cooling down. The next pass for this app opens at ${timeText(cooldown)}.", color = Muted, textAlign = TextAlign.Center)
+                        !canPass -> Text("Your daily budget for passes is used up. It resets at midnight.", color = Muted, textAlign = TextAlign.Center)
+                        else -> {
+                            val progress = if (remaining < 0 || total == 0) 0f else 1f - remaining.toFloat() / total
+                            Ring(progress, Modifier.size(124.dp), stroke = 8.dp, color = Ink, track = Ink.copy(alpha = 0.1f)) {
+                                AnimatedContent(
+                                    targetState = remaining,
+                                    transitionSpec = { (fadeIn(tween(180)) + slideInVertically { it / 2 }) togetherWith (fadeOut(tween(120)) + slideOutVertically { -it / 2 }) },
+                                    label = "seconds",
+                                ) { r ->
+                                    when {
+                                        r > 0 -> Text("$r", color = Ink, style = MaterialTheme.typography.displayMedium)
+                                        r == 0 -> Text("Ready", color = Ink, style = MaterialTheme.typography.titleLarge)
+                                        else -> Text("Paused", color = Muted, style = MaterialTheme.typography.titleMedium)
+                                    }
                                 }
                             }
-                        },
-                        enabled = ready,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Cream),
-                    ) { Text("Continue for ${s?.apps?.passMinutes ?: 5} minutes") }
+                            if (remaining < 0) {
+                                Spacer(Modifier.height(6.dp))
+                                Text("Come back to this screen to continue the countdown.", color = Muted, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+                            }
+                            if (s?.apps?.intention == true) {
+                                Spacer(Modifier.height(14.dp))
+                                OutlinedTextField(intention, { intention = it }, Modifier.fillMaxWidth(), label = { Text("What do you need there?") }, singleLine = true, shape = MaterialTheme.shapes.medium)
+                            }
+                            Spacer(Modifier.height(10.dp))
+                            Text("Budget left today: ${l?.let { Passes.budgetLeft(it, s!!.apps) } ?: 0} minutes.", color = Muted, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.height(12.dp))
+                            val ready = remaining == 0 && (s?.apps?.intention != true || intention.trim().length >= 3)
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        val current = app.local.get()
+                                        val st = app.settings.get()
+                                        if (Passes.canPass(current, st.apps, pkg)) {
+                                            app.local.update { Passes.grant(it, st.apps, pkg) }
+                                            onOpen()
+                                        } else {
+                                            message = "Could not start a pass."
+                                        }
+                                    }
+                                },
+                                enabled = ready,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Cream, disabledContainerColor = Ink.copy(alpha = 0.12f), disabledContentColor = Muted),
+                            ) { Text("Continue for ${s?.apps?.passMinutes ?: 5} minutes") }
+                        }
+                    }
+                    if (message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(message, color = Muted) }
+                    Spacer(Modifier.height(14.dp))
+                    OutlinedButton(onClick = onHome, colors = ButtonDefaults.outlinedButtonColors(contentColor = Ink)) { Text("Keep it blocked") }
                 }
-            }
-            if (message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(message, color = Muted) }
-            Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.Center) {
-                OutlinedButton(onClick = onHome) { Text("Keep it blocked", color = Ink) }
             }
         }
     }

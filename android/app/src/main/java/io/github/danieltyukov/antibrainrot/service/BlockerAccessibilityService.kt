@@ -31,16 +31,21 @@ class BlockerAccessibilityService : AccessibilityService() {
     private var consecutiveBacks = 0
     private val lastBlockAt = HashMap<String, Long>()
     private var currentPackage: String = ""
+    // Filter-on time not yet written to the history; flushed once a minute.
+    private var focusPending = 0
 
     private val ticker = object : Runnable {
         override fun run() {
+            if (settings.focus.enabled) focusPending += TICK_SECONDS
+            val flush = if (focusPending >= 60) focusPending.also { focusPending = 0 } else 0
             scope.launch {
                 Enforcer.tick(App.instance)
+                if (flush > 0) App.instance.local.update { Passes.recordFocus(it, flush) }
                 // A pass that just ended: re-check the app in front.
                 val pkg = currentPackage
                 if (pkg.isNotEmpty() && Enforcer.isBlockedApp(settings, local, pkg)) block(pkg)
             }
-            handler.postDelayed(this, 15_000)
+            handler.postDelayed(this, TICK_SECONDS * 1000L)
         }
     }
 
@@ -126,7 +131,7 @@ class BlockerAccessibilityService : AccessibilityService() {
             // The app keeps reopening the feed: leave it entirely.
             performGlobalAction(GLOBAL_ACTION_HOME)
             consecutiveBacks = 0
-            scope.launch { App.instance.local.update { Passes.recordBlock(it) } }
+            scope.launch { App.instance.local.update { Passes.recordBlock(it, pkg = pkg) } }
         } else {
             performGlobalAction(GLOBAL_ACTION_BACK)
         }
@@ -169,7 +174,7 @@ class BlockerAccessibilityService : AccessibilityService() {
         val now = System.currentTimeMillis()
         if (now - (lastBlockAt[pkg] ?: 0L) < 1500) return
         lastBlockAt[pkg] = now
-        scope.launch { App.instance.local.update { Passes.recordBlock(it) } }
+        scope.launch { App.instance.local.update { Passes.recordBlock(it, pkg = pkg) } }
         val intent = Intent(this, BlockActivity::class.java)
             .putExtra(BlockActivity.EXTRA_PACKAGE, pkg)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NO_ANIMATION)
@@ -183,6 +188,7 @@ class BlockerAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "abr-a11y"
+        private const val TICK_SECONDS = 15
         @Volatile var instance: BlockerAccessibilityService? = null
         // View ids seen in open-source Shorts and Reels blockers (see
         // docs/research/mobile.md). Only fullscreen player surfaces, never the
