@@ -49,7 +49,11 @@ fun SitesScreen(vm: AppViewModel, s: Settings) {
         if (intent != null) consent.launch(intent)
     }
 
+    val privateDns = io.github.danieltyukov.antibrainrot.ui.Permissions.privateDnsHostname(context)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+        if (privateDns != null) {
+            SectionCard("Private DNS is on", "Android is set to use $privateDns for name lookups, which bypasses this filter. Set Private DNS to Off or Automatic under Network settings.") {}
+        }
         SectionCard("Site filter", "A local DNS filter on this device. Only name lookups pass through it; nothing leaves the phone through this app. Status: ${if (DnsVpnService.running) "running" else "off"}.") {
             SwitchRow("Block adult sites", s.sites.adult, hint = "15,000 domains plus keyword rules, shipped inside the app") { v -> turnOn { it.copy(sites = it.sites.copy(adult = v)) } }
             SwitchRow("Block distracting sites", s.sites.distracting, hint = "The presets below plus your own") { v -> turnOn { it.copy(sites = it.sites.copy(distracting = v)) } }

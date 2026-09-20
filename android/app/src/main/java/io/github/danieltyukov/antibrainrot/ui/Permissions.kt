@@ -41,6 +41,17 @@ object Permissions {
     fun appInfoIntent(context: Context): Intent =
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
+    // Private DNS in hostname mode makes Android talk DNS over TLS to that
+    // host directly, which a local DNS filter never sees.
+    fun privateDnsHostname(context: Context): String? = try {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val network = cm.activeNetwork
+        val props = network?.let { cm.getLinkProperties(it) }
+        if (props != null && props.isPrivateDnsActive) props.privateDnsServerName else null
+    } catch (e: Exception) {
+        null
+    }
+
     // Android 13 and later hide the accessibility switch for sideloaded apps
     // behind "Allow restricted settings" on the app's info page.
     val needsRestrictedSettingsHint: Boolean get() = Build.VERSION.SDK_INT >= 33

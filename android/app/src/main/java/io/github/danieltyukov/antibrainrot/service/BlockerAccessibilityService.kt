@@ -8,6 +8,7 @@ import android.util.Log
 import io.github.danieltyukov.antibrainrot.BuildConfig
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import io.github.danieltyukov.antibrainrot.App
 import io.github.danieltyukov.antibrainrot.block.BlockActivity
 import io.github.danieltyukov.antibrainrot.core.LocalState
@@ -61,11 +62,22 @@ class BlockerAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
+    // The app in front is the focused (else the active) application window,
+    // not the package of whatever window raised the event: keyboards, system
+    // dialogs and overlays raise events too.
+    private fun foregroundPackage(): String? {
+        val list = try { windows } catch (e: Exception) { null } ?: return null
+        val app = list.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused }
+            ?: list.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isActive }
+        return app?.root?.packageName?.toString()
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val pkg = event?.packageName?.toString() ?: return
         if (pkg == packageName) return
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            if (pkg !in Enforcer.NEVER_BLOCK && !pkg.contains("launcher") && !pkg.contains("inputmethod")) currentPackage = pkg
+            val front = foregroundPackage() ?: pkg
+            if (front != packageName && front !in Enforcer.NEVER_BLOCK && !front.contains("launcher") && !front.contains("inputmethod")) currentPackage = front
         }
         val root = rootInActiveWindow
         if (BuildConfig.DEBUG && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
@@ -73,8 +85,9 @@ class BlockerAccessibilityService : AccessibilityService() {
         }
         if (root != null && closesFeed(pkg, root)) return
         if (root != null && settings.strictMode && guardsOwnSettings(pkg, root)) return
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && Enforcer.isBlockedApp(settings, local, pkg)) {
-            block(pkg)
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            val front = foregroundPackage() ?: pkg
+            if (Enforcer.isBlockedApp(settings, local, front)) block(front)
         }
     }
 
