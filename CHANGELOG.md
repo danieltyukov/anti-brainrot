@@ -5,6 +5,13 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-09-20
+
+### Fixed
+- The "Lock for" row showed while the filter was off, and the pause page's
+  intention field could show when it should not: display rules overrode the
+  hidden attribute. A blanket rule now makes hidden win everywhere.
+
 ## [1.1.2] - 2026-09-20
 
 ### Changed
