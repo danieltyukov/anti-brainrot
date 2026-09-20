@@ -9,8 +9,21 @@ object Keys {
     fun isSite(key: String): Boolean = key.startsWith(SITE)
     fun label(key: String): String = key.removePrefix(SITE)
 
-    fun ruleFor(s: Settings, key: String): Rule? =
-        if (isSite(key)) s.sites.rules[label(key)] else s.apps.rules[key]
+    // App stores and package installers, blocked as one by apps.blockInstalls.
+    val INSTALLERS = setOf(
+        "com.android.vending", "com.google.android.packageinstaller", "com.android.packageinstaller",
+        "com.sec.android.app.samsungapps", "com.amazon.venezia", "org.fdroid.fdroid", "com.aurora.store",
+        "com.huawei.appmarket", "com.xiaomi.mipicks", "com.oppo.market", "com.heytap.market", "com.vivo.appstore",
+    )
+    private val INSTALL_BLOCK = Rule("block")
+
+    fun isInstaller(key: String): Boolean = key in INSTALLERS
+
+    fun ruleFor(s: Settings, key: String): Rule? = when {
+        isSite(key) -> s.sites.rules[label(key)]
+        s.apps.blockInstalls && key in INSTALLERS -> s.apps.rules[key] ?: INSTALL_BLOCK
+        else -> s.apps.rules[key]
+    }
 
     // The rule host a page host falls under, the most specific one.
     fun siteRuleHost(s: Settings, host: String): String? =

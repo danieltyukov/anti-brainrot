@@ -14,12 +14,15 @@ Google Play; the APK is attached to every GitHub release.
 | Area | Mechanism |
 | --- | --- |
 | Blocked apps | Each app has a rule. Block: the accessibility service sees the app come to the front and puts the block screen over it, with no way in. Timer: a daily limit in minutes; opening the app shows a pause (countdown that only runs while the screen is in front, an intention line), then one session of the configured length, capped by what is left of the day, then a cooldown. The service meters the time the app is in front while the screen is on and blocks it for the rest of the day once the limit is used up |
+| Block new app installs | Optional. The Play Store, Samsung, Amazon, Huawei, Xiaomi, OPPO and vivo stores, F-Droid, Aurora and the package installer are blocked while the filter is on. A package added anyway (adb, a browser download) gets a Block rule from the accessibility service's package receiver before it is opened. Rules are keyed by package name and survive uninstalls, so a reinstalled app comes back blocked or timed |
 | Hidden notifications | Notification listener drops notifications from blocked apps, and from timed apps outside a session, while the filter is on |
 | Sites | Each site has a rule too, blocked or a daily timer, and subdomains follow it. The accessibility service reads the address bar of Chrome, Firefox, Samsung Internet, Brave, Edge, Opera, Vivaldi, DuckDuckGo and their variants and applies the rule the same way as for an app: block screen, pause, sessions, metering of the time the page is in front. Blocked sites are also answered NXDOMAIN by the DNS filter, so they are stopped in every app |
 | Adult sites | The DNS-only VPN: only the two fake resolver addresses are routed into the tunnel; blocked names get NXDOMAIN, everything else is forwarded to the network's own resolver. 15,000 domains plus keyword rules and an allow list |
 | Friction timer | Turning the filter off runs the countdown on the Home screen; leaving the screen cancels it |
 | Locked hours, Lock for N hours | The service checks every 15 seconds and on every app switch; during a lock the switch is forced on and cannot be turned off |
-| Strict mode | While the filter is on, the Settings pages that could disable the app (its App info page, the accessibility page) are closed as they open |
+| Strict mode | While the filter is on, the Settings pages that could disable the app (its App info page, the accessibility page, the device admin page) and the uninstall dialog are closed as they open |
+| Prevent uninstall | Optional. The app registers as a device admin with no policies; Android refuses to uninstall an active admin, from the launcher, Settings or adb, until it is deactivated, and strict mode leaves that page. Turning it off is a loosening |
+| Session notifications | While a timed app or site is in front, an ongoing notification shows the time left; a heads-up warning fires one minute before the block screen returns |
 | Progress | Ninety days of daily counters: time the filter was on while the service ran, block screens (per app too), time in timed apps (per app), sessions and their minutes. Shown as totals over 7, 30 or 90 days, bar charts per day, a streak of days with the filter on for at least an hour, the most used timed apps and the most blocked apps |
 
 What it does not do: anything inside other apps beyond the browser address
@@ -32,11 +35,12 @@ website rules (rules are per host), location or Wi-Fi conditions, widgets.
 - Home: the filter card (state, unlock delay, Lock for N hours, the friction
   timer with its ring), today's three numbers, and locked hours.
 - Progress: the history, see the table above. Empty until the filter has run.
-- Apps: the pause, session and cooldown settings, and every installed app
-  with its rule. Tapping an app opens the rule editor.
+- Apps: the pause, session and cooldown settings, the install block, every
+  installed app with its rule, and rules for apps not installed right now.
+  Tapping an app opens the rule editor.
 - Sites: the site rules with suggestions for the usual feeds, the adult
   list switch and the allow list.
-- More: the reason line, strict mode, theme, permissions, about.
+- More: the reason line, strict mode, prevent uninstall, theme, permissions, about.
 
 ## Compared with AppBlock
 

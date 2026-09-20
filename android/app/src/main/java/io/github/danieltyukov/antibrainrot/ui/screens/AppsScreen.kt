@@ -22,6 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -56,8 +61,13 @@ data class InstalledApp(val pkg: String, val label: String, val icon: ImageBitma
 @Composable
 fun AppsScreen(vm: AppViewModel, s: Settings) {
     val context = LocalContext.current
-    // Icons for every launcher app take a moment; load them off the main thread.
-    val apps by produceState<List<InstalledApp>?>(initialValue = null) {
+    // Icons for every launcher app take a moment; load them off the main
+    // thread, and again whenever the screen comes back, since apps may have
+    // been installed or removed meanwhile.
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    var refresh by remember { mutableIntStateOf(0) }
+    LaunchedEffect(lifecycle) { if (lifecycle == Lifecycle.State.RESUMED) refresh += 1 }
+    val apps by produceState<List<InstalledApp>?>(initialValue = null, refresh) {
         value = withContext(Dispatchers.IO) { loadApps(context.packageManager, context.packageName) }
     }
     var query by remember { mutableStateOf("") }
@@ -76,6 +86,7 @@ fun AppsScreen(vm: AppViewModel, s: Settings) {
                     ChoiceRow("Cooldown after a session", s.apps.cooldownMinutes, Settings.COOLDOWN_CHOICES, text = { minutesLabel(it) }) { v -> vm.update { it.copy(apps = it.apps.copy(cooldownMinutes = v)) } }
                     SwitchRow("Ask what you need there", s.apps.intention) { v -> vm.update { it.copy(apps = it.apps.copy(intention = v)) } }
                     SwitchRow("Hide their notifications", s.apps.blockNotifications, hint = "Needs notification access under Setup") { v -> vm.update { it.copy(apps = it.apps.copy(blockNotifications = v)) } }
+                    SwitchRow("Block new app installs", s.apps.blockInstalls, hint = "The Play Store, other stores and the package installer are blocked while the filter is on. An app installed anyway starts out blocked.") { v -> vm.update { it.copy(apps = it.apps.copy(blockInstalls = v)) } }
                 }
             }
         }
@@ -91,6 +102,21 @@ fun AppsScreen(vm: AppViewModel, s: Settings) {
         }
         items(shown, key = { it.pkg }) { app ->
             AppRow(app, rules[app.pkg], Modifier.animateItem()) { editing = app }
+        }
+        // Rules outlive the app: an uninstalled app keeps its rule and gets
+        // it back the moment it is installed again.
+        val installed = apps?.map { it.pkg }?.toSet()
+        val gone = if (installed == null) emptyList() else rules.keys.filter { it !in installed }.sorted()
+        if (gone.isNotEmpty()) {
+            item {
+                Column(Modifier.padding(start = 20.dp, top = 14.dp, end = 20.dp)) {
+                    Text("Not installed right now", style = MaterialTheme.typography.titleMedium)
+                    Text("These rules stay and apply again if the app comes back.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            items(gone, key = { "gone:$it" }) { pkg ->
+                AppRow(InstalledApp(pkg, pkg, null), rules[pkg], Modifier.animateItem()) { editing = InstalledApp(pkg, pkg, null) }
+            }
         }
         item { Spacer(Modifier.height(8.dp)) }
     }

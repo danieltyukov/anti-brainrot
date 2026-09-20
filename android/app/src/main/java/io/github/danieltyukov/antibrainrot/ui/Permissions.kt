@@ -1,7 +1,9 @@
 package io.github.danieltyukov.antibrainrot.ui
 
 import android.content.Context
+import android.app.admin.DevicePolicyManager
 import android.content.Intent
+import io.github.danieltyukov.antibrainrot.service.AdminReceiver
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
@@ -37,6 +39,22 @@ object Permissions {
 
     fun batteryIntent(context: Context): Intent =
         Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    fun adminActive(context: Context): Boolean {
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return dpm.isAdminActive(AdminReceiver.component(context))
+    }
+
+    fun adminIntent(context: Context): Intent =
+        Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+            .putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, AdminReceiver.component(context))
+            .putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Android will refuse to uninstall AntiBrainrot while this is active. No device policies are used.")
+
+    fun removeAdmin(context: Context) {
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val c = AdminReceiver.component(context)
+        if (dpm.isAdminActive(c)) dpm.removeActiveAdmin(c)
+    }
 
     fun appInfoIntent(context: Context): Intent =
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

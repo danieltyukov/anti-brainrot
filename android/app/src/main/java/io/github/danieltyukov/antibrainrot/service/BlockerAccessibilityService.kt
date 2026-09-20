@@ -21,6 +21,7 @@ import io.github.danieltyukov.antibrainrot.core.Domains
 import io.github.danieltyukov.antibrainrot.core.Keys
 import io.github.danieltyukov.antibrainrot.core.LocalState
 import io.github.danieltyukov.antibrainrot.core.Passes
+import io.github.danieltyukov.antibrainrot.core.Rule
 import io.github.danieltyukov.antibrainrot.core.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,7 @@ class BlockerAccessibilityService : AccessibilityService() {
     private var siteInFront: String? = null
     private var lastUrlScanAt = 0L
     private val power by lazy { getSystemService(Context.POWER_SERVICE) as PowerManager }
+    private val notifier by lazy { SessionNotifier(this) }
 
     // Screen off stops the meter; screen on starts it again for whatever is in front.
     private val screenReceiver = object : BroadcastReceiver() {
@@ -60,11 +62,27 @@ class BlockerAccessibilityService : AccessibilityService() {
         }
     }
 
+    // A newly installed app, while installs are blocked, gets a Block rule
+    // before it is ever opened. Reinstalls keep whatever rule they had.
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != Intent.ACTION_PACKAGE_ADDED) return
+            if (intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) return
+            val pkg = intent.data?.schemeSpecificPart ?: return
+            val s = settings
+            if (!s.focus.enabled || !s.apps.blockInstalls || pkg == packageName || pkg in s.apps.rules) return
+            scope.launch {
+                App.instance.settings.patch { it.copy(apps = it.apps.copy(rules = it.apps.rules + (pkg to Rule("block")))) }
+            }
+        }
+    }
+
     private val ticker = object : Runnable {
         override fun run() {
             if (settings.focus.enabled) focusPending += TICK_SECONDS
             val flush = if (focusPending >= 60) focusPending.also { focusPending = 0 } else 0
             meter(foregroundPackage())
+            notifier.update(settings, local, meteredKeys) { key -> labelFor(key) }
             scope.launch {
                 Enforcer.tick(App.instance)
                 if (flush > 0) App.instance.local.update { Passes.recordFocus(it, flush) }
@@ -90,6 +108,8 @@ class BlockerAccessibilityService : AccessibilityService() {
             addAction(Intent.ACTION_USER_PRESENT)
         }
         ContextCompat.registerReceiver(this, screenReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        val packages = IntentFilter(Intent.ACTION_PACKAGE_ADDED).apply { addDataScheme("package") }
+        ContextCompat.registerReceiver(this, packageReceiver, packages, ContextCompat.RECEIVER_NOT_EXPORTED)
         meteredSince = System.currentTimeMillis()
         handler.post(ticker)
     }
@@ -97,6 +117,7 @@ class BlockerAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         handler.removeCallbacks(ticker)
         try { unregisterReceiver(screenReceiver) } catch (e: Exception) { }
+        try { unregisterReceiver(packageReceiver) } catch (e: Exception) { }
         scope.cancel()
         instance = null
         super.onDestroy()
@@ -198,14 +219,21 @@ class BlockerAccessibilityService : AccessibilityService() {
         if (next != keys) {
             meteredKeys = next
             meteredSince = now
+            if (next.isEmpty()) notifier.clear()
         }
     }
+
+    private fun labelFor(key: String): String =
+        if (Keys.isSite(key)) Keys.label(key) else try {
+            packageManager.getApplicationLabel(packageManager.getApplicationInfo(key, 0)).toString()
+        } catch (e: Exception) { key }
 
     // Strict mode: while the filter is on, leave the Settings pages that
     // could disable this app (its App info page, the accessibility page).
     private fun guardsOwnSettings(pkg: String, root: AccessibilityNodeInfo): Boolean {
         if (!settings.focus.enabled) return false
-        if (pkg != "com.android.settings" && !pkg.startsWith("com.google.android.settings")) return false
+        val guarded = pkg == "com.android.settings" || pkg.startsWith("com.google.android.settings") || pkg in UNINSTALLERS
+        if (!guarded) return false
         val label = getString(R.string.app_name)
         // findAccessibilityNodeInfosByText finds nothing inside Compose
         // screens (the App info page is one), so walk the tree ourselves.
@@ -256,6 +284,9 @@ class BlockerAccessibilityService : AccessibilityService() {
         private const val TAG = "abr-a11y"
         private const val TICK_SECONDS = 15
         @Volatile var instance: BlockerAccessibilityService? = null
+
+        // The uninstall confirmation lives here; strict mode leaves it when it names this app.
+        val UNINSTALLERS = setOf("com.google.android.packageinstaller", "com.android.packageinstaller")
 
         // Browsers whose address bar can be read, and the view id of that bar.
         val URL_BARS = mapOf(

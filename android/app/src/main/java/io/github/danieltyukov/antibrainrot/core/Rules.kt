@@ -45,6 +45,7 @@ object Rules {
         if (b.apps.cooldownMinutes < a.apps.cooldownMinutes) return true
         if (a.apps.intention && !b.apps.intention) return true
         if (a.apps.blockNotifications && !b.apps.blockNotifications) return true
+        if (a.apps.blockInstalls && !b.apps.blockInstalls) return true
         if (a.sites.adult && !b.sites.adult) return true
         for ((host, ra) in a.sites.rules) {
             val rb = b.sites.rules[host] ?: return true
@@ -55,6 +56,7 @@ object Rules {
             if (hasNew(a.sites.allowed, b.sites.allowed)) return true
         }
         if (a.strictMode && !b.strictMode) return true
+        if (a.preventUninstall && !b.preventUninstall) return true
         return false
     }
 

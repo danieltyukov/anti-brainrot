@@ -223,9 +223,11 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
                     }
                     Text(title, color = Ink, style = MaterialTheme.typography.headlineMedium)
                     Spacer(Modifier.height(6.dp))
+                    val installer = Keys.isInstaller(key) && s?.apps?.blockInstalls == true && s.apps.rules[key] == null
                     val line = when {
                         exhausted -> "You have used your ${minutesLabel(rule!!.limitMinutes).lowercase()} in $label for today."
                         mode == "timer" -> "$label has a limit of ${minutesLabel(rule!!.limitMinutes).lowercase()} a day."
+                        installer -> "Installing new apps is blocked while the filter is on. Updates from the store wait too."
                         else -> "$label is blocked."
                     }
                     Text(line, color = Ink, textAlign = TextAlign.Center)

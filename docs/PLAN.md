@@ -384,3 +384,10 @@ Not done: educational-only mode in the YouTube app (no category data), location 
 - [x] Usage metering in the accessibility service: whole seconds the timed app is in front while the screen is on, charged on every window change, tick and screen off; sessions capped by the minutes left.
 - [x] Apps tab with a rule pill per app and a bottom sheet editor; block screen states for block, timer, out of time and cooldown.
 - [x] Feed detection and the stand-in app removed; Home, Progress, docs and site updated.
+
+## Task 15: Install block and rules that outlive apps (done 2026-09-20, v1.5.0)
+
+- [x] `apps.blockInstalls`: app stores and the package installer resolve to a synthetic Block rule; a package receiver in the accessibility service gives new packages a Block rule; loosening rule and tests.
+- [x] Apps tab lists rules for packages that are not installed, so they can be seen and changed; reinstalls keep their rule; the list reloads on resume.
+- [x] Prevent uninstall through a policy-free device admin; strict mode also leaves the uninstall dialog and the device admin page.
+- [x] Session notifications: time left while a timed app or site is in front, heads-up warning a minute before the block screen returns.

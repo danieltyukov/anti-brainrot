@@ -5,6 +5,28 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-20
+
+### Added
+- Android: Block new app installs. While the filter is on, the Play Store,
+  other app stores and the package installer get the block screen, and any
+  app that gets installed anyway starts out with a Block rule. Turning it
+  off waits until the filter is off, like every loosening.
+- Android: rules outlive their app. An uninstalled app keeps its rule and is
+  blocked or timed again the moment it is reinstalled; the Apps tab lists
+  such rules under "Not installed right now" so they can be changed.
+- Android: Prevent uninstall. The app becomes a device admin with no
+  policies, which Android refuses to uninstall until the admin is turned off
+  in Settings; strict mode leaves that page, and the uninstall dialog, as
+  soon as they open. Turning it off waits until the filter is off.
+- Android: while a timed app or site is in front, a quiet notification shows
+  the time left and a heads-up warning comes one minute before the block
+  screen returns.
+
+### Fixed
+- Android: the Apps list is reloaded whenever the screen comes back, so an
+  app installed or removed meanwhile shows up right away.
+
 ## [1.4.1] - 2026-09-20
 
 ### Fixed

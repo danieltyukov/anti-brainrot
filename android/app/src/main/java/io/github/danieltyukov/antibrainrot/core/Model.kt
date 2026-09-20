@@ -47,6 +47,9 @@ data class Apps(
     val cooldownMinutes: Int = 15,
     val intention: Boolean = true,
     val blockNotifications: Boolean = true,
+    // App stores and the package installer are blocked while the filter is
+    // on, and any app installed anyway gets a Block rule.
+    val blockInstalls: Boolean = false,
 )
 
 @Serializable
@@ -66,6 +69,8 @@ data class Settings(
     val apps: Apps = Apps(),
     val sites: Sites = Sites(),
     val strictMode: Boolean = false,
+    // The app is a device admin, which Android refuses to uninstall.
+    val preventUninstall: Boolean = false,
     val theme: String = "system",
     val onboarded: Boolean = false,
 ) {

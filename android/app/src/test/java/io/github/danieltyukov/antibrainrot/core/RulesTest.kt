@@ -59,6 +59,24 @@ class RulesTest {
         assertTrue(loosens { it.copy(apps = it.apps.copy(pauseSeconds = 5)) })
         assertTrue(loosens { it.copy(apps = it.apps.copy(cooldownMinutes = 5)) })
         assertTrue(loosens { it.copy(apps = it.apps.copy(intention = false)) })
+        val guarded = base.copy(preventUninstall = true, strictMode = true)
+        assertTrue(Rules.isLoosening(guarded, guarded.copy(preventUninstall = false)))
+        assertFalse(Rules.isLoosening(base, guarded))
+        val installsOn = base.copy(apps = base.apps.copy(blockInstalls = true))
+        assertTrue(Rules.isLoosening(installsOn, base))
+        assertFalse(Rules.isLoosening(base, installsOn))
+    }
+
+    @Test fun installersAreBlockedAsOne() {
+        val on = Settings(apps = Apps(blockInstalls = true, rules = mapOf("com.android.vending" to Rule("timer", 15))))
+        assertEquals(Rule("block"), Keys.ruleFor(on, "com.google.android.packageinstaller"))
+        assertEquals(Rule("block"), Keys.ruleFor(on, "org.fdroid.fdroid"))
+        // An explicit rule for a store still wins.
+        assertEquals(Rule("timer", 15), Keys.ruleFor(on, "com.android.vending"))
+        assertEquals(null, Keys.ruleFor(on, "com.example.other"))
+        val off = on.copy(apps = on.apps.copy(blockInstalls = false))
+        assertEquals(null, Keys.ruleFor(off, "com.google.android.packageinstaller"))
+        assertTrue(Keys.isInstaller("com.android.vending"))
     }
 
     @Test fun scheduleWindow() {

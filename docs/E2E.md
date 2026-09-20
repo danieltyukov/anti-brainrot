@@ -194,3 +194,22 @@ from YouTube" section.
 | New rule | Matches only the More from YouTube section; a section holding History, Playlists or You is left alone |
 | Hide History toggle | Listed in the popup after Hide Subscriptions; with its attribute set, the guide's History entry is `display: none`, and visible again without it |
 | Real guide, logged out | History visible with the filter on and the toggle off |
+
+## 2026-09-20, Android 15 emulator (Pixel AVD, API 35), version 1.5.0
+
+| Check | Result |
+| --- | --- |
+| Block new app installs switch | Under the session settings on the Apps tab; on while the filter was on (tightening) |
+| New package while installs are blocked | `adb install` of the release variant gave it a Block rule within seconds; opening it showed "Not now, AntiBrainrot is blocked" |
+| Rule survives uninstall | After `adb uninstall` the rule stayed in settings and the Apps tab listed the package under "Not installed right now"; after reinstalling, opening it showed the block screen again |
+| Apps list refresh | The list reloads when the screen comes back, so the removed app moved to the not-installed section without restarting |
+| Prevent uninstall | The switch opens Android's device admin confirmation ("Activate this device admin app"); after activating, `adb uninstall` fails with DELETE_FAILED_DEVICE_POLICY_MANAGER |
+| Strict mode and the admin page | The device admin page for the app (where it could be deactivated) is left within a second, one guard hit |
+| Session notifications | With a 1 minute session on Clock (timer 5 min): an ongoing "Clock" notification with the time left and a heads-up "Clock: one minute left. Wrap up. The block screen comes back when the minute is over." Both listed by dumpsys (ids 20 and 21) |
+| Session end | The block screen returned on its own after the session, reading "Cooling down. The next session opens at 18:37." |
+| Unit tests | 30 pass, including the installer rule and the loosening rules for installs and uninstall protection |
+
+Not verifiable on this host: the Play Store (the Google APIs image has a
+stub without a launcher activity) and the package installer and uninstall
+dialogs, which cannot be started from the shell on this image; both are
+plain app windows handled by the same block and guard code as App info.
