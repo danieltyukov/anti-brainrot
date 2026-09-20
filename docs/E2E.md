@@ -157,3 +157,26 @@ second) taps went by coordinates instead.
 
 Not verifiable on this host: the animations' smoothness at 60 Hz (the
 emulator renders with SwiftShader), dark theme on a real display.
+
+## 2026-09-20, Android 15 emulator (Pixel AVD, API 35), version 1.4.0
+
+Per-app and per-site rules. Chrome on the emulator freezes the guest under
+SwiftShader's Vulkan path, so `/data/local/tmp/chrome-command-line` got
+`--disable-gpu`; unrelated to the app.
+
+| Check | Result |
+| --- | --- |
+| Apps tab | Settings card (pause, session, cooldown, intention, notifications), search, one row per app with the rule under the name and a pill: Block (dark), 5 min (light), Add (outlined); ruled apps sort first |
+| Rule sheet, app | Segmented No rule / Block / Timer, minute chips 5 min to 3 h, help text per mode; Chrome set to Timer 5 min and Calendar to Block while the filter was on |
+| Stored settings | `apps.rules` holds `com.android.chrome: timer 5` and `com.google.android.calendar: block`; `sites.rules` holds `example.com: block` and `wikipedia.org: timer 5` |
+| Loosening a fresh rule | Switching a just-added Block to Timer while on was refused; Add now opens the sheet without a rule so the first choice is free |
+| Sites tab | Rule rows with a globe, host and rule, an add field and suggestion chips for the usual feeds; adult switch and allow list below |
+| Calendar (block) | Block screen "Not now, Calendar is blocked", only Keep it blocked |
+| Chrome (timer 5 min) | "Take a breath, Chrome has a limit of 5 minutes a day", ring to Ready, intention, "4m left today", Continue for 4m opens Chrome |
+| Session end | Chrome blocked again after the session with the cooldown message |
+| example.com (block) in Chrome | Block screen "Not now, example.com is blocked" as soon as the address bar shows it, also on reopening Chrome with that tab; DNS answers NXDOMAIN too (`tun0` up) |
+| wikipedia.org (timer 5 min) in Chrome | Block screen with the Chrome icon, "wikipedia.org has a limit of 5 minutes a day", Continue for 5m; the page loads; 43 s of use metered after 45 s in front, keyed `site:wikipedia.org`; Chrome itself, without a rule, is not metered |
+| wikipedia.org limit used up | After 5 minutes of the page in front the block screen came up on its own: "Time's up. You have used your 5 minutes in wikipedia.org for today. It resets at midnight." |
+| Filter off, rule removal | Chrome's rule removed while off, refused while on |
+| Home and Progress | Home strip reads filter on, blocks and timed use; Progress lists wikipedia.org and Chrome under most used timed apps and sites, and wikipedia.org, Calendar and Chrome under most blocked |
+| Unit tests | 29 pass: rules per app and site, loosening per rule, sessions capped by the minutes left, usage, streaks, the 1.3 list migration and the distracting sites migration |

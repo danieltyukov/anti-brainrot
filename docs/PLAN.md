@@ -376,3 +376,10 @@ Not done: educational-only mode in the YouTube app (no category data), location 
 - [x] Progress tab: 7, 30, 90 day ranges, summary tiles, bar charts (filter-on hours; block screens stacked with feeds closed), streak with the last seven days, most blocked apps. Debug builds can seed sample history.
 - [x] Name shown as AntiBrainrot; wordmark header with the leaf mark and a status pill; hero filter card that cross-fades between its off and on looks; countdown rings on Home and the block screen; staggered card entrances; animated tab changes, counters and permission states; typography and shapes. Locked hours moved to a Home card; the app list loads off the main thread.
 - [x] Emulator run of every screen and the regression set (docs/E2E.md), docs and site.
+
+## Task 14: Per-app rules and usage timers (done 2026-09-20, v1.4.0)
+
+- [x] `Rule` per package (block, or timer with a daily limit), JSON migration from the 1.3 list, loosening rules per app, JVM tests.
+- [x] Usage metering in the accessibility service: whole seconds the timed app is in front while the screen is on, charged on every window change, tick and screen off; sessions capped by the minutes left.
+- [x] Apps tab with a rule pill per app and a bottom sheet editor; block screen states for block, timer, out of time and cooldown.
+- [x] Feed detection and the stand-in app removed; Home, Progress, docs and site updated.

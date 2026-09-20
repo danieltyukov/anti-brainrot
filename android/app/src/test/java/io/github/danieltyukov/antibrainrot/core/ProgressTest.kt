@@ -11,22 +11,21 @@ class ProgressTest {
     private fun history(vararg focusHoursByBack: Pair<Int, Int>): Map<String, DayRecord> =
         focusHoursByBack.associate { (back, hours) -> today.minusDays(back.toLong()).toString() to DayRecord(focusSeconds = hours * 3600) }
 
-    @Test fun countersLandInHistoryAndStats() {
+    @Test fun countersLandInHistory() {
+        val apps = Settings(apps = Apps(rules = mapOf("com.android.chrome" to Rule("timer", 30)), passMinutes = 5))
         var s = Passes.recordBlock(LocalState(), "2026-09-20", "com.android.chrome")
         s = Passes.recordBlock(s, "2026-09-20", "com.android.chrome")
-        s = Passes.recordFeedClosed(s, "2026-09-20")
+        s = Passes.recordUsage(s, "com.android.chrome", 90, "2026-09-20")
         s = Passes.recordFocus(s, 900, "2026-09-20")
-        s = Passes.grant(s, Apps(passMinutes = 5), "com.android.chrome", 1000, "2026-09-20")
+        s = Passes.grant(s, apps, "com.android.chrome", 1000, "2026-09-20")
         val rec = s.history.getValue("2026-09-20")
         assertEquals(2, rec.blocks)
-        assertEquals(1, rec.feedsClosed)
+        assertEquals(90, rec.usage["com.android.chrome"])
         assertEquals(900, rec.focusSeconds)
         assertEquals(1, rec.passes)
         assertEquals(5, rec.passMinutes)
         assertEquals(2, rec.byApp["com.android.chrome"])
-        assertEquals(2, s.stats.blocks)
-        assertEquals(1, s.stats.passes)
-        assertEquals("2026-09-20", s.stats.day)
+        assertEquals(90, Progress.summary(Progress.days(s.history, 7, today)).usageSeconds)
     }
 
     @Test fun historyIsPrunedToNinetyDays() {
@@ -61,10 +60,11 @@ class ProgressTest {
 
     @Test fun topAppsAndFocusText() {
         val h = mapOf(
-            "2026-09-20" to DayRecord(byApp = mapOf("a" to 2, "b" to 5)),
-            "2026-09-19" to DayRecord(byApp = mapOf("a" to 4)),
+            "2026-09-20" to DayRecord(byApp = mapOf("a" to 2, "b" to 5), usage = mapOf("a" to 600)),
+            "2026-09-19" to DayRecord(byApp = mapOf("a" to 4), usage = mapOf("b" to 900, "c" to 0)),
         )
         assertEquals(listOf("a" to 6, "b" to 5), Progress.topApps(Progress.days(h, 7, today)))
+        assertEquals(listOf("b" to 900, "a" to 600), Progress.topUsage(Progress.days(h, 7, today)))
         assertEquals("0m", Progress.focusText(0))
         assertEquals("45m", Progress.focusText(45 * 60))
         assertEquals("2h", Progress.focusText(7200))
@@ -74,10 +74,10 @@ class ProgressTest {
 
 class MigrationTest {
     @Test fun oldStatsBecomeHistory() {
-        val old = LocalState(stats = Stats(day = "2026-09-20", blocks = 2, passes = 1, feedsClosed = 7))
-        val migrated = LocalState.decode(old.encode())
+        val old = """{"passes":{},"cooldowns":{},"budget":{"day":"2026-09-20","usedMinutes":5},"stats":{"day":"2026-09-20","blocks":2,"passes":1,"feedsClosed":7}}"""
+        val migrated = LocalState.decode(old)
         assertEquals(2, migrated.history.getValue("2026-09-20").blocks)
-        assertEquals(7, migrated.history.getValue("2026-09-20").feedsClosed)
+        assertEquals(1, migrated.history.getValue("2026-09-20").passes)
         // Already migrated state is left alone.
         val again = LocalState.decode(migrated.encode())
         assertEquals(migrated, again)

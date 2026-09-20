@@ -2,6 +2,14 @@ package io.github.danieltyukov.antibrainrot.core
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
 // Settings mirror the browser extension's schema where the concepts match.
 // Everything the user can change lives here; passes, budgets and counters
@@ -24,42 +32,38 @@ data class Schedule(
     val end: String = "17:00",
 )
 
+// One app's or site's rule: blocked outright, or a daily timer of limitMinutes.
+@Serializable
+data class Rule(val mode: String = "block", val limitMinutes: Int = 30)
+
 @Serializable
 data class Apps(
-    val mode: String = "pause",
-    val blocked: List<String> = emptyList(),
+    // Package name to rule.
+    val rules: Map<String, Rule> = emptyMap(),
+    // A timed app opens for one session of this length, capped by what is
+    // left of its daily limit.
     val passMinutes: Int = 5,
     val pauseSeconds: Int = 10,
-    val dailyBudgetMinutes: Int = 30,
     val cooldownMinutes: Int = 15,
     val intention: Boolean = true,
     val blockNotifications: Boolean = true,
 )
 
 @Serializable
-data class Reels(
-    // YouTube Shorts are always blocked; this is not a setting, like the extension.
-    val instagram: Boolean = true,
-    val facebook: Boolean = true,
-    val snapchatSpotlight: Boolean = true,
-)
-
-@Serializable
 data class Sites(
     val adult: Boolean = false,
-    val distracting: Boolean = false,
-    val presets: List<String> = Presets.DEFAULT_IDS,
-    val custom: List<String> = emptyList(),
+    // Host to rule; subdomains follow the rule of their parent.
+    val rules: Map<String, Rule> = emptyMap(),
+    // Never blocked, whatever the adult list says.
     val allowed: List<String> = emptyList(),
 )
 
 @Serializable
 data class Settings(
-    val version: Int = 1,
+    val version: Int = 2,
     val focus: Focus = Focus(),
     val schedule: Schedule = Schedule(),
     val apps: Apps = Apps(),
-    val reels: Reels = Reels(),
     val sites: Sites = Sites(),
     val strictMode: Boolean = false,
     val theme: String = "system",
@@ -67,12 +71,12 @@ data class Settings(
 ) {
     companion object {
         val DELAY_CHOICES = listOf(0, 30, 60, 300, 600, 1800, 3600)
-        val PASS_CHOICES = listOf(1, 2, 5, 10, 15, 30)
+        val PASS_CHOICES = listOf(1, 2, 5, 10, 15, 30, 60)
         val PAUSE_CHOICES = listOf(5, 10, 20, 30, 60)
-        val BUDGET_CHOICES = listOf(0, 10, 15, 30, 60, 120, 1440)
         val COOLDOWN_CHOICES = listOf(0, 5, 15, 30, 60)
         val LOCK_HOURS = listOf(1, 2, 4, 8, 24)
-        val MODES = listOf("block", "pause")
+        val RULE_MODES = listOf("block", "timer")
+        val LIMIT_CHOICES = listOf(5, 10, 15, 30, 45, 60, 90, 120, 180)
         val THEMES = listOf("system", "light", "dark")
         private val TIME = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
 
@@ -81,10 +85,45 @@ data class Settings(
         fun decode(text: String?): Settings {
             if (text.isNullOrBlank()) return Settings()
             return try {
-                normalize(json.decodeFromString(serializer(), text))
+                normalize(json.decodeFromJsonElement(serializer(), migrate(json.parseToJsonElement(text).jsonObject)))
             } catch (e: Exception) {
                 Settings()
             }
+        }
+
+        // Up to 1.3 the apps section had one mode, one daily budget and a
+        // list of packages. They become one rule per package.
+        fun migrate(root: JsonObject): JsonObject = migrateSites(migrateApps(root))
+
+        private fun migrateApps(root: JsonObject): JsonObject {
+            val apps = root["apps"]?.jsonObject ?: return root
+            if ("rules" in apps || "blocked" !in apps) return root
+            val mode = if (apps["mode"]?.jsonPrimitive?.contentOrNull == "block") "block" else "timer"
+            val budget = apps["dailyBudgetMinutes"]?.jsonPrimitive?.intOrNull ?: 30
+            val limit = LIMIT_CHOICES.firstOrNull { it >= budget } ?: LIMIT_CHOICES.last()
+            val rules = buildJsonObject {
+                apps["blocked"]?.jsonArray?.forEach { pkg ->
+                    put(pkg.jsonPrimitive.content, buildJsonObject { put("mode", mode); put("limitMinutes", limit) })
+                }
+            }
+            return JsonObject(root + ("apps" to JsonObject(apps + ("rules" to rules))))
+        }
+
+        // Up to 1.3 distracting sites were a switch over presets and custom
+        // hosts. They become block rules, one per host, when the switch was on.
+        private fun migrateSites(root: JsonObject): JsonObject {
+            val sites = root["sites"]?.jsonObject ?: return root
+            if ("rules" in sites || ("presets" !in sites && "custom" !in sites)) return root
+            val on = sites["distracting"]?.jsonPrimitive?.contentOrNull == "true"
+            val hosts = if (!on) emptyList() else {
+                val presets = sites["presets"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList()
+                val custom = sites["custom"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList()
+                Presets.ALL.filter { it.id in presets }.map { it.hosts.first() } + custom
+            }
+            val rules = buildJsonObject {
+                hosts.distinct().forEach { host -> put(host, buildJsonObject { put("mode", "block"); put("limitMinutes", 30) }) }
+            }
+            return JsonObject(root + ("sites" to JsonObject(sites + ("rules" to rules))))
         }
 
         // Brings any stored object back into a valid state: unknown choices
@@ -100,21 +139,34 @@ data class Settings(
             val end = if (TIME.matches(s.schedule.end)) s.schedule.end else "17:00"
             val schedule = if (start < end) s.schedule.copy(days = days, start = start, end = end)
             else s.schedule.copy(days = days, start = "09:00", end = "17:00")
+            val rules = s.apps.rules.entries
+                .filter { it.key.isNotBlank() }
+                .associate { (pkg, r) ->
+                    pkg.trim() to Rule(
+                        mode = if (r.mode in RULE_MODES) r.mode else "block",
+                        limitMinutes = if (r.limitMinutes in LIMIT_CHOICES) r.limitMinutes else 30,
+                    )
+                }
             val apps = s.apps.copy(
-                mode = if (s.apps.mode in MODES) s.apps.mode else "pause",
-                blocked = s.apps.blocked.map { it.trim() }.filter { it.isNotEmpty() }.distinct(),
+                rules = rules,
                 passMinutes = if (s.apps.passMinutes in PASS_CHOICES) s.apps.passMinutes else 5,
                 pauseSeconds = if (s.apps.pauseSeconds in PAUSE_CHOICES) s.apps.pauseSeconds else 10,
-                dailyBudgetMinutes = if (s.apps.dailyBudgetMinutes in BUDGET_CHOICES) s.apps.dailyBudgetMinutes else 30,
                 cooldownMinutes = if (s.apps.cooldownMinutes in COOLDOWN_CHOICES) s.apps.cooldownMinutes else 15,
             )
+            val siteRules = s.sites.rules.entries
+                .mapNotNull { (host, r) -> Domains.normalize(host)?.let { it to r } }
+                .associate { (host, r) ->
+                    host to Rule(
+                        mode = if (r.mode in RULE_MODES) r.mode else "block",
+                        limitMinutes = if (r.limitMinutes in LIMIT_CHOICES) r.limitMinutes else 30,
+                    )
+                }
             val sites = s.sites.copy(
-                presets = s.sites.presets.filter { id -> Presets.ALL.any { it.id == id } }.distinct(),
-                custom = Domains.parseList(s.sites.custom.joinToString("\n")),
+                rules = siteRules,
                 allowed = Domains.parseList(s.sites.allowed.joinToString("\n")),
             )
             return s.copy(
-                version = 1,
+                version = 2,
                 focus = focus,
                 schedule = schedule,
                 apps = apps,
@@ -128,13 +180,14 @@ data class Settings(
 }
 
 // Machine local, short lived state.
-@Serializable
-data class Budget(val day: String = "", val usedMinutes: Int = 0)
 
-// Today's counters, kept for the screens that only need today. The same
-// numbers also live in LocalState.history under today's key.
+// Seconds spent today in each timed app.
 @Serializable
-data class Stats(val day: String = "", val blocks: Int = 0, val passes: Int = 0, val feedsClosed: Int = 0)
+data class Usage(val day: String = "", val seconds: Map<String, Int> = emptyMap())
+
+// Today's counters as 1.2 stored them; only read to migrate them.
+@Serializable
+data class Stats(val day: String = "", val blocks: Int = 0, val passes: Int = 0)
 
 // One day of the progress history.
 @Serializable
@@ -142,19 +195,20 @@ data class DayRecord(
     val blocks: Int = 0,
     val passes: Int = 0,
     val passMinutes: Int = 0,
-    val feedsClosed: Int = 0,
     // Seconds the filter was on while the service ran.
     val focusSeconds: Int = 0,
     // Block screens per package.
     val byApp: Map<String, Int> = emptyMap(),
+    // Seconds in front per timed package.
+    val usage: Map<String, Int> = emptyMap(),
 )
 
 @Serializable
 data class LocalState(
-    // key: package name for apps, host for sites; value: epoch millis
+    // Package to session end, epoch millis.
     val passes: Map<String, Long> = emptyMap(),
     val cooldowns: Map<String, Long> = emptyMap(),
-    val budget: Budget = Budget(),
+    val usage: Usage = Usage(),
     val stats: Stats = Stats(),
     // ISO date to that day's counters, the last Progress.HISTORY_DAYS days.
     val history: Map<String, DayRecord> = emptyMap(),
@@ -172,8 +226,8 @@ data class LocalState(
         fun migrate(state: LocalState): LocalState {
             val st = state.stats
             if (st.day.isBlank() || st.day in state.history) return state
-            if (st.blocks == 0 && st.passes == 0 && st.feedsClosed == 0) return state
-            return state.copy(history = state.history + (st.day to DayRecord(blocks = st.blocks, passes = st.passes, feedsClosed = st.feedsClosed)))
+            if (st.blocks == 0 && st.passes == 0) return state
+            return state.copy(history = state.history + (st.day to DayRecord(blocks = st.blocks, passes = st.passes)))
         }
     }
 

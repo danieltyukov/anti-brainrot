@@ -11,9 +11,9 @@ The anti brain rot extension for Chrome, and an Android app that follows the
 same rules. It removes YouTube Shorts for good, hides feeds and distractions
 behind a friction timer, pauses or blocks distracting sites across the whole
 browser, limits YouTube to educational videos when you want, blocks adult
-sites, and locks itself during your focus hours. On the phone it closes
-Shorts and Reels inside their apps, blocks distracting apps and filters sites
-at the DNS level.
+sites, and locks itself during your focus hours. On the phone it blocks apps
+and sites outright or puts them on a daily timer, and filters adult sites at
+the DNS level.
 
 On YouTube it replaces three extensions in one: Remove YouTube Shorts,
 Youtube-shorts block, and Unhook. Outside YouTube it stands between you and
@@ -77,11 +77,11 @@ Website: https://danieltyukov.github.io/anti-brainrot/
 
 ## Android app
 
-The same rules on the phone, as AntiBrainrot: Shorts, Reels and Spotlight
-closed inside their apps, distracting apps behind a pause and a timed pass,
-adult and distracting sites filtered at the DNS level, the friction timer,
-locked hours, Lock for N hours, strict mode, and a Progress tab with ninety
-days of counters, charts and a streak. Download `anti-brainrot-<version>.apk` from the
+An app and site blocker in the spirit of AppBlock, as AntiBrainrot: every app
+and every site gets its own rule, blocked outright or a daily timer with a
+pause and sessions, adult sites filtered at the DNS level, the friction timer, locked
+hours, Lock for N hours, strict mode, and a Progress tab with ninety days of
+counters, charts and a streak. Download `anti-brainrot-<version>.apk` from the
 [latest release](https://github.com/danieltyukov/anti-brainrot/releases/latest),
 open it on the phone, allow installing from that source, then follow the
 Setup screen. Android 8 or newer. Details, permissions and limits in
@@ -92,7 +92,7 @@ Setup screen. Android 8 or newer. Details, permissions and limits in
   &nbsp;
   <img src="site/assets/screenshots/android-progress.png" alt="The Progress tab with totals, a bar chart and a streak" width="240">
   &nbsp;
-  <img src="site/assets/screenshots/android-block.png" alt="The block screen over Chrome in pause mode with a countdown ring" width="240">
+  <img src="site/assets/screenshots/android-block.png" alt="The block screen over a timed app with a countdown ring" width="240">
 </p>
 
 ## Install the extension

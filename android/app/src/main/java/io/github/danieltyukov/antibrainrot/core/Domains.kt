@@ -27,6 +27,9 @@ object Presets {
 
     fun hosts(ids: List<String>): List<String> =
         ALL.filter { it.id in ids }.flatMap { it.hosts }.distinct()
+
+    // The preset a rule host belongs to, for its label.
+    fun byHost(host: String): Preset? = ALL.firstOrNull { p -> p.hosts.any { Domains.matches(it, host) } }
 }
 
 object Domains {
@@ -84,13 +87,13 @@ object Domains {
 class DomainPolicy(
     private val adultList: Set<String>,
     private val adultEnabled: Boolean,
-    private val distracting: List<String>,
+    private val blockedHosts: List<String>,
     private val allowed: List<String>,
 ) {
     fun isBlocked(host: String): Boolean {
         val h = host.lowercase().trimEnd('.')
         if (allowed.any { Domains.matches(it, h) }) return false
-        if (distracting.any { Domains.matches(it, h) }) return true
+        if (blockedHosts.any { Domains.matches(it, h) }) return true
         if (adultEnabled) {
             if (Domains.matchesKeyword(h)) return true
             var probe = h

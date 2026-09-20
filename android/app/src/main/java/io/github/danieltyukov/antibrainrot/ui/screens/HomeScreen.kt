@@ -84,11 +84,6 @@ fun HomeScreen(vm: AppViewModel, s: Settings, l: LocalState?, onProgress: () -> 
         Appear(0) { FilterCard(vm, s) }
         Appear(1) { TodayStrip(l, onProgress) }
         Appear(2) { LockedHoursCard(vm, s) }
-        Appear(3) {
-            SectionCard("Always on") {
-                Text("YouTube Shorts are closed the moment they open, inside the YouTube app, whether the filter is on or off. Instagram Reels, Facebook Reels and Snapchat Spotlight follow the switches under Apps.", style = MaterialTheme.typography.bodyMedium)
-            }
-        }
     }
 }
 
@@ -249,9 +244,9 @@ private fun TodayStrip(l: LocalState?, onProgress: () -> Unit) {
             .padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Stat(Progress.focusText(animatedInt(rec.focusSeconds)), "Filter on today", Modifier.weight(1.2f))
-        Stat(animatedInt(rec.blocks).toString(), "Blocks", Modifier.weight(0.8f))
-        Stat(animatedInt(rec.feedsClosed).toString(), "Feeds closed", Modifier.weight(1f))
+        Stat(Progress.focusText(animatedInt(rec.focusSeconds)), "Filter on", Modifier.weight(1f))
+        Stat(animatedInt(rec.blocks).toString(), "Blocks", Modifier.weight(0.7f))
+        Stat(Progress.focusText(animatedInt(rec.usage.values.sum())), "Timed use", Modifier.weight(1f))
         Icon(Icons.Rounded.ChevronRight, contentDescription = "Progress", tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

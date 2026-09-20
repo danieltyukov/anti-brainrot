@@ -15,7 +15,7 @@ import io.github.danieltyukov.antibrainrot.App
 import io.github.danieltyukov.antibrainrot.MainActivity
 import io.github.danieltyukov.antibrainrot.R
 import io.github.danieltyukov.antibrainrot.core.DomainPolicy
-import io.github.danieltyukov.antibrainrot.core.Presets
+import io.github.danieltyukov.antibrainrot.core.Keys
 import io.github.danieltyukov.antibrainrot.core.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,8 +77,9 @@ class DnsVpnService : VpnService() {
     }
 
     private fun applySettings(s: Settings) {
-        val distracting = if (s.sites.distracting) Presets.hosts(s.sites.presets) + s.sites.custom else emptyList()
-        policy = DomainPolicy(adultList, s.sites.adult, distracting, s.sites.allowed)
+        // Blocked sites are also answered NXDOMAIN; timed sites need to load
+        // during a session, so only the address bar watches them.
+        policy = DomainPolicy(adultList, s.sites.adult, Keys.blockedHosts(s), s.sites.allowed)
         if (!Enforcer.siteFilterWanted(s)) {
             stopFilter()
             stopSelf()

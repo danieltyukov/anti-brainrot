@@ -5,6 +5,24 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-20
+
+### Changed
+- Android: rules are per app and per site. Each app on the list, and each
+  site, is either blocked outright or on a daily timer of its own, chosen in
+  a sheet from the Apps or Sites tab. Sites are read from the browser's
+  address bar (Chrome, Firefox, Samsung Internet, Brave, Edge, Opera,
+  Vivaldi, DuckDuckGo); blocked sites are also answered at the DNS level. Timed apps open after the pause for one session at a time, and only
+  the time they are in front counts against the limit; when it is used up the
+  app stays blocked until midnight. The single mode, the shared daily budget
+  and the distracting sites switch with its presets are gone; existing lists
+  migrate to one rule per app and per site.
+- Android: Progress and Home show time in timed apps, per day and per app.
+
+### Removed
+- Android: the Shorts, Reels and Spotlight detection inside other apps and
+  the stand-in test app. The app blocks or times whole apps only.
+
 ## [1.3.1] - 2026-09-20
 
 ### Fixed

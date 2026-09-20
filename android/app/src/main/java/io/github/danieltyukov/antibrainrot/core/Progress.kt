@@ -14,7 +14,7 @@ object Progress {
     data class Summary(
         val focusSeconds: Int,
         val blocks: Int,
-        val feedsClosed: Int,
+        val usageSeconds: Int,
         val passes: Int,
         val passMinutes: Int,
         val activeDays: Int,
@@ -35,7 +35,7 @@ object Progress {
     fun summary(days: List<Day>): Summary = Summary(
         focusSeconds = days.sumOf { it.record.focusSeconds },
         blocks = days.sumOf { it.record.blocks },
-        feedsClosed = days.sumOf { it.record.feedsClosed },
+        usageSeconds = days.sumOf { it.record.usage.values.sum() },
         passes = days.sumOf { it.record.passes },
         passMinutes = days.sumOf { it.record.passMinutes },
         activeDays = days.count { it.record.focusSeconds >= STREAK_MIN_SECONDS },
@@ -68,10 +68,15 @@ object Progress {
     }
 
     // Packages by block screens shown, most first.
-    fun topApps(days: List<Day>, limit: Int = 5): List<Pair<String, Int>> {
+    fun topApps(days: List<Day>, limit: Int = 5): List<Pair<String, Int>> = top(days, limit) { it.byApp }
+
+    // Packages by seconds in front, most first.
+    fun topUsage(days: List<Day>, limit: Int = 5): List<Pair<String, Int>> = top(days, limit) { it.usage }
+
+    private fun top(days: List<Day>, limit: Int, of: (DayRecord) -> Map<String, Int>): List<Pair<String, Int>> {
         val totals = HashMap<String, Int>()
-        for (d in days) for ((pkg, n) in d.record.byApp) totals[pkg] = (totals[pkg] ?: 0) + n
-        return totals.entries.sortedByDescending { it.value }.take(limit).map { it.key to it.value }
+        for (d in days) for ((pkg, n) in of(d.record)) totals[pkg] = (totals[pkg] ?: 0) + n
+        return totals.entries.filter { it.value > 0 }.sortedByDescending { it.value }.take(limit).map { it.key to it.value }
     }
 
     fun focusText(seconds: Int): String {

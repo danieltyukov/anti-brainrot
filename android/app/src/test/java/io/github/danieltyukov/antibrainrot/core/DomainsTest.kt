@@ -34,7 +34,7 @@ class DomainsTest {
         val policy = DomainPolicy(
             adultList = setOf("badsite.example"),
             adultEnabled = true,
-            distracting = Presets.hosts(listOf("tiktok")),
+            blockedHosts = Presets.hosts(listOf("tiktok")),
             allowed = listOf("allowed.example"),
         )
         assertTrue(policy.isBlocked("cdn.badsite.example"))

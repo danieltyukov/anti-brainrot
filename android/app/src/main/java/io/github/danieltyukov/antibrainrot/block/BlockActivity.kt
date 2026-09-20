@@ -49,7 +49,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import io.github.danieltyukov.antibrainrot.App
+import io.github.danieltyukov.antibrainrot.core.Keys
 import io.github.danieltyukov.antibrainrot.core.Passes
+import io.github.danieltyukov.antibrainrot.core.Progress
+import io.github.danieltyukov.antibrainrot.service.Enforcer
+import io.github.danieltyukov.antibrainrot.ui.minutesLabel
 import io.github.danieltyukov.antibrainrot.ui.theme.Cream
 import io.github.danieltyukov.antibrainrot.ui.theme.Ink
 import io.github.danieltyukov.antibrainrot.ui.theme.Muted
@@ -91,9 +95,10 @@ class BlockActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val pkg = intent.getStringExtra(EXTRA_PACKAGE) ?: run { finish(); return }
-        val label = appLabel(pkg)
+        val key = intent.getStringExtra(EXTRA_KEY) ?: pkg
+        val label = if (Keys.isSite(key)) Keys.label(key) else appLabel(pkg)
         val icon = appIcon(pkg)
-        setContent { BlockScreen(pkg, label, icon, onHome = { goHome() }, onOpen = { openApp(pkg) }) }
+        setContent { BlockScreen(key, label, icon, onHome = { goHome() }, onOpen = { openApp(pkg) }) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -131,12 +136,15 @@ class BlockActivity : ComponentActivity() {
     }
 
     companion object {
+        // The app to return to: the blocked app, or the browser for a site.
         const val EXTRA_PACKAGE = "package"
+        // The rule key: the package, or "site:" plus the rule host.
+        const val EXTRA_KEY = "key"
     }
 }
 
 @Composable
-private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () -> Unit, onOpen: () -> Unit) {
+private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () -> Unit, onOpen: () -> Unit) {
     val app = App.instance
     val settings by app.settings.flow.collectAsState(initial = null)
     val local by app.local.flow.collectAsState(initial = null)
@@ -148,14 +156,18 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
     var intention by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
-    val mode = s?.apps?.mode ?: "pause"
-    val canPass = s != null && l != null && Passes.canPass(l, s.apps, pkg)
-    val cooldown = l?.let { Passes.cooldownUntil(it, pkg) }
+    val rule = s?.let { Keys.ruleFor(it, key) }
+    val mode = rule?.mode ?: "block"
+    val left = if (l != null && rule != null) Passes.secondsLeft(l, rule, key) else 0
+    val exhausted = mode == "timer" && left <= 0
+    val canPass = s != null && l != null && Passes.canPass(l, s, key)
+    val cooldown = l?.let { Passes.cooldownUntil(it, key) }
+    val session = if (s != null && l != null) Passes.sessionSeconds(l, s, key) else 0
     val total = s?.apps?.pauseSeconds ?: 10
 
     // Countdown only advances while this screen is resumed; leaving resets it.
     LaunchedEffect(lifecycle, total, mode, canPass) {
-        if (mode != "pause" || !canPass) return@LaunchedEffect
+        if (mode != "timer" || !canPass) return@LaunchedEffect
         if (lifecycle != Lifecycle.State.RESUMED) {
             remaining = -1
             return@LaunchedEffect
@@ -166,8 +178,9 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
             remaining -= 1
         }
     }
+    // A session is running and there is time left: let the app through.
     LaunchedEffect(l, s) {
-        if (s != null && l != null && Passes.activePass(l, pkg) != null) onOpen()
+        if (s != null && l != null && !Enforcer.isBlocked(s, l, key)) onOpen()
     }
 
     // The card slides up and the app icon pops once it is there.
@@ -203,14 +216,25 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
                         )
                     }
                     Spacer(Modifier.height(12.dp))
-                    Text(if (mode == "pause" && canPass) "Take a breath" else "Not now", color = Ink, style = MaterialTheme.typography.headlineMedium)
+                    val title = when {
+                        exhausted -> "Time's up"
+                        mode == "timer" && canPass -> "Take a breath"
+                        else -> "Not now"
+                    }
+                    Text(title, color = Ink, style = MaterialTheme.typography.headlineMedium)
                     Spacer(Modifier.height(6.dp))
-                    Text("$label is on your blocked list.", color = Ink, textAlign = TextAlign.Center)
+                    val line = when {
+                        exhausted -> "You have used your ${minutesLabel(rule!!.limitMinutes).lowercase()} in $label for today."
+                        mode == "timer" -> "$label has a limit of ${minutesLabel(rule!!.limitMinutes).lowercase()} a day."
+                        else -> "$label is blocked."
+                    }
+                    Text(line, color = Ink, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(16.dp))
                     when {
                         mode == "block" -> Text("To open it, turn the filter off in AntiBrainrot and wait out your unlock delay.", color = Muted, textAlign = TextAlign.Center)
-                        cooldown != null -> Text("Cooling down. The next pass for this app opens at ${timeText(cooldown)}.", color = Muted, textAlign = TextAlign.Center)
-                        !canPass -> Text("Your daily budget for passes is used up. It resets at midnight.", color = Muted, textAlign = TextAlign.Center)
+                        exhausted -> Text("It resets at midnight.", color = Muted, textAlign = TextAlign.Center)
+                        cooldown != null -> Text("Cooling down. The next session opens at ${timeText(cooldown)}.", color = Muted, textAlign = TextAlign.Center)
+                        !canPass -> Text("No session is possible right now.", color = Muted, textAlign = TextAlign.Center)
                         else -> {
                             val progress = if (remaining < 0 || total == 0) 0f else 1f - remaining.toFloat() / total
                             Ring(progress, Modifier.size(124.dp), stroke = 8.dp, color = Ink, track = Ink.copy(alpha = 0.1f)) {
@@ -235,7 +259,7 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
                                 OutlinedTextField(intention, { intention = it }, Modifier.fillMaxWidth(), label = { Text("What do you need there?") }, singleLine = true, shape = MaterialTheme.shapes.medium)
                             }
                             Spacer(Modifier.height(10.dp))
-                            Text("Budget left today: ${l?.let { Passes.budgetLeft(it, s!!.apps) } ?: 0} minutes.", color = Muted, style = MaterialTheme.typography.bodyMedium)
+                            Text("${Progress.focusText(left)} left today.", color = Muted, style = MaterialTheme.typography.bodyMedium)
                             Spacer(Modifier.height(12.dp))
                             val ready = remaining == 0 && (s?.apps?.intention != true || intention.trim().length >= 3)
                             Button(
@@ -243,8 +267,8 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
                                     scope.launch {
                                         val current = app.local.get()
                                         val st = app.settings.get()
-                                        if (Passes.canPass(current, st.apps, pkg)) {
-                                            app.local.update { Passes.grant(it, st.apps, pkg) }
+                                        if (Passes.canPass(current, st, key)) {
+                                            app.local.update { Passes.grant(it, st, key) }
                                             onOpen()
                                         } else {
                                             message = "Could not start a pass."
@@ -254,7 +278,7 @@ private fun BlockScreen(pkg: String, label: String, icon: Drawable?, onHome: () 
                                 enabled = ready,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Cream, disabledContainerColor = Ink.copy(alpha = 0.12f), disabledContentColor = Muted),
-                            ) { Text("Continue for ${s?.apps?.passMinutes ?: 5} minutes") }
+                            ) { Text("Continue for ${Progress.focusText(session)}") }
                         }
                     }
                     if (message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(message, color = Muted) }

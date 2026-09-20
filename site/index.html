@@ -109,7 +109,7 @@
         </li>
         <li>
           <h3>Android app</h3>
-          <p>The same rules on the phone: Shorts and Reels closed inside their apps, distracting apps behind a pause and a timed pass, adult and distracting sites filtered at the DNS level, locked hours, strict mode, and a Progress tab with ninety days of counters and charts. An APK on every release.</p>
+          <p>An app and site blocker in the spirit of AppBlock: every app and every site gets its own rule, blocked outright or a daily timer, plus adult sites filtered at the DNS level, locked hours, strict mode, and a Progress tab with ninety days of counters and charts. An APK on every release.</p>
         </li>
         <li>
           <h3>More YouTube options</h3>
@@ -203,24 +203,24 @@
 
     <section class="wrap shots" aria-labelledby="android-heading">
       <h2 id="android-heading">On the phone</h2>
-      <p>The Android app is the same idea with the phone's own tools. An accessibility service recognises the Shorts, Reels and Spotlight players by their view ids and presses Back, and puts a block screen over the apps on your list. A DNS-only VPN answers lookups for adult and distracting hosts with "no such name" and forwards everything else to the network's resolver, so no traffic leaves the phone through the app. The friction timer, locked hours, Lock for N hours and the loosen-only-while-off rule are the same as in the extension. Strict mode closes the Settings pages that could disable the app while the filter is on. The Progress tab keeps ninety days of counters: how long the filter was on, block screens, feeds closed and passes, as totals over 7, 30 or 90 days, bars per day, a streak, and the apps that needed the most block screens.</p>
+      <p>The Android app is an app blocker in the spirit of AppBlock, built with the phone's own tools. Every app and every site on your list gets its own rule. Blocked ones get a block screen the moment they open. Timed ones get a daily limit: they open after a short pause, an intention if you want one, for one session at a time, and only the time they are in front counts, so a limit of thirty minutes is thirty minutes of use. When the minutes are gone they stay blocked until midnight. Sites are caught in the address bar of Chrome, Firefox, Samsung Internet, Brave, Edge, Opera, Vivaldi and DuckDuckGo. A DNS-only VPN answers lookups for adult hosts and blocked sites with "no such name" and forwards everything else to the network's resolver, so no traffic leaves the phone through the app. The friction timer, locked hours, Lock for N hours and the loosen-only-while-off rule are the same as in the extension. Strict mode closes the Settings pages that could disable the app while the filter is on. The Progress tab keeps ninety days of counters: how long the filter was on, block screens, time in timed apps and sessions, as totals over 7, 30 or 90 days, bars per day, a streak, and the apps that used the most time or needed the most block screens.</p>
       <div class="phones">
         <figure>
           <img src="assets/screenshots/android-home.png" alt="The Home tab of the Android app: a blue card that reads Filter is on with a power ring, a Lock for row and a Turn off button, then today's three numbers and the locked hours card" width="540" height="1200" loading="lazy">
           <figcaption>Home, with the filter on.</figcaption>
         </figure>
         <figure>
-          <img src="assets/screenshots/android-progress.png" alt="The Progress tab: a 7, 30, 90 day selector, four tiles with the filter-on time, block screens, feeds closed and passes, and a bar chart of hours per day" width="540" height="1200" loading="lazy">
+          <img src="assets/screenshots/android-progress.png" alt="The Progress tab: a 7, 30, 90 day selector, four tiles with the filter-on time, block screens, time in timed apps and sessions, and a bar chart of hours per day" width="540" height="1200" loading="lazy">
           <figcaption>Progress over the last 7 days.</figcaption>
         </figure>
         <figure>
-          <img src="assets/screenshots/android-block.png" alt="The block screen over Chrome: Take a breath, Chrome is on your blocked list, a countdown ring, an intention field, the budget left today and a Continue for 5 minutes button next to Keep it blocked" width="540" height="1200" loading="lazy">
-          <figcaption>A blocked app in pause mode.</figcaption>
+          <img src="assets/screenshots/android-block.png" alt="The block screen over a timed app: Take a breath, Chrome has a limit of 5 minutes a day, a ring that reads Ready, an intention field, 4m left today and a Continue for 4m button next to Keep it blocked" width="540" height="1200" loading="lazy">
+          <figcaption>A timed app, before a session.</figcaption>
         </figure>
       </div>
       <ul class="limits">
-        <li>Feed detection depends on view ids inside the apps, which change with updates. The counters on Home show whether feeds are still being closed.</li>
-        <li>A DNS filter sees hosts, not paths, so site rules are whole sites. Private DNS and browsers with their own DNS over HTTPS setting bypass it; the app warns when Private DNS is on.</li>
+        <li>Rules apply to whole apps and whole sites. Beyond the browser address bar nothing inside another app is read, so there is no Shorts or Reels detection on the phone; block or time the app instead.</li>
+        <li>Site rules are per host, and the address bar check covers the listed browsers. Blocked sites are also stopped at the DNS level in every app; Private DNS and browsers with their own DNS over HTTPS setting bypass that part, and the app warns when Private DNS is on.</li>
         <li>Sideloaded apps on Android 13 and later need the Allow restricted settings step before the accessibility service can be turned on. The Setup screen walks through it.</li>
       </ul>
     </section>

@@ -22,6 +22,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -41,17 +44,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import io.github.danieltyukov.antibrainrot.core.Keys
 import io.github.danieltyukov.antibrainrot.core.LocalState
-import io.github.danieltyukov.antibrainrot.core.Passes
 import io.github.danieltyukov.antibrainrot.core.Progress
 import io.github.danieltyukov.antibrainrot.core.Settings
 import io.github.danieltyukov.antibrainrot.ui.Appear
 import io.github.danieltyukov.antibrainrot.ui.BarChart
-import io.github.danieltyukov.antibrainrot.ui.LegendDot
 import io.github.danieltyukov.antibrainrot.ui.SectionCard
 import io.github.danieltyukov.antibrainrot.ui.StatTile
 import io.github.danieltyukov.antibrainrot.ui.animatedInt
 import io.github.danieltyukov.antibrainrot.ui.count
+import io.github.danieltyukov.antibrainrot.ui.theme.Amber
 import io.github.danieltyukov.antibrainrot.ui.theme.Leaf
 import io.github.danieltyukov.antibrainrot.ui.theme.Theme
 import java.time.LocalDate
@@ -73,9 +76,9 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
     val streak = remember(history) { Progress.streak(history, today) }
     val best = remember(history) { Progress.bestStreak(history) }
     val top = remember(days) { Progress.topApps(days) }
+    val topUsage = remember(days) { Progress.topUsage(days) }
     val labels = remember(days) { labelsFor(days) }
-    val empty = remember(history) { history.values.all { it.focusSeconds == 0 && it.blocks == 0 && it.feedsClosed == 0 && it.passes == 0 } }
-    val budgetLeft = l?.let { Passes.budgetLeft(it, s.apps) } ?: s.apps.dailyBudgetMinutes
+    val empty = remember(history) { history.values.all { it.focusSeconds == 0 && it.blocks == 0 && it.usage.isEmpty() && it.passes == 0 } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 4.dp, bottom = 24.dp)) {
         Appear(0) {
@@ -86,7 +89,7 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
             }
         }
         if (empty) Appear(1) {
-            SectionCard("Nothing yet", "The counters fill in as the filter runs: how long it was on, block screens, feeds closed, passes. Check back tomorrow.") {}
+            SectionCard("Nothing yet", "The counters fill in as the filter runs: how long it was on, block screens, time in timed apps, sessions. Check back tomorrow.") {}
         }
         Appear(1) {
             SectionCard("Last $range days") {
@@ -96,11 +99,9 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
                 }
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    StatTile(animatedInt(summary.feedsClosed).toString(), "Feeds closed", Modifier.weight(1f))
-                    StatTile(animatedInt(summary.passes).toString(), "Passes, ${summary.passMinutes} min", Modifier.weight(1f))
+                    StatTile(Progress.focusText(animatedInt(summary.usageSeconds)), "In timed apps", Modifier.weight(1f), accent = Amber)
+                    StatTile(animatedInt(summary.passes).toString(), "Sessions, ${summary.passMinutes} min", Modifier.weight(1f))
                 }
-                Spacer(Modifier.height(10.dp))
-                Text("Pass budget left today: ${count(budgetLeft, "minute")}.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Appear(2) {
@@ -111,18 +112,23 @@ fun ProgressScreen(s: Settings, l: LocalState?) {
             }
         }
         Appear(3) {
-            SectionCard("Blocks and feeds closed", "Block screens shown and short-video feeds closed, per day.") {
-                BarChart(days.map { it.record.blocks.toFloat() }, labels, secondary = days.map { it.record.feedsClosed.toFloat() })
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    LegendDot(MaterialTheme.colorScheme.primary, "Block screens")
-                    LegendDot(Theme.extra.chartSecondary, "Feeds closed")
-                }
+            SectionCard("Time in timed apps and sites", "Hours per day spent in apps and sites with a daily timer, counted only while they are in front.") {
+                BarChart(days.map { it.record.usage.values.sum() / 3600f }, labels, primaryColor = Amber)
+                Spacer(Modifier.height(6.dp))
+                Text("Most in one day: ${Progress.focusText(days.maxOf { it.record.usage.values.sum() })}.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Appear(4) { StreakCard(streak, best, days.takeLast(7)) }
-        if (top.isNotEmpty()) Appear(5) {
-            SectionCard("Most blocked apps", "Block screens in the last $range days.") { TopApps(top) }
+        Appear(4) {
+            SectionCard("Block screens", "Times a blocked or out-of-time app was stopped, per day.") {
+                BarChart(days.map { it.record.blocks.toFloat() }, labels)
+            }
+        }
+        Appear(5) { StreakCard(streak, best, days.takeLast(7)) }
+        if (topUsage.isNotEmpty()) Appear(6) {
+            SectionCard("Most used timed apps and sites", "Time in front in the last $range days.") { TopApps(topUsage) { Progress.focusText(it) } }
+        }
+        if (top.isNotEmpty()) Appear(7) {
+            SectionCard("Most blocked", "Block screens in the last $range days.") { TopApps(top) { it.toString() } }
         }
     }
 }
@@ -165,20 +171,27 @@ private fun StreakCard(streak: Int, best: Int, lastWeek: List<Progress.Day>) {
 }
 
 @Composable
-private fun TopApps(top: List<Pair<String, Int>>) {
+private fun TopApps(top: List<Pair<String, Int>>, format: (Int) -> String) {
     val pm = LocalContext.current.packageManager
     val max = top.first().second.toFloat().coerceAtLeast(1f)
-    top.forEachIndexed { i, (pkg, n) ->
-        val label = remember(pkg) { try { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() } catch (e: Exception) { pkg } }
-        val icon = remember(pkg) { try { pm.getApplicationIcon(pkg).toBitmap(96, 96).asImageBitmap() } catch (e: Exception) { null } }
+    top.forEachIndexed { i, (key, n) ->
+        val site = Keys.isSite(key)
+        val label = remember(key) {
+            if (site) Keys.label(key) else try { pm.getApplicationLabel(pm.getApplicationInfo(key, 0)).toString() } catch (e: Exception) { key }
+        }
+        val icon = remember(key) { if (site) null else try { pm.getApplicationIcon(key).toBitmap(96, 96).asImageBitmap() } catch (e: Exception) { null } }
         val fraction by animateFloatAsState(n / max, tween(700, delayMillis = i * 60, easing = FastOutSlowInEasing), label = "bar")
         Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (icon != null) Image(icon, contentDescription = null, Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))) else Spacer(Modifier.size(32.dp))
+            when {
+                icon != null -> Image(icon, contentDescription = null, Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
+                site -> Icon(Icons.Rounded.Language, contentDescription = null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                else -> Spacer(Modifier.size(32.dp))
+            }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(n.toString(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                    Text(format(n), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                 }
                 Spacer(Modifier.height(6.dp))
                 Box(Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(Theme.extra.track)) {

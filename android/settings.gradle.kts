@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "anti-brainrot"
 include(":app")
-include(":fakeyoutube")

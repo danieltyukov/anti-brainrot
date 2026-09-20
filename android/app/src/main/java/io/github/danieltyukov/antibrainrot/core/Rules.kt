@@ -33,24 +33,25 @@ object Rules {
             if (b.schedule.start > a.schedule.start) return true
             if (b.schedule.end < a.schedule.end) return true
         }
-        if (hasNew(b.apps.blocked, a.apps.blocked)) return true
-        if (a.apps.mode == "block" && b.apps.mode == "pause") return true
+        // An app rule loosens when it goes away, when block becomes timer,
+        // or when a timer gets more minutes.
+        for ((pkg, ra) in a.apps.rules) {
+            val rb = b.apps.rules[pkg] ?: return true
+            if (ra.mode == "block" && rb.mode == "timer") return true
+            if (ra.mode == "timer" && rb.mode == "timer" && rb.limitMinutes > ra.limitMinutes) return true
+        }
         if (b.apps.passMinutes > a.apps.passMinutes) return true
         if (b.apps.pauseSeconds < a.apps.pauseSeconds) return true
-        if (b.apps.dailyBudgetMinutes > a.apps.dailyBudgetMinutes) return true
         if (b.apps.cooldownMinutes < a.apps.cooldownMinutes) return true
         if (a.apps.intention && !b.apps.intention) return true
         if (a.apps.blockNotifications && !b.apps.blockNotifications) return true
-        if (a.reels.instagram && !b.reels.instagram) return true
-        if (a.reels.facebook && !b.reels.facebook) return true
-        if (a.reels.snapchatSpotlight && !b.reels.snapchatSpotlight) return true
         if (a.sites.adult && !b.sites.adult) return true
-        if (a.sites.distracting && !b.sites.distracting) return true
-        if (b.sites.distracting) {
-            if (hasNew(b.sites.presets, a.sites.presets)) return true
-            if (hasNew(b.sites.custom, a.sites.custom)) return true
+        for ((host, ra) in a.sites.rules) {
+            val rb = b.sites.rules[host] ?: return true
+            if (ra.mode == "block" && rb.mode == "timer") return true
+            if (ra.mode == "timer" && rb.mode == "timer" && rb.limitMinutes > ra.limitMinutes) return true
         }
-        if (b.sites.adult || b.sites.distracting) {
+        if (b.sites.adult || b.sites.rules.isNotEmpty()) {
             if (hasNew(a.sites.allowed, b.sites.allowed)) return true
         }
         if (a.strictMode && !b.strictMode) return true

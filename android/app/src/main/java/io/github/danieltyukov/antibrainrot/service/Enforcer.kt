@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.Build
 import io.github.danieltyukov.antibrainrot.App
+import io.github.danieltyukov.antibrainrot.core.Keys
 import io.github.danieltyukov.antibrainrot.core.LocalState
 import io.github.danieltyukov.antibrainrot.core.Passes
 import io.github.danieltyukov.antibrainrot.core.Rules
@@ -16,7 +17,7 @@ object Enforcer {
     // Packages that are never blocked: our own, the system UI, launchers, the settings app.
     val NEVER_BLOCK = setOf("android", "com.android.systemui", "com.android.settings")
 
-    fun siteFilterWanted(s: Settings): Boolean = s.focus.enabled && (s.sites.adult || s.sites.distracting)
+    fun siteFilterWanted(s: Settings): Boolean = s.focus.enabled && (s.sites.adult || Keys.blockedHosts(s).isNotEmpty())
 
     // Starts or stops the DNS filter to match the settings. Returns the
     // consent intent when the user still has to approve the VPN.
@@ -33,11 +34,19 @@ object Enforcer {
         return null
     }
 
-    fun isBlockedApp(s: Settings, state: LocalState, pkg: String, now: Long = System.currentTimeMillis()): Boolean {
+    // Blocked outright, out of time for today, or timed without a running
+    // session. The key is a package name or "site:" plus a rule host.
+    fun isBlocked(s: Settings, state: LocalState, key: String, now: Long = System.currentTimeMillis(), today: String = Passes.dayKey()): Boolean {
         if (!s.focus.enabled) return false
-        if (pkg !in s.apps.blocked) return false
-        return Passes.activePass(state, pkg, now) == null
+        val rule = Keys.ruleFor(s, key) ?: return false
+        if (rule.mode == "block") return true
+        if (Passes.secondsLeft(state, rule, key, today) <= 0) return true
+        return Passes.activePass(state, key, now) == null
     }
+
+    fun isBlockedApp(s: Settings, state: LocalState, pkg: String, now: Long = System.currentTimeMillis()): Boolean = isBlocked(s, state, pkg, now)
+
+    fun isTimed(s: Settings, key: String): Boolean = s.focus.enabled && Keys.ruleFor(s, key)?.mode == "timer"
 
     // Called on a timer and on app switches: expires passes, starts cooldowns,
     // and forces the filter on during locked hours.

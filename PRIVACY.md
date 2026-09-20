@@ -51,10 +51,10 @@ anything you type.
 
 ## The Android app
 
-Settings and today's counters are stored on the phone only, in the app's
-private storage. The accessibility service reads the app in front and the
-view ids of a few known feed screens; it does not read text you type or
-messages. The notification listener sees notifications from blocked apps
+Settings and the ninety day counters are stored on the phone only, in the
+app's private storage. The accessibility service reads which app is in front
+and, for apps with a daily timer, how long it stays there; it does not read
+text you type or messages. The notification listener sees notifications from blocked apps
 only to dismiss them. The DNS filter handles name lookups on the device and
 forwards them to the network's own resolver; no traffic leaves the phone
 through the app and nothing is logged. There are no accounts, no analytics

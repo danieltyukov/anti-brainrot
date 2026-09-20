@@ -8,32 +8,57 @@ import org.junit.Test
 import java.time.LocalDateTime
 
 class RulesTest {
+    private val tiktok = "com.zhiliaoapp.musically"
     private val base = Settings(
-        apps = Apps(blocked = listOf("com.zhiliaoapp.musically")),
+        apps = Apps(rules = mapOf(tiktok to Rule("timer", 30), "com.reddit.frontpage" to Rule("block"))),
         schedule = Schedule(enabled = true),
-        sites = Sites(adult = true, distracting = true),
+        sites = Sites(adult = true, rules = mapOf("reddit.com" to Rule("block"), "x.com" to Rule("timer", 15))),
     )
 
     private fun loosens(change: (Settings) -> Settings) = Rules.isLoosening(base, change(base))
+    private fun withRule(s: Settings, pkg: String, rule: Rule?) =
+        s.copy(apps = s.apps.copy(rules = if (rule == null) s.apps.rules - pkg else s.apps.rules + (pkg to rule)))
 
     @Test fun unchangedIsNotLoosening() = assertFalse(loosens { it })
 
     @Test fun featureOffLoosens() {
         assertTrue(loosens { it.copy(sites = it.sites.copy(adult = false)) })
         assertTrue(loosens { it.copy(schedule = it.schedule.copy(enabled = false)) })
-        assertTrue(loosens { it.copy(apps = it.apps.copy(blocked = emptyList())) })
-        assertFalse(loosens { it.copy(apps = it.apps.copy(blocked = it.apps.blocked + "com.instagram.android")) })
     }
 
-    @Test fun passSettings() {
+    @Test fun appRules() {
+        assertTrue(loosens { withRule(it, tiktok, null) })
+        assertTrue(loosens { withRule(it, "com.reddit.frontpage", Rule("timer", 30)) })
+        assertTrue(loosens { withRule(it, tiktok, Rule("timer", 60)) })
+        assertFalse(loosens { withRule(it, tiktok, Rule("timer", 15)) })
+        assertFalse(loosens { withRule(it, tiktok, Rule("block")) })
+        assertFalse(loosens { withRule(it, "com.instagram.android", Rule("timer", 180)) })
+    }
+
+    @Test fun siteRules() {
+        fun withSite(s: Settings, host: String, rule: Rule?) = s.copy(sites = s.sites.copy(rules = if (rule == null) s.sites.rules - host else s.sites.rules + (host to rule)))
+        assertTrue(loosens { withSite(it, "reddit.com", null) })
+        assertTrue(loosens { withSite(it, "reddit.com", Rule("timer", 30)) })
+        assertTrue(loosens { withSite(it, "x.com", Rule("timer", 30)) })
+        assertFalse(loosens { withSite(it, "x.com", Rule("block")) })
+        assertFalse(loosens { withSite(it, "tiktok.com", Rule("timer", 5)) })
+        assertTrue(loosens { it.copy(sites = it.sites.copy(allowed = listOf("reddit.com"))) })
+    }
+
+    @Test fun oldDistractingSitesBecomeRules() {
+        val old = """{"sites":{"adult":false,"distracting":true,"presets":["reddit","x"],"custom":["example.com"],"allowed":[]}}"""
+        val s = Settings.decode(old)
+        assertEquals(mapOf("reddit.com" to Rule("block", 30), "x.com" to Rule("block", 30), "example.com" to Rule("block", 30)), s.sites.rules)
+        val off = old.replace("\"distracting\":true", "\"distracting\":false")
+        assertEquals(emptyMap<String, Rule>(), Settings.decode(off).sites.rules)
+    }
+
+    @Test fun sessionSettings() {
         assertTrue(loosens { it.copy(apps = it.apps.copy(passMinutes = 10)) })
         assertFalse(loosens { it.copy(apps = it.apps.copy(passMinutes = 2)) })
         assertTrue(loosens { it.copy(apps = it.apps.copy(pauseSeconds = 5)) })
-        assertTrue(loosens { it.copy(apps = it.apps.copy(dailyBudgetMinutes = 60)) })
         assertTrue(loosens { it.copy(apps = it.apps.copy(cooldownMinutes = 5)) })
-        val blockMode = base.copy(apps = base.apps.copy(mode = "block"))
-        assertTrue(Rules.isLoosening(blockMode, base))
-        assertFalse(Rules.isLoosening(base, blockMode))
+        assertTrue(loosens { it.copy(apps = it.apps.copy(intention = false)) })
     }
 
     @Test fun scheduleWindow() {
@@ -69,7 +94,7 @@ class RulesTest {
         assertThrows(LockedException::class.java) {
             Rules.guard(on, on.copy(sites = on.sites.copy(adult = false)))
         }
-        Rules.guard(on, on.copy(apps = on.apps.copy(blocked = on.apps.blocked + "x")))
+        Rules.guard(on, withRule(on, "x", Rule("block")))
         val off = on.copy(focus = on.focus.copy(enabled = false))
         Rules.guard(off, off.copy(sites = off.sites.copy(adult = false)))
     }
@@ -83,9 +108,13 @@ class RulesTest {
     }
 
     @Test fun normalizeFallsBack() {
-        val n = Settings.normalize(Settings(focus = Focus(unlockDelaySec = 42), apps = Apps(mode = "nuke", passMinutes = 7), schedule = Schedule(start = "18:00", end = "09:00", days = listOf(0, 1, 9))))
+        val n = Settings.normalize(Settings(
+            focus = Focus(unlockDelaySec = 42),
+            apps = Apps(rules = mapOf("a" to Rule("nuke", 7), " " to Rule()), passMinutes = 7),
+            schedule = Schedule(start = "18:00", end = "09:00", days = listOf(0, 1, 9)),
+        ))
         assertEquals(300, n.focus.unlockDelaySec)
-        assertEquals("pause", n.apps.mode)
+        assertEquals(mapOf("a" to Rule("block", 30)), n.apps.rules)
         assertEquals(5, n.apps.passMinutes)
         assertEquals(listOf(1), n.schedule.days)
         assertEquals("09:00", n.schedule.start)
@@ -95,5 +124,15 @@ class RulesTest {
         val s = base.copy(focus = Focus(reason = "Thesis"))
         assertEquals(s, Settings.decode(s.encode()))
         assertEquals(Settings(), Settings.decode("garbage"))
+    }
+
+    @Test fun oldBlockedListBecomesRules() {
+        val old = """{"version":1,"apps":{"mode":"pause","blocked":["a","b"],"passMinutes":5,"pauseSeconds":10,"dailyBudgetMinutes":60,"cooldownMinutes":15,"intention":true,"blockNotifications":true},"reels":{"instagram":true}}"""
+        val s = Settings.decode(old)
+        assertEquals(mapOf("a" to Rule("timer", 60), "b" to Rule("timer", 60)), s.apps.rules)
+        val block = old.replace("\"mode\":\"pause\"", "\"mode\":\"block\"").replace("\"dailyBudgetMinutes\":60", "\"dailyBudgetMinutes\":1440")
+        assertEquals(mapOf("a" to Rule("block", 180), "b" to Rule("block", 180)), Settings.decode(block).apps.rules)
+        // Already migrated state is left alone.
+        assertEquals(s, Settings.decode(s.encode()))
     }
 }
