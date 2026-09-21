@@ -1,8 +1,9 @@
 // Service worker: seeds settings on install, keeps the toolbar badge in sync,
-// switches the adult site ruleset and the user's own domain rules, manages
-// the distracting sites rules, passes and daily budget, and enforces locked
-// hours. Every piece re-derives its state from storage, so worker restarts
-// are harmless.
+// switches the Shorts and adult site rulesets and the user's own domain
+// rules, manages the distracting sites rules, passes and daily budget,
+// enforces locked hours, and guards the extensions page while Prevent
+// removal is on. Every piece re-derives its state from storage, so worker
+// restarts are harmless.
 importScripts('lib/features.js', 'lib/settings.js', 'lib/blocker.js', 'lib/distractions.js');
 
 const S = globalThis.AntiBrainrot.settings;
@@ -10,6 +11,7 @@ const B = globalThis.AntiBrainrot.blocker;
 const D = globalThis.AntiBrainrot.distractions;
 const dnr = chrome.declarativeNetRequest;
 
+const SHORTS_RULESET = 'shorts';
 const ADULT_RULESET = 'adult';
 const DISTRACTION_RULE_BASE = 3000; // dynamic redirect rules 3000..3499
 const EXCEPTION_RULE_BASE = 3500; // dynamic allow rules 3500..3999
@@ -34,18 +36,30 @@ async function refreshBadge(settings) {
   }
 }
 
+// ---------------------------------------------------------------- static rulesets
+
+async function setRuleset(id, on) {
+  try {
+    const enabled = await dnr.getEnabledRulesets();
+    const has = enabled.includes(id);
+    if (on && !has) await dnr.updateEnabledRulesets({ enableRulesetIds: [id] });
+    if (!on && has) await dnr.updateEnabledRulesets({ disableRulesetIds: [id] });
+  } catch (err) {
+    warn('could not switch the ' + id + ' ruleset', err);
+  }
+}
+
+// The Shorts redirect rule handles full loads of /shorts/ID; the content
+// script handles in-page navigation. Both follow the Hide Shorts toggle.
+async function syncShorts(settings) {
+  await setRuleset(SHORTS_RULESET, S.isActive(settings, 'shorts'));
+}
+
 // ---------------------------------------------------------------- adult sites
 
 async function syncBlocker(settings) {
   const on = S.isActive(settings, 'adultSites');
-  try {
-    const enabled = await dnr.getEnabledRulesets();
-    const has = enabled.includes(ADULT_RULESET);
-    if (on && !has) await dnr.updateEnabledRulesets({ enableRulesetIds: [ADULT_RULESET] });
-    if (!on && has) await dnr.updateEnabledRulesets({ disableRulesetIds: [ADULT_RULESET] });
-  } catch (err) {
-    warn('could not switch the adult ruleset', err);
-  }
+  await setRuleset(ADULT_RULESET, on);
   try {
     const existing = await dnr.getDynamicRules();
     await dnr.updateDynamicRules({
@@ -223,13 +237,68 @@ async function enforceSchedule(settings) {
   }
 }
 
+// ---------------------------------------------------------------- prevent removal
+
+// Chrome gives an extension no way to stop its own removal. While Prevent
+// removal is on, the browser's extensions page (where the Remove button and
+// the on/off switch live) is sent to the block page as soon as it opens,
+// which is what strict mode does with App info on the phone. The toolbar
+// menu can still remove the extension; only a browser policy closes that
+// door, and the options page explains how to set one.
+const EXTENSIONS_PAGE = /^[a-z]+:\/\/extensions(\/|\?|#|$)/;
+
+function isExtensionsPage(tab) {
+  const url = (tab && (tab.pendingUrl || tab.url)) || '';
+  return EXTENSIONS_PAGE.test(url);
+}
+
+async function guardTab(tab) {
+  if (!isExtensionsPage(tab)) return;
+  const settings = await S.load();
+  if (!S.isActive(settings, 'preventRemoval')) return;
+  try {
+    await chrome.tabs.update(tab.id, { url: chrome.runtime.getURL('blocked/blocked.html?kind=guard') });
+  } catch (err) {
+    warn('could not leave the extensions page', err);
+  }
+}
+
+async function syncGuard(settings) {
+  const on = S.isActive(settings, 'preventRemoval');
+  try {
+    // Opens the install page after a removal so the way back is one click.
+    await chrome.runtime.setUninstallURL(on ? 'https://danieltyukov.github.io/anti-brainrot/#install' : '');
+  } catch {
+    // not supported in this browser
+  }
+  if (!on) return;
+  let tabs = [];
+  try {
+    tabs = await chrome.tabs.query({});
+  } catch (err) {
+    warn('could not list tabs', err);
+    return;
+  }
+  for (const tab of tabs) await guardTab(tab);
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.url || changeInfo.status === 'loading') guardTab(tab);
+});
+
+chrome.tabs.onCreated.addListener((tab) => {
+  guardTab(tab);
+});
+
 // ---------------------------------------------------------------- sync
 
 async function sync(settings) {
   const s = settings || (await S.load());
   await refreshBadge(s);
+  await syncShorts(s);
   await syncBlocker(s);
   await syncDistractions(s);
+  await syncGuard(s);
   await enforceSchedule(s);
 }
 
@@ -280,14 +349,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-// The popup asks for the all-sites permission when a web feature is switched
-// on and notes which one in storage. Chrome's prompt can close the popup
-// before it can write the setting, so the worker completes the switch when
-// the grant arrives, and reflects a revocation made in chrome://extensions.
+// The popup asks for an optional permission when a feature that needs one is
+// switched on and notes which feature in storage. Chrome's prompt can close
+// the popup before it can write the setting, so the worker completes the
+// switch when the grant arrives, and reflects a revocation made in
+// chrome://extensions by switching the features that depend on it off.
+const NEEDS = globalThis.AntiBrainrot.features.PERMISSIONS;
+
+function covers(granted, needed) {
+  const origins = new Set(granted.origins || []);
+  const permissions = new Set(granted.permissions || []);
+  return (needed.origins || []).every((o) => origins.has(o)) && (needed.permissions || []).every((p) => permissions.has(p));
+}
+
 chrome.permissions.onAdded.addListener(async (granted) => {
-  if (!(granted.origins || []).includes('<all_urls>')) return;
   const { pendingFeature } = await chrome.storage.local.get('pendingFeature');
-  if (!pendingFeature) return;
+  if (!pendingFeature || !NEEDS[pendingFeature] || !covers(granted, NEEDS[pendingFeature])) return;
   await chrome.storage.local.remove('pendingFeature');
   try {
     await S.update({ features: { [pendingFeature]: true } });
@@ -297,10 +374,14 @@ chrome.permissions.onAdded.addListener(async (granted) => {
 });
 
 chrome.permissions.onRemoved.addListener(async (removed) => {
-  if (!(removed.origins || []).includes('<all_urls>')) return;
   const s = await S.load();
-  if (!s.features.adultSites && !s.features.distractions) return;
-  await S.patch({ features: { adultSites: false, distractions: false } });
+  const off = {};
+  for (const [id, needed] of Object.entries(NEEDS)) {
+    const lost = (needed.origins || []).some((o) => (removed.origins || []).includes(o))
+      || (needed.permissions || []).some((p) => (removed.permissions || []).includes(p));
+    if (lost && s.features[id]) off[id] = false;
+  }
+  if (Object.keys(off).length > 0) await S.patch({ features: off });
 });
 
 boot();

@@ -69,7 +69,7 @@ fun SetupScreen(vm: AppViewModel, onDone: () -> Unit) {
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 4.dp, bottom = 24.dp)) {
         Appear(0) { SectionCard("Setup", "Two permissions are required. The others make the app better.") {
-            PermissionRow("Accessibility service", "Required. Sees which app is in front, closes Shorts and Reels, shows the block screen.", accessibility) { context.startActivity(Permissions.accessibilityIntent()) }
+            PermissionRow("Accessibility service", "Required. Sees which app is in front, reads the browser address bar, shows the block screen.", accessibility) { context.startActivity(Permissions.accessibilityIntent()) }
             if (accessibility && !accessibilityRunning) {
                 Text("Enabled but not running. After an update Android waits for the switch to be turned off and on again, or for a restart, before it starts the service.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 OutlinedButton(onClick = { context.startActivity(Permissions.accessibilityIntent()) }) { Text("Open accessibility settings") }

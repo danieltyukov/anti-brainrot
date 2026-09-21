@@ -2,8 +2,8 @@
 //
 // Responsibilities:
 // - set data-abr-* attributes on <html> from the settings (hide.css keys on them)
-// - redirect /shorts/ID to /watch?v=ID on in-page navigations (the declarative
-//   rule only sees full page loads)
+// - redirect /shorts/ID to /watch?v=ID on in-page navigations while Hide
+//   Shorts is active (the declarative rule only sees full page loads)
 // - redirect the home page to the subscriptions feed when configured
 // - switch YouTube autoplay off when configured
 // - enforce educational mode using metadata from content/page-bridge.js
@@ -52,12 +52,13 @@
 
   // Returns true when a redirect was issued.
   function redirectIfNeeded() {
-    const target = U.shorts.rewriteUrl(location.href);
+    if (!settings) return false;
+    const target = S.isActive(settings, 'shorts') ? U.shorts.rewriteUrl(location.href) : null;
     if (target) {
       location.replace(target);
       return true;
     }
-    if (settings && S.isActive(settings, 'redirectHome') && location.pathname === '/') {
+    if (S.isActive(settings, 'redirectHome') && location.pathname === '/') {
       location.replace('/feed/subscriptions');
       return true;
     }
@@ -310,12 +311,6 @@
     if (redirectIfNeeded()) return;
     fixAutoplay();
     evaluateEducation();
-  }
-
-  // Shorts can be redirected before settings arrive; nothing else can.
-  if (U.shorts.rewriteUrl(location.href)) {
-    location.replace(U.shorts.rewriteUrl(location.href));
-    return;
   }
 
   document.addEventListener(EVENT_VIDEO, onVideoMeta);

@@ -53,6 +53,8 @@ test('blockedUrlFrom reads the original URL back from the block page URL', () =>
   assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?kind=pause&u=https://x.com/?kind=block'), 'pause');
   assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?u=https://x.com/'), 'adult');
   assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?kind=weird&u=https://x.com/'), 'adult');
+  assert.equal(B.kindFrom('chrome-extension://id/blocked/blocked.html?kind=guard'), 'guard');
+  assert.equal(B.blockedUrlFrom('chrome-extension://id/blocked/blocked.html?kind=guard'), null);
   assert.equal(B.hostOf('https://www.x.com/a?b=1'), 'www.x.com');
   assert.equal(B.hostOf('garbage'), null);
 });

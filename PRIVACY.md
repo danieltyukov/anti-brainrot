@@ -19,7 +19,9 @@ today is kept.
 
 Nothing is sent to the author or to any third party. There is no analytics,
 no telemetry, no update check beyond what Chrome itself does for
-extensions.
+extensions. A copy installed through the browser policy is updated by
+Chrome from `updates.xml` on the website and the CRX on the GitHub
+release, which are plain static files.
 
 The extension makes exactly one kind of network request of its own: when
 educational mode is on and YouTube's in-page navigation has not exposed the
@@ -41,6 +43,13 @@ category from it. That request goes to YouTube only.
   Block adult sites or Block distracting sites, because a redirect rule can
   only act on sites the extension has access to. You can revoke it at any
   time in `chrome://extensions`.
+- Optional `tabs`: requested only when you switch on Prevent removal. It
+  lets the worker see tab URLs, which it needs to notice the extensions
+  page; it looks at nothing else, stores no URL, and Chrome labels the
+  permission "read your browsing history" because that is the broadest
+  thing it could do. Revoking it switches Prevent removal off.
+- `management.getSelf()` (no permission needed): the options page reads
+  how this copy was installed to say whether a browser policy protects it.
 
 ## What the content scripts read
 

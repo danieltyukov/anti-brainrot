@@ -94,7 +94,6 @@
 
     if (isObject(raw.features)) {
       for (const f of FEATURES) {
-        if (f.locked) continue;
         if (typeof raw.features[f.id] === 'boolean') out.features[f.id] = raw.features[f.id];
       }
     }
@@ -203,7 +202,7 @@
     const a = normalize(current);
     const b = normalize(next);
     for (const f of FEATURES) {
-      if (!f.locked && a.features[f.id] && !b.features[f.id]) return true;
+      if (a.features[f.id] && !b.features[f.id]) return true;
     }
     if (b.focus.unlockDelaySec < a.focus.unlockDelaySec) return true;
     if (b.focus.lockUntil < a.focus.lockUntil) return true;
@@ -336,7 +335,6 @@
     if (!settings || !settings.focus || !settings.focus.enabled) return false;
     const f = byId(id);
     if (!f) return false;
-    if (f.locked) return true;
     if (!settings.features[id]) return false;
     if (f.parent) {
       const parentOn = Boolean(settings.features[f.parent]);

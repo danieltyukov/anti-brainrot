@@ -23,9 +23,12 @@ It adds two things those extensions do not have:
    an allow list (default: Education, Science & Technology, Howto & Style) can
    play. Anything else is paused and covered by a plain block screen.
 
-Shorts blocking is unconditional. It is not a setting. As long as the
-extension is installed and enabled in Chrome, Shorts shelves, guide entries and
-results are hidden and /shorts/ URLs are rewritten to /watch URLs.
+Shorts hiding was unconditional in 1.0 through 1.6. Since 1.7.0 (2026-09-21)
+it is a setting like every other: on by default, under the filter, so it
+goes off with the filter and switching it off while the filter is on waits
+for the countdown. The reason for the change: nothing in the tool should be
+impossible to configure; the defaults carry the opinion, the timer carries
+the friction.
 
 ## 2. Naming and identity
 
@@ -62,8 +65,8 @@ Out of scope for v1:
 
 ## 4. Feature list (settings)
 
-Everything below except Shorts sits under one master switch called the
-filter (`focus.enabled`). When the filter is off none of these apply.
+Everything below sits under one master switch called the filter
+(`focus.enabled`). When the filter is off none of these apply.
 
 | Key | Popup label | Default | Mechanism |
 | --- | --- | --- | --- |
@@ -76,7 +79,7 @@ filter (`focus.enabled`). When the filter is off none of these apply.
 | fundraiser | Hide Fundraiser (child) | on | CSS |
 | endScreenFeed | Hide End Screen Feed | on | CSS |
 | endScreenCards | Hide End Screen Cards | on | CSS |
-| shorts | Hide Shorts | always on, not editable | CSS + DNR redirect + JS SPA redirect |
+| shorts | Hide Shorts | on | CSS + DNR redirect + JS SPA redirect (setting since 1.7.0) |
 | comments | Hide Comments | on | CSS |
 | mixes | Hide Mixes | on | CSS |
 | merch | Hide Merch, Tickets, Offers | on | CSS |
@@ -216,6 +219,40 @@ rest. `chips` and `richSections` default on.
 and pause page and in the popup. `chrome.storage.local.stats` counts block
 page loads and passes for the current day and is shown in the popup.
 
+## 4h. Prevent removal (added 2026-09-21, v1.7.0)
+
+Feature id `preventRemoval`, label "Prevent removal", section "Everywhere",
+default off. The phone has Prevent uninstall (device admin); Chrome offers an
+extension no equivalent, so this is two layers:
+
+1. In the extension. Needs the optional `tabs` permission, requested from
+   the popup on the first switch-on through the same pendingFeature flow as
+   the all-sites permission (`features.PERMISSIONS` maps feature to
+   permission). While active, the worker sends any tab whose URL matches
+   `<scheme>://extensions` to `blocked.html?kind=guard` on `tabs.onCreated`,
+   `tabs.onUpdated` and on every sync. That covers chrome://extensions and
+   the same page in Edge, Brave, Vivaldi and Opera. The guard view explains
+   itself and its Back button goes to a blank tab, because history.back
+   would reopen the page. The toolbar icon's own "Remove from Chrome" menu
+   is not reachable from an extension and still works. The worker also sets
+   the uninstall URL to the website's install section while active.
+   Turning the feature off is a loosening. Revoking the permission switches
+   it off.
+2. Outside the extension. Chrome's `ExtensionInstallForcelist` policy makes
+   an extension managed: no Remove button, no on/off switch, no toolbar
+   removal, until the policy file is deleted with administrator rights. For
+   that Chrome needs an update manifest and a CRX: `site/updates.xml` names
+   the CRX attached to the GitHub release of the same version, and
+   `scripts/pack-crx.mjs` signs it with the pinned key. Chrome replaces a
+   copy loaded unpacked with the policy copy (higher priority location) and
+   settings carry over, since storage is keyed by id. The options page
+   shows the Linux command and reads `management.getSelf()` to report the
+   install type. Chrome refuses off-store force installs on Windows and
+   macOS unless the machine is domain joined, MDM managed or enrolled in
+   Chrome Enterprise Core; once the extension is on the Web Store the entry
+   is the bare id and works everywhere. Removing the policy makes Chrome
+   uninstall the extension.
+
 ## 4c. Tighten any time, loosen only while off
 
 Added 2026-09-20. A friction timer on the master switch alone would be
@@ -239,7 +276,7 @@ extension/
   manifest.json           MV3; permissions: storage, declarativeNetRequest;
                           host_permissions: *://www.youtube.com/*, *://m.youtube.com/*
   background.js           installs defaults on first run, migrates settings
-  rules/shorts.json       static DNR redirect: /shorts/ID -> /watch?v=ID
+  rules/shorts.json       static DNR redirect: /shorts/ID -> /watch?v=ID (enabled while Hide Shorts is active)
   rules/adult.json        static DNR redirect of adult sites to blocked/blocked.html
   lib/blocker.js          pure domain list parsing and dynamic rule builders
   lib/distractions.js     presets, pattern grammar, matching, rule builders, passes
@@ -270,7 +307,7 @@ service worker use `importScripts`, and lets Node tests `require` them.
 `hide.css` is injected at `document_start`. Every rule is scoped to an
 attribute on the root element, for example
 `html[data-abr-home-feed] ytd-browse[page-subtype="home"] #contents`.
-Shorts rules carry no attribute and always apply. `content.js` reads settings
+Shorts rules key on `data-abr-shorts`. `content.js` reads settings
 from storage at `document_start` and sets the attributes before YouTube renders.
 It listens to `chrome.storage.onChanged` so popup changes apply to open tabs
 without reload.
@@ -280,8 +317,9 @@ without reload.
 YouTube is a single-page app. `content.js` listens to `yt-navigate-start` and
 `yt-navigate-finish` on `document` plus `popstate`, and re-runs URL rules:
 
-- `/shorts/ID` -> `location.replace('/watch?v=ID')` (belt and braces beside
-  the DNR rule, which only covers full navigations).
+- `/shorts/ID` -> `location.replace('/watch?v=ID')` while Hide Shorts is
+  active (belt and braces beside the DNR rule, which only covers full
+  navigations and which the worker enables and disables with the toggle).
 - `/` when homeFeed and redirectHome are on -> `/feed/subscriptions`.
 
 ### 5.3 Autoplay
@@ -351,7 +389,11 @@ reference site, animated with CSS only, honouring prefers-reduced-motion.
 
 ## 9. Release process
 
-- Semantic versions. `manifest.json` version is the source of truth.
-- `npm run build` writes `dist/anti-brainrot-<version>.zip`.
-- Pushing a tag `v*` runs the release workflow, which builds the zip and
-  attaches it to a GitHub release.
+- Semantic versions. `manifest.json` version is the source of truth;
+  `package.json`, `CHANGELOG.md`, `site/updates.xml` and the Android
+  `versionName` follow it, and `npm run check` enforces the first three.
+- `npm run build` writes `dist/anti-brainrot-<version>.zip` and, with the
+  signing key present, `dist/anti-brainrot-<version>.crx`.
+- Pushing a tag `v*` runs the release workflow, which builds the zip and the
+  CRX (key from the `CRX_KEY_PEM` secret) and attaches both to a GitHub
+  release; the Android workflow attaches the APK.

@@ -44,13 +44,39 @@ const registryAttrs = new Set(globalThis.AntiBrainrot.features.FEATURES.map((f) 
 const css = read('extension/content/hide.css');
 // Only attributes placed on <html> count; element tags like
 // yt-chip-cloud-chip-renderer[data-abr-shorts-chip] are set by content.js.
+// The html compound selector runs to the first space outside parentheses,
+// so html:is([data-abr-a], [data-abr-b]) counts both.
 const cssAttrs = new Set();
+function htmlCompound(line) {
+  let depth = 0;
+  for (let i = 0; i < line.length; i += 1) {
+    const c = line[i];
+    if (c === '(') depth += 1;
+    else if (c === ')') depth -= 1;
+    else if (c === ' ' && depth === 0) return line.slice(0, i);
+  }
+  return line;
+}
 for (const line of css.split('\n')) {
-  if (!/^html/.test(line.trim())) continue;
-  for (const m of line.matchAll(/\[data-abr-([a-z-]+)\]/g)) cssAttrs.add(m[1]);
+  const t = line.trim();
+  if (!/^html/.test(t)) continue;
+  for (const m of htmlCompound(t).matchAll(/\[data-abr-([a-z-]+)\]/g)) cssAttrs.add(m[1]);
 }
 for (const a of cssAttrs) if (!registryAttrs.has(a)) problems.push(`hide.css uses data-abr-${a} which is not in the feature registry`);
 for (const a of registryAttrs) if (!cssAttrs.has(a)) problems.push(`feature attribute ${a} has no rule in hide.css`);
+
+// The update manifest the policy install reads must advertise this version
+// and point at this version's CRX on the release.
+const updates = read('site/updates.xml');
+const appid = /appid='([a-p]{32})'/.exec(updates);
+const advertised = /<updatecheck[^>]*\sversion='([^']+)'/.exec(updates);
+const codebase = /codebase='([^']+)'/.exec(updates);
+if (!appid || appid[1] !== expectedId) problems.push(`site/updates.xml appid must be ${expectedId}`);
+if (!advertised || advertised[1] !== manifest.version) problems.push(`site/updates.xml advertises ${advertised && advertised[1]} but the manifest is ${manifest.version}`);
+if (!codebase || codebase[1] !== `https://github.com/danieltyukov/anti-brainrot/releases/download/v${manifest.version}/anti-brainrot-${manifest.version}.crx`) {
+  problems.push('site/updates.xml codebase must point at this version\'s CRX on the GitHub release');
+}
+if (!(manifest.optional_permissions || []).includes('tabs')) problems.push('optional_permissions must include tabs for Prevent removal');
 
 // Changelog must mention the version.
 const changelog = read('CHANGELOG.md');

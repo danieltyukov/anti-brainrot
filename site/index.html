@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>anti-brainrot</title>
-  <meta name="description" content="The anti brain rot extension for Chrome and app for Android. Removes YouTube Shorts for good, hides feeds and distractions behind a friction timer, pauses or blocks distracting sites and apps, limits YouTube to educational videos when you want, blocks adult sites, and locks itself during your focus hours.">
+  <meta name="description" content="The anti brain rot extension for Chrome and app for Android. Puts feeds, Shorts and distracting sites and apps behind a friction timer, blocks or pauses them, keeps YouTube to the parts you choose, filters adult sites, locks itself during focus hours, and can be made hard to remove.">
   <meta name="theme-color" content="#73b8ee">
   <meta property="og:title" content="anti-brainrot">
-  <meta property="og:description" content="The anti brain rot extension for Chrome and app for Android. Removes YouTube Shorts for good, hides feeds and distractions behind a friction timer, pauses or blocks distracting sites and apps, limits YouTube to educational videos when you want, blocks adult sites, and locks itself during your focus hours.">
+  <meta property="og:description" content="The anti brain rot extension for Chrome and app for Android. Puts feeds, Shorts and distracting sites and apps behind a friction timer, blocks or pauses them, keeps YouTube to the parts you choose, filters adult sites, locks itself during focus hours, and can be made hard to remove.">
   <meta property="og:image" content="https://danieltyukov.github.io/anti-brainrot/assets/logo-512.png">
   <meta property="og:url" content="https://danieltyukov.github.io/anti-brainrot/">
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
@@ -65,7 +65,7 @@
       <img class="mark" src="assets/logo.svg" alt="" width="220" height="220">
       <h1 id="brand">anti-brainrot</h1>
       <p class="tagline">The anti brain rot extension for Chrome and app for Android.</p>
-      <p class="lede">Removes YouTube Shorts for good, hides feeds and distractions behind a friction timer, pauses or blocks distracting sites across the whole browser, limits YouTube to educational videos when you want, blocks adult sites, and locks itself during your focus hours. On the phone it closes Shorts and Reels inside their apps and blocks distracting apps.</p>
+      <p class="lede">Puts the things that eat your day behind a friction timer: feeds and Shorts on YouTube, the feeds of TikTok, Instagram, X, Reddit and the rest, adult sites, and on the phone whole apps. Each one is blocked outright or paused with a countdown and a timed pass. The filter locks itself during your focus hours and can be made hard to remove. Everything is a setting; the defaults carry the opinion, the timer carries the friction.</p>
       <p class="actions">
         <a class="button" href="#install">Install</a>
         <a class="text-link" href="https://github.com/danieltyukov/anti-brainrot">Source on GitHub</a>
@@ -76,14 +76,6 @@
       <h2 id="what">What it does</h2>
       <ul class="features">
         <li>
-          <h3>Shorts gone for good</h3>
-          <p>Shorts shelves, guide entries, search results and notifications are hidden, and any Shorts link opens as a normal watch page. This is not a setting. It applies as long as the extension is installed.</p>
-        </li>
-        <li>
-          <h3>A filter you configure</h3>
-          <p>The same toggles Unhook offers: home feed with a redirect to Subscriptions, the video sidebar and its parts, end screens, comments, mixes, merch, notifications, search shelves, Explore, autoplay and more.</p>
-        </li>
-        <li>
           <h3>A friction timer</h3>
           <p>Turning the filter off starts a countdown of a length you chose when you turned it on, from 30 seconds to an hour. It only runs while the popup is open. Click away and the filter stays on.</p>
         </li>
@@ -92,28 +84,40 @@
           <p>While the filter is on you can add restrictions immediately. Removing one, shortening the delay, or allowing a category, channel or site waits until the filter is off.</p>
         </li>
         <li>
-          <h3>Educational videos only</h3>
-          <p>Optional. Only videos in the categories you allow, or from channels you list, can play. Everything else is paused behind a block screen.</p>
+          <h3>Distracting sites</h3>
+          <p>Presets for the feeds and short-video surfaces of TikTok, Instagram, X, Reddit, Facebook, Threads and more, plus your own patterns and exceptions. Pause with a countdown and a timed pass from a daily budget, or block outright.</p>
         </li>
         <li>
           <h3>Adult site blocker</h3>
-          <p>Optional. A bundled list of 15,000 domains plus hostname keyword rules redirect to a block page, everywhere in the browser. Add your own sites, or allow false positives, in the options.</p>
-        </li>
-        <li>
-          <h3>Distracting sites</h3>
-          <p>Optional. Presets for the feeds and short-video surfaces of TikTok, Instagram, X, Reddit, Facebook, Threads and more, plus your own patterns and exceptions. Pause with a countdown and a timed pass from a daily budget, or block outright.</p>
+          <p>A bundled list of 15,000 domains plus hostname keyword rules redirect to a block page, everywhere in the browser. Add your own sites, or allow false positives, in the options.</p>
         </li>
         <li>
           <h3>Locked hours</h3>
           <p>A weekly schedule during which the filter turns itself on and cannot be turned off, and a Lock for N hours button for the moments you know you need it.</p>
         </li>
         <li>
-          <h3>Android app</h3>
-          <p>An app and site blocker in the spirit of AppBlock: every app and every site gets its own rule, blocked outright or a daily timer, an optional block on installing new apps, adult sites filtered at the DNS level, locked hours, strict mode, and a Progress tab with ninety days of counters and charts. An APK on every release.</p>
+          <h3>Prevent removal</h3>
+          <p>The extensions page is sent to a block page while the filter is on, and a one-file browser policy makes Chrome refuse to remove or turn the extension off at all. <a href="#prevent-removal">How it works</a>.</p>
+        </li>
+        <li>
+          <h3>Shorts hidden by default</h3>
+          <p>Shorts shelves, guide entries, search results and notifications are hidden, and any Shorts link opens as a normal watch page. It is a toggle like every other: on from the first moment, off only with the filter.</p>
+        </li>
+        <li>
+          <h3>A YouTube filter you configure</h3>
+          <p>The same toggles Unhook offers: home feed with a redirect to Subscriptions, the video sidebar and its parts, end screens, comments, mixes, merch, notifications, search shelves, Explore, autoplay and more.</p>
+        </li>
+        <li>
+          <h3>Educational videos only</h3>
+          <p>Optional. Only videos in the categories you allow, or from channels you list, can play. Everything else is paused behind a block screen.</p>
         </li>
         <li>
           <h3>More YouTube options</h3>
           <p>Hide or blur thumbnails, hide view counts, likes and durations, hide filter chips and the posts, news and games shelves, hide search suggestions, or turn YouTube grayscale.</p>
+        </li>
+        <li>
+          <h3>Android app</h3>
+          <p>An app and site blocker in the spirit of AppBlock: every app and every site gets its own rule, blocked outright or a daily timer, an optional block on installing new apps, adult sites filtered at the DNS level, locked hours, strict mode, Prevent uninstall, and a Progress tab with ninety days of counters and charts. An APK on every release.</p>
         </li>
       </ul>
     </section>
@@ -126,13 +130,13 @@
         <li>Keep the popup open until it reaches zero. Closing it, clicking away or pressing Keep it on cancels the countdown and the filter stays on.</li>
         <li>When the countdown ends the filter turns off and every toggle becomes editable again.</li>
       </ol>
-      <p class="note">Shorts blocking is outside the filter and never turns off.</p>
+      <p class="note">Every toggle, Hide Shorts included, goes off with the filter and comes back with it.</p>
     </section>
 
     <section class="wrap shots" aria-label="Screenshots">
       <div class="pair">
         <figure>
-          <img src="assets/screenshots/popup-dark.png" alt="The popup with the filter on: a list of toggles such as Hide Home Feed, Hide Video Sidebar and Hide Comments, with Hide Shorts marked always on" width="500" height="600" loading="lazy">
+          <img src="assets/screenshots/popup-dark.png" alt="The popup with the filter on: a list of toggles such as Hide Home Feed, Hide Video Sidebar, Hide Shorts and Hide Comments" width="500" height="600" loading="lazy">
           <figcaption>The popup with the filter on.</figcaption>
         </figure>
         <figure>
@@ -195,7 +199,7 @@
           <ul class="limits">
             <li>A reason line you write once and see on every block page and in the popup.</li>
             <li>A count of today's blocks and passes in the popup.</li>
-            <li>Shorts stay hidden through all of it.</li>
+            <li>Hide Shorts is on by default and behaves like every other toggle.</li>
           </ul>
         </div>
       </div>
@@ -225,6 +229,37 @@
       </ul>
     </section>
 
+    <section class="wrap" id="prevent-removal" aria-labelledby="guard-heading">
+      <h2 id="guard-heading">Prevent removal</h2>
+      <p>On the phone, Prevent uninstall makes the app a device admin that Android refuses to remove. Chrome gives an extension no such hook, so the extension does it in two layers.</p>
+      <div class="columns">
+        <div>
+          <h3>In the extension</h3>
+          <p>Switch on Prevent removal in the popup; Chrome asks for the tabs permission once. While it and the filter are on, the extensions page, where the Remove button and the on/off switch live, is sent to a block page as soon as it opens, the way strict mode leaves App info on the phone. Turning it off waits until the filter is off.</p>
+          <p>The toolbar icon's own Remove from Chrome menu still works. That is the door only a policy can close.</p>
+        </div>
+        <div>
+          <h3>With a browser policy</h3>
+          <p>Chrome lets an administrator force-install an extension. A force-installed extension has no Remove button, no on/off switch and no toolbar removal, and Chrome keeps it updated by itself. The policy is one file that needs administrator rights to create and to delete, which is the point.</p>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>On Linux, create <code>/etc/opt/chrome/policies/managed/anti-brainrot.json</code> (for Chromium, <code>/etc/chromium/policies/managed/</code>) with this content. The options page shows a one-line command that does it.
+<pre>{
+  "ExtensionInstallForcelist": [
+    "ibcicobbbpfmonjbhpmllnjgdkedneop;https://danieltyukov.github.io/anti-brainrot/updates.xml"
+  ]
+}</pre></li>
+        <li>Restart Chrome, or open <code>chrome://policy</code> and click Reload policies. Chrome downloads the CRX attached to the release that <code>updates.xml</code> on this site names, replaces the copy you loaded unpacked (your settings carry over, they are keyed by the pinned extension id) and marks it "installed by your administrator".</li>
+        <li>The options page reports "installed by policy" once that took effect.</li>
+      </ol>
+      <p>To undo, delete the file and restart Chrome. Chrome then removes the extension.</p>
+      <ul class="limits">
+        <li>Windows and macOS honour a force-install of an extension outside the Chrome Web Store only on a managed machine: joined to a domain, managed by MDM, or enrolled in Chrome Enterprise Core. There the same string goes into the registry under <code>HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist</code> or the <code>com.google.Chrome</code> managed preferences.</li>
+        <li>Once the extension is on the Chrome Web Store the entry becomes the bare id and works on any machine.</li>
+      </ul>
+    </section>
+
     <section class="wrap install" id="install" aria-labelledby="install-heading">
       <h2 id="install-heading">Install</h2>
       <h3>Android</h3>
@@ -240,7 +275,7 @@
         <li>Click Load unpacked and pick the unzipped folder, the one that contains <code>manifest.json</code>.</li>
       </ol>
       <p>Pin the leaf icon to the toolbar. The filter is on from the first moment.</p>
-      <p>Needs Chrome 111 or newer, or any Chromium browser with Manifest V3 and <code>:has()</code> support, such as Edge, Brave, Arc or Vivaldi.</p>
+      <p>Needs Chrome 111 or newer, or any Chromium browser with Manifest V3 and <code>:has()</code> support, such as Edge, Brave, Arc or Vivaldi. Every release also carries a signed <code>.crx</code> for the <a href="#prevent-removal">policy install</a>.</p>
       <p class="actions">
         <a class="button" href="https://github.com/danieltyukov/anti-brainrot/releases/latest">Download the latest release</a>
       </p>

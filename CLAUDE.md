@@ -1,7 +1,8 @@
 # Anti-Brainrot (anti-brainrot)
 
-Chrome MV3 extension: hides YouTube Shorts unconditionally, hides feeds and
-distractions behind a friction timer, optional educational-only playback.
+Chrome MV3 extension and Android app: feeds, Shorts, distracting sites and
+apps behind a friction timer, optional educational-only playback, locks,
+and a removal guard.
 
 Read `docs/PLAN.md` first (the build plan, complete as of v1.0.0), then
 `docs/specs/2026-09-20-anti-brainrot-design.md` (why). Keep both current.
@@ -30,5 +31,7 @@ app, cycle accessibility or reboot the emulator so the service binds again.
 - Writing: no emojis, no em dashes or en dashes, plain direct prose. Applies to
   code comments, docs, commit messages, UI copy.
 - Commits: conventional prefixes, no AI attribution or session links.
-- Shorts hiding must never depend on a setting.
+- Every feature is a setting. Nothing is locked on. Hide Shorts defaults on.
+- The extension id is also what `site/updates.xml` and the policy install
+  key on; `npm run check` keeps the update manifest and the version in step.
 - Console output only with the `[anti-brainrot]` prefix and only for real problems.

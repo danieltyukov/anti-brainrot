@@ -35,6 +35,7 @@ test('roots keep registry order and exclude children', () => {
       'mixes', 'merch', 'videoInfo', 'topHeader', 'inaptSearch', 'explore',
       'moreFromYouTube', 'subscriptions', 'history', 'autoplay', 'annotations', 'thumbnails', 'metrics', 'chips',
       'richSections', 'searchSuggestions', 'grayscale', 'educational', 'adultSites', 'distractions', 'schedule',
+      'preventRemoval',
     ],
   );
 });
@@ -52,15 +53,26 @@ test('children of sidebar are the four sidebar parts in order', () => {
   assert.deepEqual(features.children('mixes'), []);
 });
 
-test('shorts is locked on and has no attribute', () => {
+test('shorts is an ordinary toggle, on by default, keyed on data-abr-shorts', () => {
   const shorts = features.byId('shorts');
-  assert.equal(shorts.locked, true);
   assert.equal(shorts.default, true);
-  assert.equal(shorts.attr, null);
+  assert.equal(shorts.attr, 'shorts');
+  assert.equal('locked' in shorts, false);
+});
+
+test('nothing in the registry is locked on', () => {
+  for (const f of features.FEATURES) assert.equal('locked' in f, false, f.id);
 });
 
 test('web-section features', () => {
-  assert.deepEqual(features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id), ['adultSites', 'distractions', 'schedule']);
+  assert.deepEqual(features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id), ['adultSites', 'distractions', 'schedule', 'preventRemoval']);
+});
+
+test('features that need an optional permission declare it', () => {
+  assert.deepEqual(features.PERMISSIONS.adultSites, { origins: ['<all_urls>'] });
+  assert.deepEqual(features.PERMISSIONS.distractions, { origins: ['<all_urls>'] });
+  assert.deepEqual(features.PERMISSIONS.preventRemoval, { permissions: ['tabs'] });
+  for (const id of Object.keys(features.PERMISSIONS)) assert.ok(features.byId(id), id);
 });
 
 test('byId returns undefined for unknown ids', () => {

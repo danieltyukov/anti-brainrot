@@ -227,3 +227,31 @@ Timers as plain limits, the pause as an option.
 | Limit used up | After 5 minutes of Clock in front the block screen came up on its own: "Time's up. You have used your 5 minutes in Clock for today." A heads-up "Clock: one minute left" had fired before. Clock stayed blocked after a reinstall of the app |
 | Shade | Opening the notification shade no longer counts as leaving the app: the ongoing time-left notification for a timed Camera was still there after expanding and collapsing it (the first run had cleared it) |
 | Unit tests | 30 pass: limits, kept-alive pauses, pause loosening rules, migrations |
+
+## 2026-09-21, Chrome 153, version 1.7.0 (Shorts as a setting, Prevent removal)
+
+Driven through the chrome-devtools-ext MCP browser, logged-out YouTube.
+
+| Check | Result |
+| --- | --- |
+| Popup with the filter on | Hide Shorts is an ordinary row (checked, disabled while on, no "always on" tag); Prevent removal listed under Everywhere after Locked hours |
+| Search page, defaults | `data-abr-shorts` on `<html>`; 15 Shorts shelves (`grid-shelf-view-model`) present, 0 visible; guide entry hidden; `shorts` ruleset enabled |
+| Filter off | Attributes removed, all 15 shelves visible, `shorts` ruleset disabled, badge OFF; a full load of `/shorts/90ab3E3Ek-M` stays on the Shorts player |
+| Hide Shorts off, filter on | 17 attributes set, none for Shorts; the Shorts player stays visible and the URL is not rewritten; ruleset stays disabled |
+| Hide Shorts on while the filter is on | Accepted as tightening; the open Shorts page was rewritten to `/watch?v=90ab3E3Ek-M` by the content script within a second; ruleset enabled again; a fresh full load of the Shorts URL redirected by the declarative rule |
+| Options page | Prevent removal card shows "Chrome reports this copy as removable" (`installType` development) and the one-line policy command with the pinned id and the update URL |
+| Prevent removal, extensions page | With the tabs permission granted (test copy with `tabs` required, since the native prompt cannot be clicked from CDP) and the feature on: `chrome://extensions/` and `chrome://extensions/?id=<id>` both landed on `blocked.html?kind=guard` within 1.5 s; `chrome://version/` was left alone |
+| Prevent removal, filter off | `chrome://extensions/` opened normally; turning the filter back on re-armed the guard |
+| Guard view | Heading "Not while the filter is on", two lines of explanation, Leave button; no console messages |
+| Stale worker | After editing `background.js` the MCP browser kept a cached service worker without the new functions; `reload_extension` fixed it. Not a product issue, noted for the next session |
+| CRX | `scripts/pack-crx.mjs` output parsed back: CRX3 magic, same public key and 16-byte id as `google-chrome --pack-extension` with the same key, both signatures verify, id `ibcicobbbpfmonjbhpmllnjgdkedneop` |
+| Unit tests and check | 75 pass; `npm run check` ok with 34 CSS attributes and the update manifest at 1.7.0 |
+
+Not verified on this host: the policy install itself. Writing to
+`/etc/opt/chrome/policies/managed` would force-install the extension into
+every Chrome on this machine, including the main browser, and an isolated
+mount namespace was not permitted. The CRX, the update manifest and the
+policy text follow Chrome's documented format; the first real check is a
+Linux machine with the policy file in place, looking for "installed by your
+administrator" on the extensions page and "installed by policy" in the
+options.

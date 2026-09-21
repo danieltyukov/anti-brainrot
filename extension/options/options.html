@@ -85,9 +85,19 @@
       </div>
     </section>
 
+    <section class="card" id="sec-guard">
+      <h2>Prevent removal</h2>
+      <p class="muted">Chrome gives an extension no way to protect itself, so this works in two layers. The switch in the popup sends the extensions page, where the Remove button and the on/off switch live, to a block page while the filter is on; Chrome asks for the tabs permission the first time. The toolbar menu can still remove the extension. A browser policy closes that door too: Chrome then treats Anti-Brainrot as managed and refuses to remove or turn it off until the policy file is deleted with administrator rights.</p>
+      <p id="managed-status" class="managed"></p>
+      <h3>Browser policy on Linux</h3>
+      <p class="muted small">Run this once and restart Chrome. Chrome installs its own copy from the update manifest on the website, keeps it updated and marks it "installed by your administrator". Your settings carry over.</p>
+      <pre id="policy-command" class="command"></pre>
+      <p class="muted small">Undo: delete <code>/etc/opt/chrome/policies/managed/anti-brainrot.json</code> and restart Chrome, which then removes the extension. On Windows and macOS Chrome only honours a policy for an extension outside the Chrome Web Store on a managed machine (domain joined, MDM or Chrome Enterprise Core). Steps for every platform are on the <a href="https://danieltyukov.github.io/anti-brainrot/#prevent-removal" target="_blank" rel="noopener">website</a>.</p>
+    </section>
+
     <section class="card" id="sec-filter">
       <h2>Filter and timer</h2>
-      <p class="muted">Turning the filter off runs a countdown inside the popup. Closing the popup cancels it. Shorts stay hidden no matter what.</p>
+      <p class="muted">Turning the filter off runs a countdown inside the popup. Closing the popup cancels it.</p>
       <label class="row between">
         <span>Unlock delay</span>
         <select id="delay"></select>

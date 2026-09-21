@@ -6,7 +6,7 @@ Thanks for helping. This project is small on purpose. Keep it that way.
 
 - No build step and no runtime dependencies. `extension/` loads unpacked as
   is. Shared code is plain scripts that attach to `globalThis.AntiBrainrot`.
-- Shorts hiding never depends on a setting.
+- Every feature is a setting with a default. Nothing is locked on.
 - The rule "tighten any time, loosen only while off" applies to every new
   setting. If you add one, extend `settings.isLoosening` and its tests.
 - Plain prose in docs and UI copy. No emojis, no em dashes or en dashes.
@@ -33,8 +33,8 @@ YouTube renames elements often. When something reappears:
    custom element that wraps it (`ytd-...`, `yt-...`, `ytm-...` or a
    `...-view-model`).
 2. Add it to the matching block in `extension/content/hide.css`. Keep the
-   attribute prefix `html[data-abr-<feature>]`. Shorts rules carry no
-   attribute.
+   attribute prefix `html[data-abr-<feature>]`, Shorts included
+   (`data-abr-shorts`).
 3. Verify on the live page, and add a line to `docs/E2E.md` with the date.
 
 Prefer `:has()` with stable hrefs (`a[href^="/shorts/"]`, `a[href*="list=RD"]`)

@@ -141,7 +141,7 @@ private fun FilterCard(vm: AppViewModel, s: Settings) {
     }
     val subtitle = when {
         mode == Mode.Countdown -> "Keep this screen open. Leaving cancels."
-        mode == Mode.Off -> "YouTube Shorts stay blocked either way."
+        mode == Mode.Off -> "Nothing is blocked or timed right now."
         locked -> "Locked until ${Rules.lockedUntilText(s)}. Adding restrictions is still fine."
         else -> "Unlock delay ${delayLabel(s.focus.unlockDelaySec).lowercase()}. Add restrictions any time; removing one needs the filter off."
     }

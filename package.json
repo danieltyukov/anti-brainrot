@@ -1,7 +1,7 @@
 {
   "name": "anti-brainrot",
-  "version": "1.6.0",
-  "description": "The anti brain rot extension for Chrome and app for Android. Removes YouTube Shorts for good, hides feeds and distractions behind a friction timer, pauses or blocks distracting sites across the whole browser, limits YouTube to educational videos when you want, blocks adult sites, and locks itself during your focus hours.",
+  "version": "1.7.0",
+  "description": "The anti brain rot extension for Chrome and app for Android. Puts feeds, Shorts and distracting sites and apps behind a friction timer, blocks or pauses them, keeps YouTube to the parts you choose, filters adult sites, locks itself during focus hours, and can be made hard to remove.",
   "private": true,
   "license": "MIT",
   "author": "danieltyukov",

@@ -43,10 +43,10 @@
     const input = document.createElement('input');
     input.type = 'checkbox';
     input.id = 'f-' + feature.id;
-    input.checked = feature.locked ? true : Boolean(settings.features[feature.id]);
+    input.checked = Boolean(settings.features[feature.id]);
     // Tighten any time, loosen only while off: an active feature cannot be
     // switched off while the filter is on.
-    input.disabled = Boolean(feature.locked) || (settings.focus.enabled && input.checked);
+    input.disabled = settings.focus.enabled && input.checked;
     const track = document.createElement('span');
     track.className = 'track';
     label.append(input, track);
@@ -57,12 +57,6 @@
     text.textContent = feature.label;
 
     row.append(label, text);
-    if (feature.locked) {
-      const tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.textContent = 'always on';
-      row.appendChild(tag);
-    }
 
     if (feature.parent) {
       const parentOn = Boolean(settings.features[feature.parent]);
@@ -177,24 +171,28 @@
     note.textContent = text;
   }
 
-  const NEEDS_ALL_SITES = new Set(['adultSites', 'distractions']);
+  const NOTES = {
+    adultSites: 'Acting on sites outside YouTube needs the permission Chrome just asked for.',
+    distractions: 'Acting on sites outside YouTube needs the permission Chrome just asked for.',
+    preventRemoval: 'Leaving the extensions page needs the tabs permission Chrome just asked for.',
+  };
 
   async function onToggle(feature, input) {
-    if (feature.locked) return;
     const row = input.closest('.row');
-    if (NEEDS_ALL_SITES.has(feature.id) && input.checked) {
+    const needed = F.PERMISSIONS[feature.id];
+    if (needed && input.checked) {
       let granted = false;
       try {
         // The worker finishes the switch if Chrome's prompt closes the popup.
         await chrome.storage.local.set({ pendingFeature: feature.id });
-        granted = await chrome.permissions.request({ origins: ['<all_urls>'] });
+        granted = await chrome.permissions.request(needed);
       } catch {
         granted = false;
       }
       await chrome.storage.local.remove('pendingFeature');
       if (!granted) {
         input.checked = false;
-        showNote(row, 'Acting on sites outside YouTube needs the permission Chrome just asked for.');
+        showNote(row, NOTES[feature.id]);
         return;
       }
     }

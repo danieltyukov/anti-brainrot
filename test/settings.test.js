@@ -170,7 +170,8 @@ test('normalize fills gaps, coerces and drops junk', () => {
   assert.equal(n.features.comments, false);
   assert.equal(n.features.mixes, true, 'non-boolean values are ignored');
   assert.equal('bogus' in n.features, false);
-  assert.equal(n.features.shorts, true, 'locked features are always on');
+  assert.equal(n.features.shorts, false, 'shorts is a setting like any other');
+  assert.equal(S.normalize({}).features.shorts, true, 'and it defaults to on');
   assert.deepEqual(n.educational.allowedCategories, ['Education']);
   assert.deepEqual(n.educational.allowedChannels, []);
 });
@@ -205,9 +206,13 @@ test('isActive respects parent modes', () => {
 test('activeAttributes lists attributes of active features in registry order', () => {
   assert.deepEqual(S.activeAttributes(S.defaults()), [
     'home-feed', 'sidebar-recommended', 'live-chat', 'fundraiser', 'end-screen-feed',
-    'end-screen-cards', 'comments', 'mixes', 'merch', 'notifications', 'inapt-search',
+    'end-screen-cards', 'shorts', 'comments', 'mixes', 'merch', 'notifications', 'inapt-search',
     'explore', 'more-from-youtube', 'autoplay', 'annotations', 'chips', 'rich-sections',
   ]);
+  const noShorts = S.defaults();
+  noShorts.features.shorts = false;
+  assert.equal(S.activeAttributes(noShorts).includes('shorts'), false);
+  assert.equal(S.isActive(noShorts, 'shorts'), false);
   const off = S.defaults();
   off.focus.enabled = false;
   assert.deepEqual(S.activeAttributes(off), []);
@@ -255,6 +260,13 @@ test('isLoosening detects every way of allowing more', () => {
   assert.equal(S.isLoosening(base, next), true, 'feature off');
   next = on(); next.features.playlist = true;
   assert.equal(S.isLoosening(base, next), false, 'feature on is tightening');
+  next = on(); next.features.shorts = false;
+  assert.equal(S.isLoosening(base, next), true, 'shorts off is loosening like any other feature');
+  next = on(); next.features.preventRemoval = true;
+  assert.equal(S.isLoosening(base, next), false, 'prevent removal on is tightening');
+  const guarded = on(); guarded.features.preventRemoval = true;
+  next = on(); next.features.preventRemoval = false;
+  assert.equal(S.isLoosening(guarded, next), true, 'prevent removal off is loosening');
 
   next = on(); next.focus.unlockDelaySec = 60;
   assert.equal(S.isLoosening(base, next), true, 'shorter delay');

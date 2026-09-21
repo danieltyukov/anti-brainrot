@@ -18,15 +18,15 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
 | `lib/distractions.js` | worker, options, watcher, tests | Presets, the pattern grammar, matching, RE2 rule builders, pass and budget helpers. |
 | `content/distractions.js` | enabled distracting hosts, isolated world | Redirects in-app navigation, grayscale, pass warning, expiry. Registered with `chrome.scripting`. |
 | `content/distractions-main.js` | enabled distracting hosts, main world | Wraps `history.pushState` and `replaceState` and raises `abr:navigate`. |
-| `content/hide.css` | youtube.com | Every hiding rule, keyed by `data-abr-*` attributes on `<html>`. Shorts rules have no attribute. |
+| `content/hide.css` | youtube.com | Every hiding rule, keyed by `data-abr-*` attributes on `<html>`, Shorts included. |
 | `content/content.js` | youtube.com, isolated world | Sets attributes from settings, handles in-page navigation, home redirect, autoplay, and the educational overlay. |
 | `content/page-bridge.js` | youtube.com, main world | Reads the player response and emits `abr:video` with a JSON string. |
-| `background.js` | service worker | Normalises settings on start, badge text, adult ruleset, custom rules, distracting site rules and scripts, passes, cooldowns, budget, stats, locked hours. |
-| `rules/shorts.json` | declarativeNetRequest | Redirects full loads of `/shorts/ID`. |
+| `background.js` | service worker | Normalises settings on start, badge text, Shorts and adult rulesets, custom rules, distracting site rules and scripts, passes, cooldowns, budget, stats, locked hours, the extensions page guard. |
+| `rules/shorts.json` | declarativeNetRequest | Redirects full loads of `/shorts/ID`. Enabled while Hide Shorts is active. |
 | `rules/adult.json` | declarativeNetRequest | Domain list plus keyword rules redirecting to `blocked/blocked.html`. Disabled until the feature is on. |
 | `popup/` | action popup | Toggle tree, filter switch, delay picker, countdown. |
 | `options/` | options page | Lists, delay, theme, import, export, reset. |
-| `blocked/` | extension page | Themed block page with three views: adult, block, pause. |
+| `blocked/` | extension page | Themed block page with four views: adult, block, pause, guard. |
 
 ## Data flow
 
@@ -48,8 +48,9 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
    `content.js` calls `education.decide()` and either removes the overlay or
    inserts it and keeps the video paused.
 5. The worker reacts to settings changes by enabling or disabling the
-   `adult` ruleset and replacing the dynamic rules built from the user's own
-   lists. Allow rules carry a higher priority than block rules.
+   `shorts` and `adult` rulesets and replacing the dynamic rules built from
+   the user's own lists. Allow rules carry a higher priority than block
+   rules.
 6. Distracting sites use dynamic redirect rules (ids 3000 to 3499),
    exception allow rules (3500 to 3999) and session pass rules (4000 and up,
    priority 4). The worker registers the two watcher scripts for the enabled
@@ -60,6 +61,15 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
    popup, by `settings.update` (refuses turning the filter off) and by the
    worker, which forces the switch on through `settings.patch` on every
    settings change and once a minute.
+8. Prevent removal: with the optional `tabs` permission the worker watches
+   `tabs.onCreated` and `tabs.onUpdated` and sends any tab at
+   `<scheme>://extensions` to `blocked.html?kind=guard` while the feature is
+   active, and sweeps open tabs on every sync. It also sets the uninstall
+   URL to the website's install section. The real lock is outside the
+   extension: a browser policy (`ExtensionInstallForcelist`) pointing at
+   `site/updates.xml`, which names the CRX attached to the release. The
+   options page reads `management.getSelf().installType` to show whether
+   the running copy is policy-managed.
 
 ## Rule id ranges
 
@@ -80,10 +90,17 @@ the filter is on and stays on. The popup disables active toggles in that
 state; the options page shows the refusal in its status line. Turning the
 filter off is only done by the popup after its countdown.
 
-## Pinned id
+## Pinned id and the CRX
 
 `manifest.json` includes a public `key`, so the extension id is the same for
 every install: `ibcicobbbpfmonjbhpmllnjgdkedneop`. The adult ruleset needs an
 absolute `chrome-extension://` URL for its redirect target, which is only
-possible with a stable id. `scripts/check.mjs` verifies the rules and the key
+possible with a stable id, and the policy install names the id too.
+`scripts/check.mjs` verifies the rules, the key and `site/updates.xml`
 agree.
+
+`scripts/pack-crx.mjs` signs the release zip into a CRX3 file with the
+private half of that key (outside the repository, `~/.config/anti-brainrot/
+key.pem` locally and the `CRX_KEY_PEM` secret in the release workflow).
+The CRX3 header is a small protobuf message written by hand so the build
+stays dependency free.

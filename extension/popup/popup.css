@@ -259,15 +259,6 @@ select {
   flex: 1;
 }
 
-.tag {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--line);
-  color: var(--muted);
-  margin-right: 8px;
-}
-
 .switch {
   position: relative;
   display: inline-block;

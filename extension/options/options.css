@@ -266,6 +266,29 @@ code {
   font-size: 0.9em;
 }
 
+.command {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--line);
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: all;
+}
+
+.managed {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.managed.on {
+  border-color: var(--accent);
+}
+
 .radios label {
   display: flex;
   align-items: center;

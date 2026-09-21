@@ -5,6 +5,38 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-21
+
+### Changed
+- Hide Shorts is a setting. It is on by default and sits under the filter
+  like every other toggle: it goes off with the filter, and switching it off
+  while the filter is on waits for the countdown. Nothing in the extension
+  is locked on any more. Existing installs keep Shorts hidden.
+- The descriptions on the extension, the website, the README and GitHub
+  describe the whole tool instead of leading with YouTube.
+
+### Added
+- Prevent removal, in the Everywhere group. While it and the filter are on,
+  the browser's extensions page, where the Remove button and the on/off
+  switch live, is sent to a block page as soon as it opens, the way strict
+  mode leaves App info on the phone. It needs the tabs permission, asked for
+  on the first switch-on; turning it off waits until the filter is off. The
+  toolbar menu can still remove the extension.
+- A browser policy install for the real lock. The build also produces a
+  signed CRX, every release attaches it, and the website serves an update
+  manifest. Listing the extension in Chrome's ExtensionInstallForcelist (one
+  file on Linux; the options page shows the command) makes Chrome install
+  its own copy, keep it updated, and refuse to remove or turn it off until
+  the policy file is deleted. The options page shows whether Chrome reports
+  the copy as policy-managed. Windows and macOS honour this for an extension
+  outside the Web Store only on a managed machine.
+- After a removal while Prevent removal was on, Chrome opens the install
+  page of the website.
+
+### Fixed
+- Android: the Setup screen and the Home screen no longer promise Shorts and
+  Reels closing, which went away in 1.4.0.
+
 ## [1.6.0] - 2026-09-21
 
 ### Changed

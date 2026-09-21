@@ -1,48 +1,48 @@
 /*
  * Anti-Brainrot hiding rules for www.youtube.com.
  *
- * The Shorts block at the top is unconditional. Every other rule is keyed by a
- * data-abr-<feature> attribute on <html>, which content/content.js sets from
- * the settings at document_start and keeps in sync when settings change.
- * Attribute names come from extension/lib/features.js.
+ * Every rule is keyed by a data-abr-<feature> attribute on <html>, which
+ * content/content.js sets from the settings at document_start and keeps in
+ * sync when settings change. Attribute names come from
+ * extension/lib/features.js.
  */
 
 /* ------------------------------------------------------------------ */
-/* Shorts: always hidden                                               */
+/* Shorts (data-abr-shorts, on by default)                             */
 /* ------------------------------------------------------------------ */
 
 /* Guide (left sidebar) and mini guide entries */
-ytd-guide-entry-renderer:has(a[title="Shorts"]),
-ytd-guide-entry-renderer:has(a[href^="/shorts"]),
-ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
-ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+html[data-abr-shorts] ytd-guide-entry-renderer:has(a[title="Shorts"]),
+html[data-abr-shorts] ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+html[data-abr-shorts] ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
+html[data-abr-shorts] ytd-mini-guide-entry-renderer[aria-label="Shorts"],
 /* Shelves on home, subscriptions, channel and search pages */
-ytd-rich-shelf-renderer[is-shorts],
-ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
-ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
-ytd-reel-shelf-renderer,
-ytd-item-section-renderer:has(> #contents > ytd-reel-shelf-renderer:only-child),
-grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"]),
+html[data-abr-shorts] ytd-rich-shelf-renderer[is-shorts],
+html[data-abr-shorts] ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html[data-abr-shorts] ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+html[data-abr-shorts] ytd-reel-shelf-renderer,
+html[data-abr-shorts] ytd-item-section-renderer:has(> #contents > ytd-reel-shelf-renderer:only-child),
+html[data-abr-shorts] grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"]),
 /* Individual Shorts items wherever they appear */
-ytd-rich-item-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"]),
-ytd-video-renderer:has(a[href^="/shorts/"]),
-ytd-grid-video-renderer:has(a[href^="/shorts/"]),
-ytd-compact-video-renderer:has(a[href^="/shorts/"]),
-yt-lockup-view-model:has(a[href^="/shorts/"]),
-ytd-reel-item-renderer,
-ytd-reel-video-renderer,
-ytd-notification-renderer:has(a[href*="/shorts/"]),
-ytd-rich-grid-renderer[is-shorts-grid],
-ytd-rich-grid-group:has(a[href^="/shorts/"]),
-a.ytp-videowall-still[href*="/shorts/"],
+html[data-abr-shorts] ytd-rich-item-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2, a[href^="/shorts/"]),
+html[data-abr-shorts] ytd-video-renderer:has(a[href^="/shorts/"]),
+html[data-abr-shorts] ytd-grid-video-renderer:has(a[href^="/shorts/"]),
+html[data-abr-shorts] ytd-compact-video-renderer:has(a[href^="/shorts/"]),
+html[data-abr-shorts] yt-lockup-view-model:has(a[href^="/shorts/"]),
+html[data-abr-shorts] ytd-reel-item-renderer,
+html[data-abr-shorts] ytd-reel-video-renderer,
+html[data-abr-shorts] ytd-notification-renderer:has(a[href*="/shorts/"]),
+html[data-abr-shorts] ytd-rich-grid-renderer[is-shorts-grid],
+html[data-abr-shorts] ytd-rich-grid-group:has(a[href^="/shorts/"]),
+html[data-abr-shorts] a.ytp-videowall-still[href*="/shorts/"],
 /* Search filter chip, tagged by content.js because it has no attribute */
-yt-chip-cloud-chip-renderer[data-abr-shorts-chip],
+html[data-abr-shorts] yt-chip-cloud-chip-renderer[data-abr-shorts-chip],
 /* Channel page tab and the Shorts player itself (in case a redirect is slow) */
-yt-tab-shape[tab-title="Shorts"],
-tp-yt-paper-tab:has(.tab-content[title="Shorts"]),
-ytd-shorts,
-#shorts-container,
-#player-shorts-container {
+html[data-abr-shorts] yt-tab-shape[tab-title="Shorts"],
+html[data-abr-shorts] tp-yt-paper-tab:has(.tab-content[title="Shorts"]),
+html[data-abr-shorts] ytd-shorts,
+html[data-abr-shorts] #shorts-container,
+html[data-abr-shorts] #player-shorts-container {
   display: none !important;
 }
 

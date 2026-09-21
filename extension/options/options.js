@@ -1,4 +1,5 @@
-// Options page: educational mode lists, blocker lists, delay, theme, data.
+// Options page: educational mode lists, blocker lists, prevent removal
+// status, delay, theme, data.
 (() => {
   'use strict';
 
@@ -157,8 +158,33 @@
     $('schedule-end').value = settings.schedule.end;
   }
 
+  const UPDATE_URL = 'https://danieltyukov.github.io/anti-brainrot/updates.xml';
+
+  function renderGuard() {
+    const id = chrome.runtime.id;
+    const policy = JSON.stringify({ ExtensionInstallForcelist: [`${id};${UPDATE_URL}`] });
+    $('policy-command').textContent =
+      `sudo mkdir -p /etc/opt/chrome/policies/managed\nprintf '%s\\n' '${policy}' | sudo tee /etc/opt/chrome/policies/managed/anti-brainrot.json`;
+    const status = $('managed-status');
+    status.textContent = 'Checking how this copy was installed.';
+    try {
+      chrome.management.getSelf().then((info) => {
+        const managed = info.installType === 'admin' || info.mayDisable === false;
+        status.classList.toggle('on', managed);
+        status.textContent = managed
+          ? 'Chrome reports this copy as installed by policy. It cannot be removed or turned off from Chrome.'
+          : 'Chrome reports this copy as removable. Prevent removal in the popup guards the extensions page; only the policy below stops the toolbar menu as well.';
+      }, () => {
+        status.textContent = '';
+      });
+    } catch {
+      status.textContent = '';
+    }
+  }
+
   function render() {
     document.documentElement.dataset.theme = settings.theme;
+    renderGuard();
     renderDistractions();
     renderSchedule();
     $('lock-banner').hidden = !settings.focus.enabled;

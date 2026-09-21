@@ -1,7 +1,11 @@
 # Anti-Brainrot implementation plan
 
 > Status: complete as of 2026-09-20 (v1.0.0). Kept as the record of how the
-> project was built. For agentic workers: read it before changing scope. Read the spec at
+> project was built. Later changes are recorded in the spec and the
+> changelog; the one that contradicts this plan is 1.7.0 (2026-09-21):
+> Shorts hiding became a setting (on by default, under the filter), the
+> `locked` flag went away, and a Prevent removal feature with a policy
+> install (CRX plus `site/updates.xml`) was added. For agentic workers: read it before changing scope. Read the spec at
 > `docs/specs/2026-09-20-anti-brainrot-design.md` for the reasoning behind every
 > decision. Tick boxes as you finish steps. Do not change scope without
 > writing the change here first.
@@ -35,7 +39,7 @@ test runner, GitHub Actions, GitHub Pages, rsvg-convert for icons.
 - Load the extension for testing only through `chrome-ext load extension`
   (see `chrome-ext --help`) or the chrome-devtools-ext MCP `install_extension`
   tool pointed at `extension/`. Never the user's main Chrome.
-- Shorts hiding is unconditional. It must never depend on a setting.
+- Shorts hiding was unconditional until 1.7.0; since then every feature is a setting.
 - Everything the popup shows must work with the popup at 360 px wide.
 - Log lines use the `[anti-brainrot]` prefix and only for real problems.
 
@@ -50,7 +54,7 @@ extension/lib/settings.js        AntiBrainrot.settings: defaults, normalize, loa
 extension/lib/shorts.js          AntiBrainrot.shorts: URL helpers
 extension/lib/education.js       AntiBrainrot.education: categories, channel parsing, decide()
 extension/lib/countdown.js       AntiBrainrot.countdown: pure state machine + formatting
-extension/content/hide.css       attribute-keyed hiding rules (+ unconditional shorts rules)
+extension/content/hide.css       attribute-keyed hiding rules (Shorts keyed on data-abr-shorts since 1.7.0)
 extension/content/content.js     isolated-world runtime
 extension/content/page-bridge.js main-world metadata bridge
 extension/popup/popup.html|css|js
@@ -70,7 +74,7 @@ README.md, CONTRIBUTING.md, CHANGELOG.md, PRIVACY.md, LICENSE, docs/E2E.md
 
 ```js
 // lib/features.js
-AntiBrainrot.features.FEATURES // Array<{id, label, default, attr|null, parent?, mode?: 'when-parent-off'|'when-parent-on', locked?: true}>
+AntiBrainrot.features.FEATURES // Array<{id, label, default, attr|null, parent?, mode?: 'when-parent-off'|'when-parent-on'}> (a locked flag existed until 1.7.0)
 AntiBrainrot.features.byId(id) // feature or undefined
 AntiBrainrot.features.roots()  // features without parent, in display order
 AntiBrainrot.features.children(parentId) // features whose parent === parentId
@@ -140,7 +144,7 @@ AntiBrainrot.countdown.delayLabel(seconds)  // 'Instant', '30 seconds', '1 minut
 | fundraiser | Hide Fundraiser | true | fundraiser | sidebar | when-parent-off |
 | endScreenFeed | Hide End Screen Feed | true | end-screen-feed | | |
 | endScreenCards | Hide End Screen Cards | true | end-screen-cards | | |
-| shorts | Hide Shorts | true | null (unconditional CSS) | | locked |
+| shorts | Hide Shorts | true | shorts (unconditional CSS until 1.7.0) | | |
 | comments | Hide Comments | true | comments | | |
 | mixes | Hide Mixes | true | mixes | | |
 | merch | Hide Merch, Tickets, Offers | true | merch | | |

@@ -7,8 +7,10 @@
 // parent  id of the parent row
 // mode    'when-parent-off': child only matters when the parent is off
 //         'when-parent-on':  child only matters when the parent is on
-// locked  always on, not editable (Shorts)
 // section 'youtube' (default) or 'web' (applies outside YouTube)
+//
+// Every feature is a setting. Nothing is locked on; defaults are the only
+// opinion the extension has.
 (globalThis.AntiBrainrot ||= {}).features = (() => {
   'use strict';
 
@@ -22,7 +24,7 @@
     { id: 'fundraiser', label: 'Hide Fundraiser', default: true, attr: 'fundraiser', parent: 'sidebar', mode: 'when-parent-off' },
     { id: 'endScreenFeed', label: 'Hide End Screen Feed', default: true, attr: 'end-screen-feed' },
     { id: 'endScreenCards', label: 'Hide End Screen Cards', default: true, attr: 'end-screen-cards' },
-    { id: 'shorts', label: 'Hide Shorts', default: true, attr: null, locked: true },
+    { id: 'shorts', label: 'Hide Shorts', default: true, attr: 'shorts' },
     { id: 'comments', label: 'Hide Comments', default: true, attr: 'comments' },
     { id: 'commentAvatars', label: 'Hide Profile Photos', default: false, attr: 'comment-avatars', parent: 'comments', mode: 'when-parent-off' },
     { id: 'mixes', label: 'Hide Mixes', default: true, attr: 'mixes' },
@@ -51,7 +53,16 @@
     { id: 'adultSites', label: 'Block adult sites', default: false, attr: null, section: 'web' },
     { id: 'distractions', label: 'Block distracting sites', default: false, attr: null, section: 'web' },
     { id: 'schedule', label: 'Locked hours', default: false, attr: null, section: 'web' },
+    { id: 'preventRemoval', label: 'Prevent removal', default: false, attr: null, section: 'web' },
   ];
+
+  // Optional permissions a feature needs before it can be switched on. The
+  // popup requests them on the click; the worker finishes the switch.
+  const PERMISSIONS = Object.freeze({
+    adultSites: { origins: ['<all_urls>'] },
+    distractions: { origins: ['<all_urls>'] },
+    preventRemoval: { permissions: ['tabs'] },
+  });
 
   const byIdMap = new Map(FEATURES.map((f) => [f.id, f]));
 
@@ -67,5 +78,5 @@
     return FEATURES.filter((f) => f.parent === parentId);
   }
 
-  return Object.freeze({ FEATURES: Object.freeze(FEATURES), byId, roots, children });
+  return Object.freeze({ FEATURES: Object.freeze(FEATURES), PERMISSIONS, byId, roots, children });
 })();

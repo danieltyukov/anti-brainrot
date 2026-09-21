@@ -1,6 +1,6 @@
-// Block page: three views. "adult" and "block" only offer a way back.
-// "pause" runs a countdown, optionally asks for an intention, and lets the
-// user continue for a few minutes if the daily budget allows and no
+// Block page: four views. "adult", "block" and "guard" only offer a way
+// back. "pause" runs a countdown, optionally asks for an intention, and lets
+// the user continue for a few minutes if the daily budget allows and no
 // cooldown is running. The countdown restarts whenever the tab is hidden so
 // a background tab cannot wait it out for free.
 (() => {
@@ -18,9 +18,13 @@
   }
   $('view-' + kind).hidden = false;
   document.title = kind === 'pause' ? 'Pause' : 'Blocked by Anti-Brainrot';
+  if (kind === 'guard') $('back').textContent = 'Leave';
 
   $('back').addEventListener('click', () => {
-    if (history.length > 1) history.back();
+    // The guard replaced the extensions page in place; going back would
+    // only reopen it, so leave for a blank tab instead.
+    if (kind === 'guard') location.replace('about:blank');
+    else if (history.length > 1) history.back();
     else window.close();
   });
 

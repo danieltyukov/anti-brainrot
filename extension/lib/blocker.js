@@ -86,14 +86,14 @@
     }
   }
 
-  // 'adult' (default), 'block' or 'pause'.
+  // 'adult' (default), 'block', 'pause' or 'guard'.
   function kindFrom(href) {
     if (typeof href !== 'string') return 'adult';
     const q = href.indexOf('?');
     if (q < 0) return 'adult';
     const head = href.slice(q + 1).split(/[?&]u=/)[0];
     const kind = new URLSearchParams(head).get('kind');
-    return ['adult', 'block', 'pause'].includes(kind) ? kind : 'adult';
+    return ['adult', 'block', 'pause', 'guard'].includes(kind) ? kind : 'adult';
   }
 
   function hostOf(url) {
