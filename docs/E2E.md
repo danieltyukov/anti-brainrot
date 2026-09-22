@@ -310,3 +310,23 @@ Safe Mode for CachedFlags, crash streak is 2"), and no other browser is
 installed. The keyword check sits on the same address bar path as the site
 rules verified in the 1.3.0 and 1.4.0 runs, and the matcher itself is unit
 tested.
+
+## 2026-09-22, Chrome 153, version 1.8.1
+
+Prevent removal reworked after 1.8.0 closed the extensions page for every
+extension, not only this one. Same test copy of the extension, Prevent
+removal on, 5 minute unlock delay.
+
+| Check | Result |
+| --- | --- |
+| `chrome://extensions` opened by the worker, no pass | Sent to the guard view |
+| Popup under Prevent removal | "Other extensions: the unlock delay runs, then the page opens for 5 minutes." with a Manage extensions button |
+| Manage extensions | Countdown panel reads "Opening extensions in" at 5:00, cancel reads "Never mind", the button is disabled meanwhile; Never mind restores it |
+| Pass granted (the countdown's end, sent from the worker) | A `chrome://extensions/` tab opens and stays; the earlier guard tab stays where it was; alarm set for 299 s |
+| Popup during the pass | "Extensions page open until 08:47." and no button |
+| Pass ended | Stored pass cleared, both extensions tabs sent to the guard view, the button back in the popup |
+| Console | No errors or warnings on the popup |
+
+Not verifiable here: the policy-managed case (`installType` `admin`), for
+the reason noted under 1.7.0. The test copy reports `development`, and the
+worker's check is the same call the options page has used since 1.7.0.

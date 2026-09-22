@@ -12,8 +12,10 @@
 
   let settings = null;
   let countdown = null;
+  let countdownPurpose = 'off'; // or 'extensions'
   let timer = null;
   let stats = null;
+  let guard = { managed: false, until: 0 };
 
   // ---------------------------------------------------------------- helpers
 
@@ -82,10 +84,43 @@
       for (const root of roots) {
         list.appendChild(makeRow(root, false));
         for (const child of F.children(root.id)) list.appendChild(makeRow(child, true));
+        if (root.id === 'preventRemoval') renderGuardRow();
       }
     }
     // While the filter is off everything is editable; that is when loosening
     // changes are meant to happen.
+  }
+
+  function timeText(ms) {
+    const d = new Date(ms);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
+  // While the guard is active, the way to the extensions page: a pass that
+  // costs the unlock delay. A policy-managed copy needs no guard, so the
+  // row says so instead.
+  function renderGuardRow() {
+    if (!S.isActive(settings, 'preventRemoval')) return;
+    const row = document.createElement('div');
+    row.className = 'guard-row';
+    const text = document.createElement('span');
+    if (guard.managed) {
+      text.textContent = 'Installed by policy: the extensions page cannot remove this copy, so it stays open.';
+      row.appendChild(text);
+    } else if (guard.until > Date.now()) {
+      text.textContent = `Extensions page open until ${timeText(guard.until)}.`;
+      row.appendChild(text);
+    } else {
+      text.textContent = 'Other extensions: the unlock delay runs, then the page opens for 5 minutes.';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'mini';
+      button.textContent = 'Manage extensions';
+      button.disabled = countdown !== null;
+      button.addEventListener('click', () => beginCountdown('extensions'));
+      row.append(text, button);
+    }
+    list.appendChild(row);
   }
 
   function renderLockRow() {
@@ -142,6 +177,8 @@
 
     setPanel('panel-off', !on);
     setPanel('panel-countdown', on && countdown !== null);
+    $('countdown-title').textContent = countdownPurpose === 'extensions' ? 'Opening extensions in' : 'Turning off in';
+    $('cancel').textContent = countdownPurpose === 'extensions' ? 'Never mind' : 'Keep it on';
 
     const note = $('delay-note');
     note.hidden = !on || countdown !== null;
@@ -215,10 +252,27 @@
     await S.update({ focus: { enabled: false } });
   }
 
-  function beginCountdown() {
+  async function openExtensions() {
+    stopCountdown();
+    const reply = await new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'guard-pass' }, (r) => resolve(r || {}));
+      } catch {
+        resolve({});
+      }
+    });
+    if (reply.ok) guard = { ...guard, until: reply.until };
+    render();
+  }
+
+  // The same countdown serves two ends: turning the filter off, or a pass
+  // to the extensions page while Prevent removal is on.
+  function beginCountdown(purpose = 'off') {
+    countdownPurpose = purpose;
+    const finish = purpose === 'extensions' ? openExtensions : turnOffNow;
     const totalMs = settings.focus.unlockDelaySec * 1000;
     if (totalMs === 0) {
-      turnOffNow();
+      finish();
       return;
     }
     countdown = C.start(totalMs);
@@ -227,7 +281,7 @@
     timer = setInterval(() => {
       countdown = C.tick(countdown);
       $('time').textContent = C.format(countdown.remainingMs);
-      if (countdown.status === 'done') turnOffNow();
+      if (countdown.status === 'done') finish();
     }, 250);
   }
 
@@ -275,11 +329,23 @@
       stats = changes.stats.newValue || null;
       renderStats();
     }
+    if (area === 'local' && changes.guardPassUntil) {
+      guard = { ...guard, until: Number(changes.guardPassUntil.newValue) || 0 };
+      if (settings) render();
+    }
   });
   chrome.storage.local.get('stats').then((got) => {
     stats = got.stats || null;
     if (settings) renderStats();
   });
+  try {
+    chrome.runtime.sendMessage({ type: 'guard-status' }, (reply) => {
+      if (reply && typeof reply === 'object') guard = { managed: Boolean(reply.managed), until: Number(reply.until) || 0 };
+      if (settings) render();
+    });
+  } catch {
+    // worker not reachable; the row shows the button
+  }
   $('delay').addEventListener('change', () => {
     if (!settings.focus.enabled) S.update({ focus: { unlockDelaySec: Number($('delay').value) } });
   });

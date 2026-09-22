@@ -274,22 +274,73 @@ async function enforceSchedule(settings) {
 // which is what strict mode does with App info on the phone. The toolbar
 // menu can still remove the extension; only a browser policy closes that
 // door, and the options page explains how to set one.
+//
+// The guard stands down in two cases. When Chrome reports this copy as
+// policy-managed, the page cannot remove or switch off the extension, so
+// other extensions can be managed freely. And during a Manage extensions
+// pass: the popup runs the unlock delay, then the page is opened and left
+// alone for a few minutes, after which the guard returns.
 const EXTENSIONS_PAGE = /^[a-z]+:\/\/extensions(\/|\?|#|$)/;
+const GUARD_PASS_ALARM = 'abr-guard-pass';
+const GUARD_PASS_MINUTES = 5;
+let managedCopy = null;
 
 function isExtensionsPage(tab) {
   const url = (tab && (tab.pendingUrl || tab.url)) || '';
   return EXTENSIONS_PAGE.test(url);
 }
 
+// getSelf needs no permission. The install type only changes with a
+// reinstall, which restarts the worker, so one answer per worker life.
+async function isManagedCopy() {
+  if (managedCopy !== null) return managedCopy;
+  try {
+    const info = await chrome.management.getSelf();
+    managedCopy = info.installType === 'admin' || info.mayDisable === false;
+  } catch {
+    managedCopy = false;
+  }
+  return managedCopy;
+}
+
+async function guardPassUntil() {
+  const { guardPassUntil } = await chrome.storage.local.get('guardPassUntil');
+  const until = Number(guardPassUntil) || 0;
+  return until > Date.now() ? until : 0;
+}
+
 async function guardTab(tab) {
   if (!isExtensionsPage(tab)) return;
   const settings = await S.load();
   if (!S.isActive(settings, 'preventRemoval')) return;
+  if (await isManagedCopy()) return;
+  if (await guardPassUntil()) return;
   try {
     await chrome.tabs.update(tab.id, { url: chrome.runtime.getURL('blocked/blocked.html?kind=guard') });
   } catch (err) {
     warn('could not leave the extensions page', err);
   }
+}
+
+// Granted by the popup once its countdown has run. Opens the extensions
+// page and keeps the guard away from it until the pass ends.
+async function grantGuardPass() {
+  const settings = await S.load();
+  if (!S.isActive(settings, 'preventRemoval')) return { ok: false, reason: 'off' };
+  const until = Date.now() + GUARD_PASS_MINUTES * 60 * 1000;
+  await chrome.storage.local.set({ guardPassUntil: until });
+  await chrome.alarms.create(GUARD_PASS_ALARM, { when: until + 500 });
+  try {
+    await chrome.tabs.create({ url: 'chrome://extensions' });
+  } catch (err) {
+    warn('could not open the extensions page', err);
+  }
+  return { ok: true, until };
+}
+
+async function endGuardPass() {
+  await chrome.storage.local.remove('guardPassUntil');
+  await syncGuard(await S.load());
 }
 
 async function syncGuard(settings) {
@@ -359,6 +410,7 @@ S.onChange((settings) => {
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === SCHEDULE_ALARM) enforceSchedule();
+  else if (alarm.name === GUARD_PASS_ALARM) endGuardPass();
   else if (alarm.name.startsWith(PASS_ALARM_PREFIX)) revokeExpiredPasses();
 });
 
@@ -374,6 +426,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.type === 'record-block') {
     recordBlock().then(() => sendResponse({ ok: true }), () => sendResponse({ ok: false }));
+    return true;
+  }
+  if (message.type === 'guard-pass') {
+    grantGuardPass().then(sendResponse, (err) => sendResponse({ ok: false, reason: err.message }));
+    return true;
+  }
+  if (message.type === 'guard-status') {
+    Promise.all([isManagedCopy(), guardPassUntil()]).then(([managed, until]) => sendResponse({ managed, until }), () => sendResponse({}));
     return true;
   }
   return false;

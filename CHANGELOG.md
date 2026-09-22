@@ -5,6 +5,20 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-09-22
+
+### Changed
+- Prevent removal no longer keeps you from managing your other extensions.
+  A Manage extensions button sits under the switch in the popup: it runs
+  the same countdown as turning the filter off, then opens the extensions
+  page and leaves it alone for five minutes, after which the guard
+  returns. Closing the popup cancels the countdown, as always.
+- When Chrome reports the copy as installed by policy, the guard stands
+  down altogether: the extensions page cannot remove or switch off a
+  managed extension, so there is nothing to guard against and the page
+  stays open.
+- The guard's block page and the options page explain both.
+
 ## [1.8.0] - 2026-09-22
 
 ### Added

@@ -100,7 +100,7 @@
 
     <section class="card" id="sec-guard">
       <h2>Prevent removal</h2>
-      <p class="muted">Chrome gives an extension no way to protect itself, so this works in two layers. The switch in the popup sends the extensions page, where the Remove button and the on/off switch live, to a block page while the filter is on; Chrome asks for the tabs permission the first time. The toolbar menu can still remove the extension. A browser policy closes that door too: Chrome then treats Anti Brainrot as managed and refuses to remove or turn it off until the policy file is deleted with administrator rights.</p>
+      <p class="muted">Chrome gives an extension no way to protect itself, so this works in two layers. The switch in the popup sends the extensions page, where the Remove button and the on/off switch live, to a block page while the filter is on; Chrome asks for the tabs permission the first time. Other extensions are managed through the Manage extensions button under the switch: your unlock delay runs, then the page opens for five minutes. The toolbar menu can still remove the extension. A browser policy closes that door too: Chrome then treats Anti Brainrot as managed and refuses to remove or turn it off until the policy file is deleted with administrator rights, and the extensions page stays open since it can no longer do harm.</p>
       <p id="managed-status" class="managed"></p>
       <h3>Browser policy on Linux</h3>
       <p class="muted small">Run this once and restart Chrome. Chrome installs its own copy from the update manifest on the website, keeps it updated and marks it "installed by your administrator". Your settings carry over.</p>

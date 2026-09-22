@@ -58,9 +58,12 @@ Website: https://danieltyukov.github.io/anti-brainrot/
   block page, on any search engine, any subreddit, any tag page.
 - **Prevent removal.** The browser's extensions page, where the Remove button
   and the on/off switch live, is sent to a block page while the filter is
-  on. For the real lock, a browser policy makes Chrome install its own copy
-  and refuse to remove or turn it off until the policy file is deleted with
-  administrator rights. See [Prevent removal](#prevent-removal).
+  on. Other extensions are managed through a Manage extensions button in
+  the popup: the unlock delay runs, then the page opens for five minutes.
+  For the real lock, a browser policy makes Chrome install its own copy and
+  refuse to remove or turn it off until the policy file is deleted with
+  administrator rights; the page then stays open, since it can do no harm.
+  See [Prevent removal](#prevent-removal).
 - **Small nudges.** A reason line you write once and see on every block
   page, a count of today's blocks and passes in the popup, and a warning
   thirty seconds before a pass ends.

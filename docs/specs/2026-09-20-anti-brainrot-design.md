@@ -315,6 +315,21 @@ extension no equivalent, so this is two layers:
    the uninstall URL to the website's install section while active.
    Turning the feature off is a loosening. Revoking the permission switches
    it off.
+
+   Changed 2026-09-22 (v1.8.1): closing the whole page also closed the way
+   to every other extension, which was the wrong trade. Two exceptions
+   since then. A pass: the popup shows a Manage extensions button under the
+   switch; it runs the unlock delay through the same countdown as turning
+   the filter off (purpose `extensions` instead of `off`), then sends
+   `guard-pass` to the worker, which stores `guardPassUntil` in
+   `chrome.storage.local`, opens `chrome://extensions` and sets an alarm;
+   `guardTab` leaves the page alone while the pass runs and the alarm
+   re-guards any open extensions page when it ends. Five minutes, not a
+   setting. And the managed copy: `management.getSelf()` (no permission
+   needed) reporting `installType` `admin` or `mayDisable` false means the
+   page cannot touch the extension, so the guard does nothing and the popup
+   row says so. The pass costs exactly what turning the filter off costs,
+   so it is no shortcut to removal; it only spares the rest of the filter.
 2. Outside the extension. Chrome's `ExtensionInstallForcelist` policy makes
    an extension managed: no Remove button, no on/off switch, no toolbar
    removal, until the policy file is deleted with administrator rights. For
