@@ -252,15 +252,20 @@
     await S.update({ focus: { enabled: false } });
   }
 
+  // A question to the worker. No answer (a worker from before an update
+  // that does not know the message, or one that is restarting) is an empty
+  // reply, not an unchecked runtime.lastError.
+  async function ask(message) {
+    try {
+      return (await chrome.runtime.sendMessage(message)) || {};
+    } catch {
+      return {};
+    }
+  }
+
   async function openExtensions() {
     stopCountdown();
-    const reply = await new Promise((resolve) => {
-      try {
-        chrome.runtime.sendMessage({ type: 'guard-pass' }, (r) => resolve(r || {}));
-      } catch {
-        resolve({});
-      }
-    });
+    const reply = await ask({ type: 'guard-pass' });
     if (reply.ok) guard = { ...guard, until: reply.until };
     render();
   }
@@ -338,14 +343,10 @@
     stats = got.stats || null;
     if (settings) renderStats();
   });
-  try {
-    chrome.runtime.sendMessage({ type: 'guard-status' }, (reply) => {
-      if (reply && typeof reply === 'object') guard = { managed: Boolean(reply.managed), until: Number(reply.until) || 0 };
-      if (settings) render();
-    });
-  } catch {
-    // worker not reachable; the row shows the button
-  }
+  ask({ type: 'guard-status' }).then((reply) => {
+    if (typeof reply.managed === 'boolean') guard = { managed: reply.managed, until: Number(reply.until) || 0 };
+    if (settings) render();
+  });
   $('delay').addEventListener('change', () => {
     if (!settings.focus.enabled) S.update({ focus: { unlockDelaySec: Number($('delay').value) } });
   });

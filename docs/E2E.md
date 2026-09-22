@@ -330,3 +330,14 @@ removal on, 5 minute unlock delay.
 Not verifiable here: the policy-managed case (`installType` `admin`), for
 the reason noted under 1.7.0. The test copy reports `development`, and the
 worker's check is the same call the options page has used since 1.7.0.
+
+## 2026-09-22, Chrome 153, version 1.8.2
+
+The extension's errors page showed "Unchecked runtime.lastError: The
+message port closed before a response was received" from popup.html after
+1.8.1: the popup asked the worker for the guard state with a callback and
+an older worker, still running under the updated files, had no answer.
+Every message from the popup and the block page now uses the promise form
+inside try/catch. Checked with a message no handler knows: it resolves to
+an empty reply, `runtime.lastError` stays unset, the popup renders its
+rows, and the console shows nothing.

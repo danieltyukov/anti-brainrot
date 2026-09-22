@@ -5,6 +5,16 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-09-22
+
+### Fixed
+- The popup and the block page no longer leave an unchecked
+  runtime.lastError ("The message port closed before a response was
+  received") on the extension's errors page when the worker gives no
+  answer, which happens when the files were updated under a running
+  worker or while the worker restarts. Every message to the worker now
+  treats no answer as an empty reply.
+
 ## [1.8.1] - 2026-09-22
 
 ### Changed

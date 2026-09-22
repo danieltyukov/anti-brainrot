@@ -1,6 +1,6 @@
 {
   "name": "anti-brainrot",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Anti Brainrot, the anti brain rot extension for Chrome and app for Android. Puts feeds, Shorts and distracting sites and apps behind a friction timer, blocks or pauses them, keeps YouTube to the parts you choose, filters adult sites with forced safe search and blocked keywords, locks itself during focus hours, and can be made hard to remove.",
   "private": true,
   "license": "MIT",

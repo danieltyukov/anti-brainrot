@@ -37,14 +37,14 @@
     else window.close();
   });
 
-  function send(message) {
-    return new Promise((resolve) => {
-      try {
-        chrome.runtime.sendMessage(message, (reply) => resolve(reply || {}));
-      } catch {
-        resolve({});
-      }
-    });
+  // No answer from the worker (one from before an update, or one that is
+  // restarting) is an empty reply, not an unchecked runtime.lastError.
+  async function send(message) {
+    try {
+      return (await chrome.runtime.sendMessage(message)) || {};
+    } catch {
+      return {};
+    }
   }
 
   function timeText(ms) {
