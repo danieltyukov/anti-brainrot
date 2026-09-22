@@ -255,3 +255,58 @@ policy text follow Chrome's documented format; the first real check is a
 Linux machine with the policy file in place, looking for "installed by your
 administrator" on the extensions page and "installed by policy" in the
 options.
+
+## 2026-09-22, Chrome 153, version 1.8.0
+
+Run in the chrome-devtools-ext MCP browser with a test copy of the
+extension that has `<all_urls>` in `host_permissions` (the permission
+prompt is native UI), Block adult sites on with both children, then Block
+keywords on with the list `feet`, `foot fetish`, `nudes`.
+
+| Check | Result |
+| --- | --- |
+| Rulesets after the switch | `shorts`, `adult`, `safesearch`, `youtube-restrict` enabled together |
+| Page embedding favicons from xvideos.com and pornhub.com, plus an xvideos.com iframe | All three `net::ERR_BLOCKED_BY_CLIENT`; a Wikipedia favicon on the same page loaded |
+| xvideos.com | Adult view of the block page, `Keep it blocked` the only button |
+| Block page for a YouTube URL (`kind=block`) | `Keep it blocked` and `Subscriptions` |
+| Google `search?q=feet&udm=2` | Redirected once to `...&safe=active&ssui=on`, no loop; Google's abuse check appeared first for the automation browser, then the page loaded |
+| Bing `images/search?q=feet` | `adlt=strict` added, header reads "SafeSearch: Strict" |
+| DuckDuckGo `?q=feet&ia=images` | `kp=1` added, the page's own `i.js` calls carry `p=1` |
+| Yahoo images | `vm=r` added, page reads "SafeSearch on" |
+| Yandex images, Brave images | `family=yes` and `safesearch=strict` added, pages loaded |
+| YouTube `results?search_query=feet` | Document request carries `youtube-restrict: Strict` |
+| Keyword rules | Two dynamic rules (5000 redirect, 5001 block, priority 5) for the three words |
+| Google `search?q=feet`, Reddit `r/feet/`, Bing `images/search?q=foot+fetish` | Keyword view of the block page; the Bing one reads `The address on bing.com contains "foot fetish".` |
+| Bing `search?q=football` | Loads (whole words only) |
+| YouTube in-page navigation to `results?search_query=feet+pics` | Content script sends the tab to the keyword view |
+| Popup | `Force safe search` and `Restrict YouTube` nested under `Block adult sites`, `Block keywords` a row of its own |
+| Options | Both checkboxes on; the policy command carries `ForceGoogleSafeSearch` and `ForceYouTubeRestrict: 0` |
+| Console | No errors or warnings on the block, popup and options pages |
+
+## 2026-09-22, Android 15 emulator (Pixel AVD, API 35), version 1.8.0
+
+Debug build installed with `android/scripts/emu.sh install` on the `m2a_pixel`
+AVD, which still had `example.com` blocked and `wikipedia.org` timed from
+the 1.4.0 run, so the DNS filter was already running.
+
+| Check | Result |
+| --- | --- |
+| Sites tab | `Force safe search` and `Restrict YouTube` under `Block adult sites`, greyed until it is on; a `Blocked keywords` card with a field and Save |
+| Block adult sites on | Both children on by default |
+| `ping www.google.com`, `google.nl` | 216.239.38.120, the address of `forcesafesearch.google.com` |
+| `ping www.bing.com` | 150.171.30.16, one of `strict.bing.com` |
+| `ping duckduckgo.com` | 52.142.126.100, `safe.duckduckgo.com` |
+| `ping www.youtube.com`, `m.youtube.com` | 216.239.38.120, `restrict.youtube.com` |
+| `ping mail.google.com` | Its own address, untouched |
+| `ping example.com` | Unknown host, the site rule's NXDOMAIN as before |
+| Keywords | `feet` saved from the field; Save greys out once the list matches |
+| Filter off | Countdown ran out at 30 s, `tun0` gone |
+| Unit tests | 38 pass, including the DNS answer builder, the safe search targets, the keyword matcher and the new loosening cases |
+
+Not verified: the address bar keyword block in a browser. Chrome on this
+image dies with SIGTRAP inside libmonochrome on every launch, with the
+filter on or off and with the tunnel up or down (its own log reads "Enter
+Safe Mode for CachedFlags, crash streak is 2"), and no other browser is
+installed. The keyword check sits on the same address bar path as the site
+rules verified in the 1.3.0 and 1.4.0 runs, and the matcher itself is unit
+tested.

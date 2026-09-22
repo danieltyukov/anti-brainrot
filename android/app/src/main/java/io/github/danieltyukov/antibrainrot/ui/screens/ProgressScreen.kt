@@ -175,7 +175,7 @@ private fun TopApps(top: List<Pair<String, Int>>, format: (Int) -> String) {
     val pm = LocalContext.current.packageManager
     val max = top.first().second.toFloat().coerceAtLeast(1f)
     top.forEachIndexed { i, (key, n) ->
-        val site = Keys.isSite(key)
+        val site = Keys.isSite(key) || Keys.isKeyword(key)
         val label = remember(key) {
             if (site) Keys.label(key) else try { pm.getApplicationLabel(pm.getApplicationInfo(key, 0)).toString() } catch (e: Exception) { key }
         }

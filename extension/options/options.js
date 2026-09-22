@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const { settings: S, education: E, blocker: B, countdown: C, distractions: D } = globalThis.AntiBrainrot;
+  const { settings: S, education: E, blocker: B, keywords: K, countdown: C, distractions: D } = globalThis.AntiBrainrot;
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const $ = (id) => document.getElementById(id);
   let settings = null;
@@ -162,7 +162,14 @@
 
   function renderGuard() {
     const id = chrome.runtime.id;
-    const policy = JSON.stringify({ ExtensionInstallForcelist: [`${id};${UPDATE_URL}`] });
+    // Chrome's own safe search policies ride along while the adult filter
+    // is on: ForceYouTubeRestrict 0 is Strict, the same as the header rule.
+    const f = settings.features;
+    const policy = JSON.stringify({
+      ExtensionInstallForcelist: [`${id};${UPDATE_URL}`],
+      ...(f.adultSites && f.safeSearch ? { ForceGoogleSafeSearch: true } : {}),
+      ...(f.adultSites && f.restrictYouTube ? { ForceYouTubeRestrict: 0 } : {}),
+    });
     $('policy-command').textContent =
       `sudo mkdir -p /etc/opt/chrome/policies/managed\nprintf '%s\\n' '${policy}' | sudo tee /etc/opt/chrome/policies/managed/anti-brainrot.json`;
     const status = $('managed-status');
@@ -189,10 +196,13 @@
     renderSchedule();
     $('lock-banner').hidden = !settings.focus.enabled;
     $('edu-enabled').checked = settings.features.educational;
+    $('safe-search').checked = settings.features.safeSearch;
+    $('restrict-youtube').checked = settings.features.restrictYouTube;
     renderCategories();
     if (document.activeElement !== $('channels')) $('channels').value = settings.educational.allowedChannels.join('\n');
     if (document.activeElement !== $('blocked-domains')) $('blocked-domains').value = settings.blocker.blockedDomains.join('\n');
     if (document.activeElement !== $('allowed-domains')) $('allowed-domains').value = settings.blocker.allowedDomains.join('\n');
+    if (document.activeElement !== $('blocked-keywords')) $('blocked-keywords').value = settings.keywords.blocked.join('\n');
     renderDelay();
     renderTheme();
   }
@@ -202,6 +212,8 @@
   $('edu-enabled').addEventListener('change', (event) => {
     apply({ features: { educational: event.target.checked } });
   });
+  $('safe-search').addEventListener('change', (e) => apply({ features: { safeSearch: e.target.checked } }));
+  $('restrict-youtube').addEventListener('change', (e) => apply({ features: { restrictYouTube: e.target.checked } }));
 
   $('save-channels').addEventListener('click', () => {
     apply({ educational: { allowedChannels: E.parseChannelList($('channels').value) } });
@@ -214,6 +226,10 @@
         allowedDomains: B.parseDomainList($('allowed-domains').value),
       },
     });
+  });
+
+  $('save-keywords').addEventListener('click', () => {
+    apply({ keywords: { blocked: K.parseList($('blocked-keywords').value) } });
   });
 
   $('delay').addEventListener('change', (event) => {

@@ -5,6 +5,8 @@
 // - redirect /shorts/ID to /watch?v=ID on in-page navigations while Hide
 //   Shorts is active (the declarative rule only sees full page loads)
 // - redirect the home page to the subscriptions feed when configured
+// - send searches and pages whose address carries a blocked keyword to the
+//   block page (the declarative rule only sees full page loads)
 // - switch YouTube autoplay off when configured
 // - enforce educational mode using metadata from content/page-bridge.js
 //
@@ -60,6 +62,10 @@
     }
     if (S.isActive(settings, 'redirectHome') && location.pathname === '/') {
       location.replace('/feed/subscriptions');
+      return true;
+    }
+    if (S.isActive(settings, 'keywords') && U.keywords.match(settings.keywords.blocked, location.href)) {
+      location.replace(chrome.runtime.getURL('blocked/blocked.html') + '?kind=keyword&u=' + encodeURIComponent(location.href));
       return true;
     }
     return false;
@@ -172,7 +178,7 @@
 
     const brand = document.createElement('div');
     brand.className = 'abr-brand';
-    brand.textContent = 'anti-brainrot';
+    brand.textContent = 'Anti Brainrot';
 
     const heading = document.createElement('h1');
     heading.textContent = 'Not on your list';
@@ -180,7 +186,7 @@
     // Text nodes only: the title and category come from page data.
     const p1 = document.createElement('p');
     if (decision.reason === 'unknown') {
-      p1.textContent = `${title} has no category Anti-Brainrot can read, so it stays blocked.`;
+      p1.textContent = `${title} has no category Anti Brainrot can read, so it stays blocked.`;
     } else {
       const bold = document.createElement('b');
       bold.textContent = meta.category;
@@ -204,7 +210,7 @@
 
     const hint = document.createElement('p');
     hint.className = 'abr-hint';
-    hint.textContent = 'Allowed categories and channels can be changed in Anti-Brainrot options.';
+    hint.textContent = 'Allowed categories and channels can be changed in Anti Brainrot options.';
 
     card.append(brand, heading, p1, p2, actions, hint);
     overlay.appendChild(card);

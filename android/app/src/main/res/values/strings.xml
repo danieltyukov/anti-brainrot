@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AntiBrainrot</string>
+    <string name="app_name">Anti Brainrot</string>
     <string name="accessibility_description">AntiBrainrot uses this service to see which app is in front, to show its block screen over the apps you chose to block, and to count the time you spend in apps with a daily limit. It reads nothing else and sends nothing anywhere.</string>
     <string name="notification_listener_description">Hides notifications from the apps you block while the filter is on.</string>
     <string name="admin_description">Keeps AntiBrainrot from being uninstalled while the filter is on. It uses no device policies.</string>

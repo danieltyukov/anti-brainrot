@@ -18,6 +18,7 @@
   const BUDGET_CHOICES = Object.freeze([0, 10, 15, 30, 60, 120, 1440]);
   const COOLDOWN_CHOICES = Object.freeze([0, 5, 15, 30, 60]);
   const LOCK_CHOICES = Object.freeze([1, 2, 4, 8, 24]);
+  const MAX_KEYWORDS = 200;
   const DEFAULT_PRESETS = Object.freeze(['tiktok', 'instagram-reels', 'x-home', 'reddit-home', 'facebook-feed', 'threads', '9gag']);
   const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -43,6 +44,9 @@
       blocker: {
         blockedDomains: [],
         allowedDomains: [],
+      },
+      keywords: {
+        blocked: [],
       },
       distractions: {
         mode: 'pause',
@@ -110,6 +114,11 @@
       if (blocked) out.blocker.blockedDomains = blocked;
       const allowed = cleanStringList(raw.blocker.allowedDomains);
       if (allowed) out.blocker.allowedDomains = allowed;
+    }
+
+    if (isObject(raw.keywords)) {
+      const list = cleanStringList(raw.keywords.blocked);
+      if (list) out.keywords.blocked = list.slice(0, MAX_KEYWORDS);
     }
 
     if (isObject(raw.distractions)) {
@@ -213,6 +222,9 @@
     if (b.features.adultSites) {
       if (hasNew(b.blocker.blockedDomains, a.blocker.blockedDomains)) return true;
       if (hasNew(a.blocker.allowedDomains, b.blocker.allowedDomains)) return true;
+    }
+    if (b.features.keywords) {
+      if (hasNew(b.keywords.blocked, a.keywords.blocked)) return true;
     }
     if (b.features.distractions) {
       const x = a.distractions;

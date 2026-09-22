@@ -1,12 +1,12 @@
-// Block page: four views. "adult", "block" and "guard" only offer a way
-// back. "pause" runs a countdown, optionally asks for an intention, and lets
+// Block page: five views. "adult", "block", "keyword" and "guard" only
+// offer a way back. "pause" runs a countdown, optionally asks for an intention, and lets
 // the user continue for a few minutes if the daily budget allows and no
 // cooldown is running. The countdown restarts whenever the tab is hidden so
 // a background tab cannot wait it out for free.
 (() => {
   'use strict';
 
-  const { blocker: B } = globalThis.AntiBrainrot;
+  const { blocker: B, keywords: K, settings: S } = globalThis.AntiBrainrot;
   const $ = (id) => document.getElementById(id);
 
   const original = B.blockedUrlFrom(location.href);
@@ -17,8 +17,17 @@
     if (host) el.textContent = host.replace(/^www\./, '');
   }
   $('view-' + kind).hidden = false;
-  document.title = kind === 'pause' ? 'Pause' : 'Blocked by Anti-Brainrot';
+  document.title = kind === 'pause' ? 'Pause' : 'Blocked by Anti Brainrot';
   if (kind === 'guard') $('back').textContent = 'Leave';
+  // A way to Subscriptions only makes sense when the blocked page was on
+  // YouTube; on an adult site or a feed elsewhere it would be a non sequitur.
+  $('subscriptions').hidden = !B.isYouTube(original);
+  if (kind === 'keyword') {
+    S.load().then((s) => {
+      const word = K.match(s.keywords.blocked, original);
+      if (word) $('keyword-word').textContent = `"${word}"`;
+    });
+  }
 
   $('back').addEventListener('click', () => {
     // The guard replaced the extensions page in place; going back would

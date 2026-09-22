@@ -46,6 +46,13 @@ object Rules {
         if (a.apps.blockNotifications && !b.apps.blockNotifications) return true
         if (a.apps.blockInstalls && !b.apps.blockInstalls) return true
         if (a.sites.adult && !b.sites.adult) return true
+        // Safe search and Restricted Mode follow the adult filter; they only
+        // count while it is on.
+        if (b.sites.adult) {
+            if (a.sites.safeSearch && !b.sites.safeSearch) return true
+            if (a.sites.restrictYouTube && !b.sites.restrictYouTube) return true
+        }
+        if (hasNew(b.sites.keywords, a.sites.keywords)) return true
         for ((host, ra) in a.sites.rules) {
             val rb = b.sites.rules[host] ?: return true
             if (ra.mode == "block" && rb.mode == "timer") return true

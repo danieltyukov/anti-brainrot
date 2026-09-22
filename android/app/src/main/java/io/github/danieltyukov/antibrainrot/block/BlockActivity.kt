@@ -93,7 +93,7 @@ class BlockActivity : ComponentActivity() {
         enableEdgeToEdge()
         val pkg = intent.getStringExtra(EXTRA_PACKAGE) ?: run { finish(); return }
         val key = intent.getStringExtra(EXTRA_KEY) ?: pkg
-        val label = if (Keys.isSite(key)) Keys.label(key) else appLabel(pkg)
+        val label = if (Keys.isSite(key) || Keys.isKeyword(key)) Keys.label(key) else appLabel(pkg)
         val icon = appIcon(pkg)
         setContent { BlockScreen(key, label, icon, onHome = { goHome() }, onOpen = { openApp(pkg) }) }
     }
@@ -197,7 +197,7 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_mark), contentDescription = null, Modifier.size(18.dp), tint = Ink)
                         Spacer(Modifier.size(6.dp))
-                        Text("AntiBrainrot", color = Muted, style = MaterialTheme.typography.labelLarge)
+                        Text("Anti Brainrot", color = Muted, style = MaterialTheme.typography.labelLarge)
                     }
                     if (!s?.focus?.reason.isNullOrBlank()) {
                         Spacer(Modifier.height(8.dp))
@@ -223,12 +223,13 @@ private fun BlockScreen(key: String, label: String, icon: Drawable?, onHome: () 
                         exhausted -> "You have used your ${minutesLabel(rule!!.limitMinutes).lowercase()} in $label for today."
                         mode == "timer" -> "$label has a limit of ${minutesLabel(rule!!.limitMinutes).lowercase()} a day."
                         installer -> "Installing new apps is blocked while the filter is on. Updates from the store wait too."
+                        Keys.isKeyword(key) -> "The address contains \"$label\", one of your blocked keywords."
                         else -> "$label is blocked."
                     }
                     Text(line, color = Ink, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(16.dp))
                     when {
-                        mode == "block" -> Text("To open it, turn the filter off in AntiBrainrot and wait out your unlock delay.", color = Muted, textAlign = TextAlign.Center)
+                        mode == "block" -> Text("To open it, turn the filter off in Anti Brainrot and wait out your unlock delay.", color = Muted, textAlign = TextAlign.Center)
                         exhausted -> Text("It resets at midnight.", color = Muted, textAlign = TextAlign.Center)
                         !canPass -> Text("Nothing to wait for right now.", color = Muted, textAlign = TextAlign.Center)
                         else -> {

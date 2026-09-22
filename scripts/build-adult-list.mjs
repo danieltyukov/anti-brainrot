@@ -279,34 +279,78 @@ export function keywordPattern(kw) {
   return typeof kw === 'string' ? escapeRegex(kw) : kw.pattern;
 }
 
-export function keywordRules(keywords, firstId) {
-  const rules = [];
+export function keywordFilters(keywords) {
+  const filters = [];
   for (let i = 0; i < keywords.length; i += KEYWORDS_PER_RULE) {
     const group = keywords.slice(i, i + KEYWORDS_PER_RULE).map(keywordPattern);
-    rules.push({
-      id: firstId + rules.length,
-      priority: 1,
-      action: { type: 'redirect', redirect: { regexSubstitution: BLOCK_PAGE } },
-      condition: {
-        regexFilter: `^https?://[^/]*(?:${group.join('|')})[^/]*`,
-        resourceTypes: ['main_frame'],
-      },
-    });
+    filters.push(`^https?://[^/]*(?:${group.join('|')})[^/]*`);
   }
+  return filters;
+}
+
+// Every declarativeNetRequest resource type, for the allow rule.
+export const ALL_RESOURCE_TYPES = [
+  'main_frame', 'sub_frame', 'stylesheet', 'script', 'image', 'font', 'object', 'xmlhttprequest',
+  'ping', 'csp_report', 'media', 'websocket', 'webtransport', 'webbundle', 'other',
+];
+
+// The ruleset. Rule 1 sends navigations to a listed domain to the block
+// page; the keyword rules do the same for hostnames that contain a keyword.
+// Then every one of those has a block twin for everything else the site
+// serves (images, video, frames, scripts), so adult media stays off search
+// result pages and forums as well. The allow rule for benign keyword hits
+// outranks all of them and covers every resource type. `domains` is the
+// packed placeholder that serialize() expands.
+export function buildRules(domains, exceptions) {
+  const filters = keywordFilters(KEYWORDS);
+  const rules = [];
+  const add = (action, condition) => rules.push({ id: rules.length + 1, priority: 1, action, condition });
+  const redirect = { type: 'redirect', redirect: { regexSubstitution: BLOCK_PAGE } };
+  const block = { type: 'block' };
+  add(redirect, { requestDomains: domains, regexFilter: '^https?://.*', resourceTypes: ['main_frame'] });
+  for (const regexFilter of filters) add(redirect, { regexFilter, resourceTypes: ['main_frame'] });
+  add(block, { requestDomains: domains, excludedResourceTypes: ['main_frame'] });
+  for (const regexFilter of filters) add(block, { regexFilter, excludedResourceTypes: ['main_frame'] });
+  rules.push({
+    id: rules.length + 1,
+    priority: 2,
+    action: { type: 'allow' },
+    condition: { requestDomains: exceptions, resourceTypes: ALL_RESOURCE_TYPES },
+  });
   return rules;
 }
 
 const DOMAINS_PLACEHOLDER = '"__REQUEST_DOMAINS__"';
 
 // JSON.stringify with two-space indentation, except that the domain list is
-// packed eight per line to keep the file small.
+// packed eight per line to keep the file small. The placeholder appears
+// twice, once in the redirect rule and once in its block twin.
 function serialize(rules, domains) {
   const text = JSON.stringify(rules, null, 2);
   const lines = [];
   for (let i = 0; i < domains.length; i += 8) {
     lines.push('        ' + domains.slice(i, i + 8).map((d) => JSON.stringify(d)).join(', '));
   }
-  return text.replace(DOMAINS_PLACEHOLDER, '[\n' + lines.join(',\n') + '\n      ]') + '\n';
+  return text.replaceAll(DOMAINS_PLACEHOLDER, '[\n' + lines.join(',\n') + '\n      ]') + '\n';
+}
+
+function writeRules(domains) {
+  const exceptions = [...new Set(KEYWORD_EXCEPTIONS.map(normalizeDomain))].sort();
+  const rules = buildRules('__REQUEST_DOMAINS__', exceptions);
+  writeFileSync(OUT_FILE, serialize(rules, domains));
+  const kb = statSync(OUT_FILE).size / 1024;
+  console.log(`wrote ${path.relative(ROOT, OUT_FILE)}: ${rules.length} rules, ${domains.length} domains, ${kb.toFixed(1)} KB`);
+  if (kb > 1024) fail('output exceeds 1 MB');
+}
+
+// `--rules-only` rewrites the rule structure around the domain list that is
+// already in adult.json, without downloading anything. For changes to the
+// rules themselves, not to the list.
+function rewriteRules() {
+  const current = JSON.parse(readFileSync(OUT_FILE, 'utf8'));
+  const domains = current[0].condition.requestDomains;
+  if (!Array.isArray(domains) || domains.length < 1000) fail('adult.json does not start with the domain rule');
+  writeRules(domains);
 }
 
 function readCore() {
@@ -402,35 +446,10 @@ async function main() {
   console.log(`final: ${domains.length} domains (${core.size} core, cap ${MAX_DOMAINS}, ${cut} lower-ranked candidates cut)`);
   if (exactRanks.length) console.log(`lowest tranco rank kept outside the core list: ${Math.max(...exactRanks)}`);
 
-  const rules = [
-    {
-      id: 1,
-      priority: 1,
-      action: { type: 'redirect', redirect: { regexSubstitution: BLOCK_PAGE } },
-      condition: {
-        requestDomains: '__REQUEST_DOMAINS__',
-        regexFilter: '^https?://.*',
-        resourceTypes: ['main_frame'],
-      },
-    },
-    ...keywordRules(KEYWORDS, 2),
-  ];
-  rules.push({
-    id: rules.length + 1,
-    priority: 2,
-    action: { type: 'allow' },
-    condition: {
-      requestDomains: [...new Set(KEYWORD_EXCEPTIONS.map(normalizeDomain))].sort(),
-      resourceTypes: ['main_frame'],
-    },
-  });
-
-  writeFileSync(OUT_FILE, serialize(rules, domains));
-  const kb = statSync(OUT_FILE).size / 1024;
-  console.log(`wrote ${path.relative(ROOT, OUT_FILE)}: ${rules.length} rules, ${kb.toFixed(1)} KB`);
-  if (kb > 500) fail('output exceeds 500 KB');
+  writeRules(domains);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().catch((err) => fail(err.stack || err.message));
+  if (process.argv.includes('--rules-only')) rewriteRules();
+  else main().catch((err) => fail(err.stack || err.message));
 }

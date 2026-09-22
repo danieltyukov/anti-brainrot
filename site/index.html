@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>anti-brainrot</title>
+  <title>Anti Brainrot</title>
   <meta name="description" content="The anti brain rot extension for Chrome and app for Android. Puts feeds, Shorts and distracting sites and apps behind a friction timer, blocks or pauses them, keeps YouTube to the parts you choose, filters adult sites, locks itself during focus hours, and can be made hard to remove.">
   <meta name="theme-color" content="#73b8ee">
-  <meta property="og:title" content="anti-brainrot">
+  <meta property="og:title" content="Anti Brainrot">
   <meta property="og:description" content="The anti brain rot extension for Chrome and app for Android. Puts feeds, Shorts and distracting sites and apps behind a friction timer, blocks or pauses them, keeps YouTube to the parts you choose, filters adult sites, locks itself during focus hours, and can be made hard to remove.">
   <meta property="og:image" content="https://danieltyukov.github.io/anti-brainrot/assets/logo-512.png">
   <meta property="og:url" content="https://danieltyukov.github.io/anti-brainrot/">
@@ -63,9 +63,9 @@
 
     <section class="hero" aria-labelledby="brand">
       <img class="mark" src="assets/logo.svg" alt="" width="220" height="220">
-      <h1 id="brand">anti-brainrot</h1>
+      <h1 id="brand">Anti Brainrot</h1>
       <p class="tagline">The anti brain rot extension for Chrome and app for Android.</p>
-      <p class="lede">Puts the things that eat your day behind a friction timer: feeds and Shorts on YouTube, the feeds of TikTok, Instagram, X, Reddit and the rest, adult sites, and on the phone whole apps. Each one is blocked outright or paused with a countdown and a timed pass. The filter locks itself during your focus hours and can be made hard to remove. Everything is a setting; the defaults carry the opinion, the timer carries the friction.</p>
+      <p class="lede">Puts the things that eat your day behind a friction timer: feeds and Shorts on YouTube, the feeds of TikTok, Instagram, X, Reddit and the rest, adult sites and their media, the searches you have banned, and on the phone whole apps. Each one is blocked outright or paused with a countdown and a timed pass; safe search is forced on every engine while the adult filter is on. The filter locks itself during your focus hours and can be made hard to remove. Everything is a setting; the defaults carry the opinion, the timer carries the friction.</p>
       <p class="actions">
         <a class="button" href="#install">Install</a>
         <a class="text-link" href="https://github.com/danieltyukov/anti-brainrot">Source on GitHub</a>
@@ -89,7 +89,11 @@
         </li>
         <li>
           <h3>Adult site blocker</h3>
-          <p>A bundled list of 15,000 domains plus hostname keyword rules redirect to a block page, everywhere in the browser. Add your own sites, or allow false positives, in the options.</p>
+          <p>A bundled list of 15,000 domains plus hostname keyword rules redirect to a block page, everywhere in the browser, and the images, video and frames those hosts serve are blocked on every other page. Under it, Force safe search gives every search on Google, Bing, DuckDuckGo, Yahoo, Yandex and Brave the engine's strict setting, images and videos included, and Restrict YouTube turns on YouTube's Restricted Mode. Add your own sites, or allow false positives, in the options.</p>
+        </li>
+        <li>
+          <h3>Blocked keywords</h3>
+          <p>Words you never want to search for or open. Any address whose path or query carries one of them, as a whole word, goes to the block page: a search on any engine, a subreddit, a tag page. Adding a word works any time; taking one off waits until the filter is off.</p>
         </li>
         <li>
           <h3>Locked hours</h3>
@@ -117,7 +121,7 @@
         </li>
         <li>
           <h3>Android app</h3>
-          <p>An app and site blocker in the spirit of AppBlock: every app and every site gets its own rule, blocked outright or a daily timer, an optional block on installing new apps, adult sites filtered at the DNS level, locked hours, strict mode, Prevent uninstall, and a Progress tab with ninety days of counters and charts. An APK on every release.</p>
+          <p>An app and site blocker in the spirit of AppBlock: every app and every site gets its own rule, blocked outright or a daily timer, an optional block on installing new apps, adult sites filtered at the DNS level with forced safe search and YouTube Restricted Mode under it, blocked keywords, locked hours, strict mode, Prevent uninstall, and a Progress tab with ninety days of counters and charts. An APK on every release.</p>
         </li>
       </ul>
     </section>
@@ -154,7 +158,7 @@
       <div class="columns">
         <div>
           <h2>Educational videos only</h2>
-          <p>YouTube assigns every video one of 15 categories. Anti-Brainrot reads that category on the watch page and compares it with your allow list. Videos from allowed channels always play.</p>
+          <p>YouTube assigns every video one of 15 categories. Anti Brainrot reads that category on the watch page and compares it with your allow list. Videos from allowed channels always play.</p>
           <h3>Limits worth knowing</h3>
           <ul class="limits">
             <li>Feeds and search results still list every video. The gate is the watch page. You can search freely; you just cannot watch what is not allowed.</li>
@@ -168,15 +172,16 @@
         </div>
         <div>
           <h2>Adult site blocker</h2>
-          <p>Off by default. Switching it on asks Chrome for permission to act on all sites, because a redirect rule cannot work otherwise. The list is generated from public blocklists intersected with the Tranco top million, plus a curated core, and ships inside the extension.</p>
+          <p>Off by default. Switching it on asks Chrome for permission to act on all sites, because a redirect rule cannot work otherwise. The list is generated from public blocklists intersected with the Tranco top million, plus a curated core, and ships inside the extension. Navigations to a listed site land on the block page; the images, video, frames and scripts a listed site serves are blocked on every other page, so a forum or a results page cannot show them. Two switches sit under the filter, both on by default: Force safe search adds each engine's strict parameter to every search, the same one Chrome's own policy uses, and Restrict YouTube sends YouTube's Restricted Mode header with every request. A blocked keywords list, its own switch, catches any address that carries one of your words.</p>
           <h3>Limits worth knowing</h3>
           <ul class="limits">
             <li>It is a browser extension rule, not a network filter. Other browsers and apps on the machine are not affected.</li>
+            <li>No filter here judges a picture by its content. A page that is not on the list, not a search engine and has no blocked word in its address still shows what it shows.</li>
             <li>No list is complete. Sites it misses can be added in the options; sites it catches by mistake can be allowed there. Allowed sites win over blocked ones.</li>
             <li>Allowing a site, like every other loosening, waits until the filter is off.</li>
           </ul>
           <figure class="small">
-            <img src="assets/screenshots/site-blocked.jpg" alt="The block page on a sky blue background: a card that reads Not now, Anti-Brainrot blocked example.com, with Back and Subscriptions buttons" width="900" height="1100" loading="lazy">
+            <img src="assets/screenshots/site-blocked.jpg" alt="The block page on a sky blue background: a card that reads Not now, Anti Brainrot blocked example.com, with a Keep it blocked button" width="900" height="1100" loading="lazy">
             <figcaption>A blocked site lands here.</figcaption>
           </figure>
         </div>
@@ -207,7 +212,7 @@
 
     <section class="wrap shots" aria-labelledby="android-heading">
       <h2 id="android-heading">On the phone</h2>
-      <p>The Android app is an app blocker in the spirit of AppBlock, built with the phone's own tools. Every app and every site on your list gets its own rule. Blocked ones get a block screen the moment they open. Timed ones get a daily limit: they open on their own, only the time they are in front counts, so a limit of thirty minutes is thirty minutes of use, and a pause with an intention line can stand before them if you want that. When the minutes are gone they stay blocked until midnight. Rules follow the package name, so an uninstalled app comes back with its rule, and an optional install block keeps the app stores and the package installer shut while the filter is on. Sites are caught in the address bar of Chrome, Firefox, Samsung Internet, Brave, Edge, Opera, Vivaldi and DuckDuckGo. A DNS-only VPN answers lookups for adult hosts and blocked sites with "no such name" and forwards everything else to the network's resolver, so no traffic leaves the phone through the app. The friction timer, locked hours, Lock for N hours and the loosen-only-while-off rule are the same as in the extension. Strict mode closes the Settings pages that could disable the app while the filter is on, and Prevent uninstall makes the app a device admin that Android refuses to remove. A minute before a timer runs out, a notification says so. The Progress tab keeps ninety days of counters: how long the filter was on, block screens, time in timed apps and sessions, as totals over 7, 30 or 90 days, bars per day, a streak, and the apps that used the most time or needed the most block screens.</p>
+      <p>The Android app is an app blocker in the spirit of AppBlock, built with the phone's own tools. Every app and every site on your list gets its own rule. Blocked ones get a block screen the moment they open. Timed ones get a daily limit: they open on their own, only the time they are in front counts, so a limit of thirty minutes is thirty minutes of use, and a pause with an intention line can stand before them if you want that. When the minutes are gone they stay blocked until midnight. Rules follow the package name, so an uninstalled app comes back with its rule, and an optional install block keeps the app stores and the package installer shut while the filter is on. Sites are caught in the address bar of Chrome, Firefox, Samsung Internet, Brave, Edge, Opera, Vivaldi and DuckDuckGo. A DNS-only VPN answers lookups for adult hosts and blocked sites with "no such name", answers Google search, Bing, DuckDuckGo and YouTube with the addresses of their forced safe search hosts while you want that, and forwards everything else to the network's resolver, so no traffic leaves the phone through the app. A blocked keywords list puts the block screen over any page whose address carries one of your words. The friction timer, locked hours, Lock for N hours and the loosen-only-while-off rule are the same as in the extension. Strict mode closes the Settings pages that could disable the app while the filter is on, and Prevent uninstall makes the app a device admin that Android refuses to remove. A minute before a timer runs out, a notification says so. The Progress tab keeps ninety days of counters: how long the filter was on, block screens, time in timed apps and sessions, as totals over 7, 30 or 90 days, bars per day, a streak, and the apps that used the most time or needed the most block screens.</p>
       <div class="phones">
         <figure>
           <img src="assets/screenshots/android-home.png" alt="The Home tab of the Android app: a blue card that reads Filter is on with a power ring, a Lock for row and a Turn off button, then today's three numbers and the locked hours card" width="540" height="1200" loading="lazy">
@@ -305,7 +310,7 @@
   </section>
 
   <footer class="wrap">
-    <img src="assets/wordmark.svg" alt="anti-brainrot" width="160" height="48">
+    <img src="assets/wordmark.svg" alt="Anti Brainrot" width="160" height="48">
     <p>2026. <a href="https://github.com/danieltyukov/anti-brainrot">github.com/danieltyukov/anti-brainrot</a></p>
   </footer>
 

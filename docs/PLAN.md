@@ -5,7 +5,10 @@
 > changelog; the one that contradicts this plan is 1.7.0 (2026-09-21):
 > Shorts hiding became a setting (on by default, under the filter), the
 > `locked` flag went away, and a Prevent removal feature with a policy
-> install (CRX plus `site/updates.xml`) was added. For agentic workers: read it before changing scope. Read the spec at
+> install (CRX plus `site/updates.xml`) was added. 1.8.0 (2026-09-22) made
+> the adult ruleset block media from listed sites on every page, added
+> Force safe search and Restrict YouTube under it, added Block keywords,
+> and mirrored all three on Android (spec section 4b.1). For agentic workers: read it before changing scope. Read the spec at
 > `docs/specs/2026-09-20-anti-brainrot-design.md` for the reasoning behind every
 > decision. Tick boxes as you finish steps. Do not change scope without
 > writing the change here first.

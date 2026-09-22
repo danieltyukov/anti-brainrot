@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.danieltyukov.antibrainrot.core.Domains
+import io.github.danieltyukov.antibrainrot.core.Keywords
 import io.github.danieltyukov.antibrainrot.core.Presets
 import io.github.danieltyukov.antibrainrot.core.Rule
 import io.github.danieltyukov.antibrainrot.core.Settings
@@ -61,6 +62,7 @@ fun SitesScreen(vm: AppViewModel, s: Settings) {
     var newHost by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<String?>(null) }
     var allowed by remember(s.sites.allowed) { mutableStateOf(s.sites.allowed.joinToString("\n")) }
+    var keywords by remember(s.sites.keywords) { mutableStateOf(s.sites.keywords.joinToString("\n")) }
     val consent = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) Enforcer.syncSiteFilter(context, s)
         else vm.message.value = "The site filter needs the VPN permission to work."
@@ -134,9 +136,24 @@ fun SitesScreen(vm: AppViewModel, s: Settings) {
         Appear(1) {
             SectionCard("Adult sites", "A bundled list of 15,000 domains plus keyword rules, answered at the DNS level. Status: ${if (DnsVpnService.running) "filter running" else "filter off"}.") {
                 SwitchRow("Block adult sites", s.sites.adult) { v -> change { it.copy(sites = it.sites.copy(adult = v)) } }
+                SwitchRow(
+                    "Force safe search", s.sites.safeSearch, enabled = s.sites.adult,
+                    hint = "Google, Bing and DuckDuckGo are answered with the addresses of their forced safe search hosts, so images and videos are filtered whatever the account says.",
+                ) { v -> vm.update { it.copy(sites = it.sites.copy(safeSearch = v)) } }
+                SwitchRow(
+                    "Restrict YouTube", s.sites.restrictYouTube, enabled = s.sites.adult,
+                    hint = "YouTube, the app included, is answered with the address of its Restricted Mode host, which hides mature videos.",
+                ) { v -> vm.update { it.copy(sites = it.sites.copy(restrictYouTube = v)) } }
             }
         }
         Appear(2) {
+            SectionCard("Blocked keywords", "Words you never want to search for or open. A page whose address carries one of them, as a whole word, gets the block screen in the supported browsers: a search on any engine, a subreddit, a tag page. Site names do not count. Taking a word off waits until the filter is off.") {
+                OutlinedTextField(keywords, { keywords = it }, Modifier.fillMaxWidth(), minLines = 2, placeholder = { Text("one per line") }, shape = MaterialTheme.shapes.medium)
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = { vm.update { it.copy(sites = it.sites.copy(keywords = Keywords.parseList(keywords))) } }, Modifier.fillMaxWidth(), enabled = Keywords.parseList(keywords) != s.sites.keywords) { Text("Save") }
+            }
+        }
+        Appear(3) {
             SectionCard("Never block", "One host per line. Wins over the adult list and over blocked sites at the DNS level.") {
                 OutlinedTextField(allowed, { allowed = it }, Modifier.fillMaxWidth(), minLines = 2, shape = MaterialTheme.shapes.medium)
                 Spacer(Modifier.height(8.dp))

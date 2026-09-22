@@ -23,10 +23,13 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
 | `content/page-bridge.js` | youtube.com, main world | Reads the player response and emits `abr:video` with a JSON string. |
 | `background.js` | service worker | Normalises settings on start, badge text, Shorts and adult rulesets, custom rules, distracting site rules and scripts, passes, cooldowns, budget, stats, locked hours, the extensions page guard. |
 | `rules/shorts.json` | declarativeNetRequest | Redirects full loads of `/shorts/ID`. Enabled while Hide Shorts is active. |
-| `rules/adult.json` | declarativeNetRequest | Domain list plus keyword rules redirecting to `blocked/blocked.html`. Disabled until the feature is on. |
+| `rules/adult.json` | declarativeNetRequest | Domain list plus keyword rules redirecting navigations to `blocked/blocked.html`, with block twins for the media those hosts serve to other pages. Disabled until the feature is on. |
+| `rules/safesearch.json` | declarativeNetRequest | Query transform redirects adding each search engine's strict parameter. Enabled while Force safe search is active. |
+| `rules/youtube-restrict.json` | declarativeNetRequest | Sets `YouTube-Restrict: Strict` on YouTube requests. Enabled while Restrict YouTube is active. |
+| `lib/keywords.js` | shared | Blocked keyword normalisation, URL matching, and the dynamic rule builder. |
 | `popup/` | action popup | Toggle tree, filter switch, delay picker, countdown. |
 | `options/` | options page | Lists, delay, theme, import, export, reset. |
-| `blocked/` | extension page | Themed block page with four views: adult, block, pause, guard. |
+| `blocked/` | extension page | Themed block page with five views: adult, block, pause, keyword, guard. The Subscriptions link only shows for a YouTube URL. |
 
 ## Data flow
 
@@ -76,8 +79,11 @@ scripts that attach one object each to `globalThis.AntiBrainrot`. Node tests
 | Ruleset | Ids | Priority | Purpose |
 | --- | --- | --- | --- |
 | static `shorts` | 1, 2 | 1 | Shorts to watch redirect |
-| static `adult` | 1 to 6, 7 | 1, 2 | domain list, keyword rules, benign keyword exceptions |
-| dynamic | 1000, 2000 | 2, 3 | user's blocked and allowed adult domains |
+| static `adult` | 1 to 6, 7 to 12, 13 | 1, 1, 2 | domain list and keyword redirects, their subresource block twins, benign keyword exceptions |
+| static `safesearch` | 1 to 7 | 1 | strict parameter per search engine |
+| static `youtube-restrict` | 1 | 1 | Restricted Mode header |
+| dynamic | 1000, 1001, 2000 | 2, 2, 3 | user's blocked adult domains (navigations, then media), allowed domains |
+| dynamic | 5000 and up | 5 | blocked keywords, a redirect and a block per five words |
 | dynamic | 3000 to 3499 | 2 | distracting site redirects |
 | dynamic | 3500 to 3999 | 3 | distracting site exceptions |
 | session | 4000 and up | 4 | active passes |

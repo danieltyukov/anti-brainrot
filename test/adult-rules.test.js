@@ -10,6 +10,7 @@ const BLOCK_PAGE = '/blocked/blocked.html?u=';
 const text = fs.readFileSync(FILE, 'utf8');
 const rules = JSON.parse(text);
 const redirectRules = rules.filter((r) => r.action.type === 'redirect');
+const blockRules = rules.filter((r) => r.action.type === 'block');
 const allowRules = rules.filter((r) => r.action.type === 'allow');
 const domainRule = rules[0];
 const domains = domainRule.condition.requestDomains;
@@ -56,10 +57,29 @@ test('rule ids are unique integers starting at 1', () => {
   assert.deepEqual([...ids].sort((a, b) => a - b), ids.map((_, i) => i + 1));
 });
 
-test('every rule targets main frames only and has a positive priority', () => {
-  for (const rule of rules) {
-    assert.deepEqual(rule.condition.resourceTypes, ['main_frame'], `rule ${rule.id}`);
-    assert.ok(Number.isInteger(rule.priority) && rule.priority >= 1, `rule ${rule.id}`);
+test('redirect rules target main frames, block rules everything else, and every priority is positive', () => {
+  for (const rule of rules) assert.ok(Number.isInteger(rule.priority) && rule.priority >= 1, `rule ${rule.id}`);
+  for (const rule of redirectRules) assert.deepEqual(rule.condition.resourceTypes, ['main_frame'], `rule ${rule.id}`);
+  for (const rule of blockRules) {
+    assert.equal(rule.condition.resourceTypes, undefined, `rule ${rule.id}`);
+    assert.deepEqual(rule.condition.excludedResourceTypes, ['main_frame'], `rule ${rule.id}`);
+  }
+});
+
+// Every redirect rule (a navigation to the site) has a twin block rule with
+// the same condition for images, video, frames and scripts served from the
+// site to any page. That is what keeps adult media off a search results page
+// or a forum.
+test('every redirect rule has a block twin for subresources', () => {
+  assert.equal(blockRules.length, redirectRules.length);
+  for (const redirect of redirectRules) {
+    // The domain redirect needs a regexFilter for the substitution; its twin
+    // does not, so domain rules pair on the list and keyword rules on the regex.
+    const twin = blockRules.find((b) => (redirect.condition.requestDomains
+      ? JSON.stringify(b.condition.requestDomains) === JSON.stringify(redirect.condition.requestDomains)
+      : !b.condition.requestDomains && b.condition.regexFilter === redirect.condition.regexFilter));
+    assert.ok(twin, `rule ${redirect.id} has no block twin`);
+    assert.equal(twin.priority, redirect.priority);
   }
 });
 
@@ -73,12 +93,16 @@ test('redirect rules send the request to the block page with the original URL', 
   }
 });
 
-test('allow rules outrank the redirect rules and only list domains', () => {
-  const maxRedirect = Math.max(...redirectRules.map((r) => r.priority));
+test('allow rules outrank the redirect and block rules, only list domains, and cover every resource type', () => {
+  const maxBlocking = Math.max(...[...redirectRules, ...blockRules].map((r) => r.priority));
   for (const rule of allowRules) {
-    assert.ok(rule.priority > maxRedirect, `rule ${rule.id}`);
+    assert.ok(rule.priority > maxBlocking, `rule ${rule.id}`);
     assert.equal(rule.condition.regexFilter, undefined, `rule ${rule.id}`);
     assert.ok(rule.condition.requestDomains.length >= 1, `rule ${rule.id}`);
+    assert.ok(rule.condition.resourceTypes.includes('main_frame'), `rule ${rule.id}`);
+    assert.ok(rule.condition.resourceTypes.includes('image'), `rule ${rule.id}`);
+    assert.ok(rule.condition.resourceTypes.includes('media'), `rule ${rule.id}`);
+    assert.ok(rule.condition.resourceTypes.includes('sub_frame'), `rule ${rule.id}`);
   }
 });
 
@@ -141,6 +165,6 @@ test('well-known adult domains are covered', () => {
   assert.ok(covers('cam4.com'));
 });
 
-test('the file stays under 500 KB', () => {
-  assert.ok(Buffer.byteLength(text) < 500 * 1024);
+test('the file stays under 1 MB', () => {
+  assert.ok(Buffer.byteLength(text) < 1024 * 1024);
 });

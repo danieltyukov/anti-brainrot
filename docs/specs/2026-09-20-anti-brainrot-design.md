@@ -32,7 +32,7 @@ the friction.
 
 ## 2. Naming and identity
 
-- Product name: Anti-Brainrot (wordmark: anti-brainrot)
+- Product name: Anti Brainrot, written with a space since 1.8.0 (2026-09-22); until then Anti-Brainrot with the wordmark anti-brainrot. Repository, package and file names keep the slug anti-brainrot.
 - Tagline: The anti brain rot extension for Chrome. (Changed 2026-09-20 from a YouTube-only line because the site blocker works everywhere.)
 - Repository: github.com/danieltyukov/anti-brainrot (public, MIT)
 - Website: https://danieltyukov.github.io/anti-brainrot/
@@ -162,6 +162,83 @@ Pinned extension id: `manifest.json` carries a `key` so the id is
 `ibcicobbbpfmonjbhpmllnjgdkedneop` for every install. The redirect rules need
 the absolute chrome-extension:// URL of the block page, which is only stable
 with a pinned id. The private key lives outside the repository.
+
+### 4b.1 Media, safe search, Restricted Mode and keywords (added 2026-09-22, v1.8.0)
+
+Asked for on 2026-09-22: blocking a site's address was not enough, because
+an image search for "nudes" or "feet" on an ordinary search engine, or a
+forum embedding a clip from a listed host, showed the same material. Four
+things changed.
+
+Media from listed sites. Every redirect rule in `rules/adult.json` (the
+domain rule and the keyword rules) has a block twin with the same condition
+and `excludedResourceTypes: ["main_frame"]`, so images, video, frames,
+scripts and fetches served by a listed host are blocked wherever they are
+embedded. The allow rule for benign keyword hits names every resource type.
+The user's own blocked domains get the same pair (dynamic ids 1000 and
+1001); the allow rule for their allowed domains covers every type too. The
+domain list appears twice in the file, since a rule has one action; the
+generator has a `--rules-only` mode that rewrites the rule structure
+around the committed list without downloading anything.
+
+Force safe search: feature `safeSearch`, child of `adultSites` with mode
+`when-parent-on`, default on. A static ruleset `safesearch`
+(`rules/safesearch.json`) rewrites search URLs with a `queryTransform`
+redirect that adds the engine's strict parameter: Google `safe=active` and
+`ssui=on` (what Chrome's ForceGoogleSafeSearch policy appends), Bing
+`adlt=strict`, DuckDuckGo `kp=1` on pages and `p=1` on its image and video
+API, Yahoo `vm=r`, Yandex `family=yes`, Brave `safesearch=strict`.
+`addOrReplaceParams` is idempotent, so the rewritten URL does not redirect
+again. Main frames, subframes and XHR. Verified live on every engine: the
+parameter lands in the address and Bing and Yahoo show "SafeSearch: Strict"
+and "SafeSearch on".
+
+Restrict YouTube: feature `restrictYouTube`, same parent and mode, default
+on. A static ruleset `youtube-restrict` sets the request header
+`YouTube-Restrict: Strict` on every request to youtube.com,
+youtube-nocookie.com and the YouTube API hosts, which is YouTube's
+Restricted Mode as a network enforces it. Strict rather than Moderate,
+because the purpose is adult content and the switch is there for anyone
+who finds it too much.
+
+Block keywords: feature `keywords`, a root in the Everywhere group, default
+off, same `<all_urls>` permission. `keywords.blocked` is a list of up to
+200 words (letters and digits, spaces inside a phrase, at most 40
+characters, normalised by `lib/keywords.js`). The worker builds dynamic
+rules (ids 5000 and up, priority 5, above passes and exceptions): per five
+keywords one RE2 regex over the URL after the host, matching a word between
+non-alphanumeric characters or percent-encoded bytes, with a redirect to
+`blocked.html?kind=keyword` for main frames and a block for subframes,
+XHR, websockets and other. The host does not count; that is the adult
+list's job. In-page navigation is covered by the YouTube content script
+and the distracting sites watcher, which call `keywords.match` on every URL
+change. The block page names the word. Adding a word is tightening,
+removing one is loosening.
+
+Block page: the Subscriptions link is shown only when the blocked URL is on
+youtube.com. The other views (adult, block, keyword, guard) offer Keep it
+blocked alone.
+
+Android mirrors the three: `sites.safeSearch` and `sites.restrictYouTube`
+under the adult switch, enforced by the DNS filter answering lookups of
+Google search domains, Bing and DuckDuckGo with the addresses of
+`forcesafesearch.google.com`, `strict.bing.com` and `safe.duckduckgo.com`,
+and YouTube hosts with `restrict.youtube.com`, the way those companies
+document it for networks (the YouTube app follows too). The service
+resolves the target through the network's own resolver (the app is
+excluded from the tunnel), caches it for five minutes, answers A and AAAA
+with the addresses and every other type with an empty NOERROR answer, and
+forwards the query unchanged if the target cannot be resolved.
+`sites.keywords` is checked against the browser's address bar by the
+accessibility service; a hit is the rule key `keyword:<word>`, which
+`Keys.ruleFor` turns into a Block rule so the block screen and the
+loosening guard work unchanged.
+
+Not done, on purpose: judging a picture by its content. An image
+classifier in the extension would mean a multi-megabyte model, CPU time on
+every image and false positives, against the no-dependencies rule. A page
+that is not on the list, not a search engine and has no blocked word in
+its address still shows what it shows; the options page says so.
 
 ## 4d. Distracting sites (added 2026-09-20, v1.1.0)
 

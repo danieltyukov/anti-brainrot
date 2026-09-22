@@ -19,6 +19,7 @@ import io.github.danieltyukov.antibrainrot.R
 import io.github.danieltyukov.antibrainrot.block.BlockActivity
 import io.github.danieltyukov.antibrainrot.core.Domains
 import io.github.danieltyukov.antibrainrot.core.Keys
+import io.github.danieltyukov.antibrainrot.core.Keywords
 import io.github.danieltyukov.antibrainrot.core.LocalState
 import io.github.danieltyukov.antibrainrot.core.Passes
 import io.github.danieltyukov.antibrainrot.core.Rule
@@ -155,7 +156,7 @@ class BlockerAccessibilityService : AccessibilityService() {
                 return
             }
         }
-        if (root != null && pkg in URL_BARS && settings.sites.rules.isNotEmpty()) watchAddressBar(pkg, root)
+        if (root != null && pkg in URL_BARS && (settings.sites.rules.isNotEmpty() || settings.sites.keywords.isNotEmpty())) watchAddressBar(pkg, root)
     }
 
     // Reads the browser's address bar and applies the site's rule. Content
@@ -172,11 +173,13 @@ class BlockerAccessibilityService : AccessibilityService() {
         if (key != null && Enforcer.isBlocked(settings, local, key)) block(key, pkg)
     }
 
+    // "keyword:<word>" when the address carries a blocked keyword, else
     // "site:<rule host>" for the page shown in a known browser, or null.
     private fun siteKeyInFront(pkg: String, root: AccessibilityNodeInfo): String? {
         val id = URL_BARS[pkg] ?: return null
         val node = root.findAccessibilityNodeInfosByViewId("$pkg:id/$id").firstOrNull() ?: return null
         val text = node.text?.toString() ?: return null
+        Keywords.match(settings.sites.keywords, text)?.let { return Keys.keyword(it) }
         val host = Domains.normalize(text) ?: return null
         val ruleHost = Keys.siteRuleHost(settings, host) ?: return null
         return Keys.site(ruleHost)
@@ -227,7 +230,7 @@ class BlockerAccessibilityService : AccessibilityService() {
     }
 
     private fun labelFor(key: String): String =
-        if (Keys.isSite(key)) Keys.label(key) else try {
+        if (Keys.isSite(key) || Keys.isKeyword(key)) Keys.label(key) else try {
             packageManager.getApplicationLabel(packageManager.getApplicationInfo(key, 0)).toString()
         } catch (e: Exception) { key }
 

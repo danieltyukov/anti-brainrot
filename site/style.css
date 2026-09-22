@@ -129,6 +129,11 @@ main { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .cloud { animation: none; }
+  .mark,
+  .hero h1,
+  .hero .tagline,
+  .hero .lede,
+  .hero .actions { animation: none; }
 }
 
 /* Top nav */
@@ -170,12 +175,42 @@ main { position: relative; z-index: 1; }
   width: clamp(140px, 24vw, 240px);
   height: auto;
   margin-bottom: 2.5rem;
+  transform-origin: 40% 55%;
+  animation: glide 7s ease-in-out infinite, settle 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  will-change: transform;
+}
+
+/* A leaf on a slow current: up and to the right with a small lift of the
+   nose, back down with a dip, never far from where it started. */
+@keyframes glide {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(6px, -10px) rotate(-3deg); }
+  50%  { transform: translate(0, -4px) rotate(1deg); }
+  75%  { transform: translate(-5px, 6px) rotate(3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* On arrival it comes in from the left, the way it points. */
+@keyframes settle {
+  from { opacity: 0; translate: -40px 8px; }
+  to   { opacity: 1; translate: 0 0; }
 }
 
 .hero h1 {
   font-size: clamp(2.8rem, 9vw, 5.25rem);
   font-weight: 600;
   letter-spacing: -0.02em;
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s both;
+}
+
+.hero .tagline { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.55s both; }
+.hero .lede,
+.hero .actions { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.75s both; }
+
+/* The words follow the leaf in: up from below, a touch tighter at first. */
+@keyframes rise {
+  from { opacity: 0; translate: 0 18px; letter-spacing: 0.02em; }
+  to   { opacity: 1; translate: 0 0; }
 }
 
 .tagline {

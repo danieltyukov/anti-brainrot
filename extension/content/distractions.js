@@ -48,6 +48,11 @@
   }
 
   function check() {
+    // A blocked keyword in the address outranks everything, pass or not.
+    if (settings && S.isActive(settings, 'keywords') && U.keywords.match(settings.keywords.blocked, location.href)) {
+      location.replace(chrome.runtime.getURL('blocked/blocked.html') + '?kind=keyword&u=' + encodeURIComponent(location.href));
+      return;
+    }
     if (!settings || !S.isActive(settings, 'distractions')) {
       setGray(false);
       return;

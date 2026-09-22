@@ -51,6 +51,9 @@
     { id: 'grayscale', label: 'Grayscale YouTube', default: false, attr: 'grayscale' },
     { id: 'educational', label: 'Educational videos only', default: false, attr: 'educational' },
     { id: 'adultSites', label: 'Block adult sites', default: false, attr: null, section: 'web' },
+    { id: 'safeSearch', label: 'Force safe search', default: true, attr: null, section: 'web', parent: 'adultSites', mode: 'when-parent-on' },
+    { id: 'restrictYouTube', label: 'Restrict YouTube', default: true, attr: null, section: 'web', parent: 'adultSites', mode: 'when-parent-on' },
+    { id: 'keywords', label: 'Block keywords', default: false, attr: null, section: 'web' },
     { id: 'distractions', label: 'Block distracting sites', default: false, attr: null, section: 'web' },
     { id: 'schedule', label: 'Locked hours', default: false, attr: null, section: 'web' },
     { id: 'preventRemoval', label: 'Prevent removal', default: false, attr: null, section: 'web' },
@@ -60,6 +63,7 @@
   // popup requests them on the click; the worker finishes the switch.
   const PERMISSIONS = Object.freeze({
     adultSites: { origins: ['<all_urls>'] },
+    keywords: { origins: ['<all_urls>'] },
     distractions: { origins: ['<all_urls>'] },
     preventRemoval: { permissions: ['tabs'] },
   });

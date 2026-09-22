@@ -167,7 +167,7 @@ private fun Header(s: Settings, showSetup: Boolean) {
         Icon(painterResource(R.drawable.ic_mark), contentDescription = null, Modifier.size(30.dp), tint = MaterialTheme.colorScheme.onBackground)
         Spacer(Modifier.width(10.dp))
         Column {
-            Text("AntiBrainrot", style = MaterialTheme.typography.titleLarge)
+            Text("Anti Brainrot", style = MaterialTheme.typography.titleLarge)
             AnimatedVisibility(showSetup) {
                 Text("Setup", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

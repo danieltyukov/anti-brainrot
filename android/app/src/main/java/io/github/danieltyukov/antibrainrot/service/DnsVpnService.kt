@@ -26,6 +26,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.net.Inet4Address
+import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
@@ -34,8 +36,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 // A DNS-only VPN. Only the two fake DNS addresses are routed into the tunnel,
 // so every other packet takes its normal path. Queries for blocked names get
-// NXDOMAIN; the rest are forwarded to the network's own resolver. No traffic
-// leaves the device through this app.
+// NXDOMAIN, search engines and YouTube are answered with their forced safe
+// search hosts while the adult filter wants that, and the rest are forwarded
+// to the network's own resolver. No traffic leaves the device through this
+// app.
 class DnsVpnService : VpnService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var tun: ParcelFileDescriptor? = null
@@ -45,6 +49,9 @@ class DnsVpnService : VpnService() {
     private val forwardPool = Executors.newCachedThreadPool()
     private val writeLock = Any()
     private var adultList: Set<String> = emptySet()
+    // Safe search hosts resolved through the network's own resolver (this
+    // app is excluded from the tunnel), kept for a while.
+    private val rewriteCache = HashMap<String, Pair<Long, List<InetAddress>>>()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -79,7 +86,7 @@ class DnsVpnService : VpnService() {
     private fun applySettings(s: Settings) {
         // Blocked sites are also answered NXDOMAIN; timed sites need to load
         // during a session, so only the address bar watches them.
-        policy = DomainPolicy(adultList, s.sites.adult, Keys.blockedHosts(s), s.sites.allowed)
+        policy = DomainPolicy(adultList, s.sites.adult, Keys.blockedHosts(s), s.sites.allowed, s.sites.safeSearch, s.sites.restrictYouTube)
         if (!Enforcer.siteFilterWanted(s)) {
             stopFilter()
             stopSelf()
@@ -166,37 +173,74 @@ class DnsVpnService : VpnService() {
 
     private fun handlePacket(packet: ByteArray, output: FileOutputStream) {
         val parsed = Dns.parse(packet) ?: return
-        val name = parsed.question ?: return
+        val question = parsed.question ?: return
+        val name = question.name
         if (policy.isBlocked(name)) {
             val reply = Dns.buildReply(parsed, Dns.nxdomain(parsed.payload))
             synchronized(writeLock) { output.write(reply) }
             return
         }
+        val target = policy.rewrite(name)
         forwardPool.execute {
-            try {
-                val socket = DatagramSocket()
-                protect(socket)
-                socket.soTimeout = 5000
-                val resolvers = upstreamResolvers()
-                var answer: ByteArray? = null
-                for (resolver in resolvers) {
-                    try {
-                        socket.send(DatagramPacket(parsed.payload, parsed.payload.size, InetSocketAddress(resolver, 53)))
-                        val response = DatagramPacket(ByteArray(4096), 4096)
-                        socket.receive(response)
-                        answer = response.data.copyOf(response.length)
-                        break
-                    } catch (e: Exception) {
-                        // try the next resolver
-                    }
+            if (target != null && answerWith(parsed, question, target, output)) return@execute
+            forward(parsed, output)
+        }
+    }
+
+    private fun resolveTarget(target: String): List<InetAddress> {
+        val now = System.currentTimeMillis()
+        synchronized(rewriteCache) { rewriteCache[target]?.let { if (it.first > now) return it.second } }
+        val addresses = try {
+            InetAddress.getAllByName(target).toList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+        if (addresses.isNotEmpty()) synchronized(rewriteCache) { rewriteCache[target] = (now + REWRITE_TTL_MS) to addresses }
+        return addresses
+    }
+
+    // Answers the query with the addresses of the safe search host. Address
+    // records only; anything else (HTTPS records, for one) gets an empty
+    // answer so nothing points back at the unfiltered host. False when the
+    // host could not be resolved, in which case the query is forwarded as it
+    // is rather than left unanswered.
+    private fun answerWith(parsed: Dns.Parsed, question: Dns.Question, target: String, output: FileOutputStream): Boolean {
+        val addresses = resolveTarget(target)
+        if (addresses.isEmpty()) return false
+        val rdata = when (question.type) {
+            Dns.TYPE_A -> addresses.filterIsInstance<Inet4Address>().map { it.address }
+            Dns.TYPE_AAAA -> addresses.filterIsInstance<Inet6Address>().map { it.address }
+            else -> emptyList()
+        }
+        val reply = Dns.buildReply(parsed, Dns.answer(parsed.payload, question, rdata))
+        synchronized(writeLock) { output.write(reply) }
+        return true
+    }
+
+    private fun forward(parsed: Dns.Parsed, output: FileOutputStream) {
+        try {
+            val socket = DatagramSocket()
+            protect(socket)
+            socket.soTimeout = 5000
+            val resolvers = upstreamResolvers()
+            var answer: ByteArray? = null
+            for (resolver in resolvers) {
+                try {
+                    socket.send(DatagramPacket(parsed.payload, parsed.payload.size, InetSocketAddress(resolver, 53)))
+                    val response = DatagramPacket(ByteArray(4096), 4096)
+                    socket.receive(response)
+                    answer = response.data.copyOf(response.length)
+                    break
+                } catch (e: Exception) {
+                    // try the next resolver
                 }
-                socket.close()
-                val data = answer ?: return@execute
-                val reply = Dns.buildReply(parsed, data)
-                synchronized(writeLock) { output.write(reply) }
-            } catch (e: Exception) {
-                Log.w(TAG, "forward failed: ${e.message}")
             }
+            socket.close()
+            val data = answer ?: return
+            val reply = Dns.buildReply(parsed, data)
+            synchronized(writeLock) { output.write(reply) }
+        } catch (e: Exception) {
+            Log.w(TAG, "forward failed: ${e.message}")
         }
     }
 
@@ -225,14 +269,21 @@ class DnsVpnService : VpnService() {
         const val DNS_ADDRESS4 = "10.111.222.2"
         const val TUN_ADDRESS6 = "fd00:abbe:abbe::1"
         const val DNS_ADDRESS6 = "fd00:abbe:abbe::2"
+        private const val REWRITE_TTL_MS = 5 * 60 * 1000L
         private const val TAG = "abr-dns"
         @Volatile var running = false
     }
 }
 
 // Minimal IP/UDP/DNS packet handling for the filter: enough to read a query
-// name, forward the DNS payload, and write a well formed reply back.
+// name and type, forward the DNS payload, answer with addresses of our own,
+// and write a well formed reply back.
 object Dns {
+    const val TYPE_A = 1
+    const val TYPE_AAAA = 28
+
+    class Question(val name: String, val type: Int, val end: Int)
+
     class Parsed(
         val ipVersion: Int,
         val header: ByteArray, // IP header bytes
@@ -241,7 +292,7 @@ object Dns {
         val srcPort: Int,
         val dstPort: Int,
         val payload: ByteArray,
-        val question: String?,
+        val question: Question?,
     )
 
     fun parse(packet: ByteArray): Parsed? {
@@ -263,7 +314,7 @@ object Dns {
         val dstPort = ((p[udp + 2].toInt() and 0xFF) shl 8) or (p[udp + 3].toInt() and 0xFF)
         if (dstPort != 53) return null
         val payload = p.copyOfRange(udp + 8, p.size)
-        return Parsed(4, p.copyOfRange(0, ihl), p.copyOfRange(12, 16), p.copyOfRange(16, 20), srcPort, dstPort, payload, questionName(payload))
+        return Parsed(4, p.copyOfRange(0, ihl), p.copyOfRange(12, 16), p.copyOfRange(16, 20), srcPort, dstPort, payload, question(payload))
     }
 
     private fun parse6(p: ByteArray): Parsed? {
@@ -274,11 +325,12 @@ object Dns {
         val dstPort = ((p[udp + 2].toInt() and 0xFF) shl 8) or (p[udp + 3].toInt() and 0xFF)
         if (dstPort != 53) return null
         val payload = p.copyOfRange(udp + 8, p.size)
-        return Parsed(6, p.copyOfRange(0, 40), p.copyOfRange(8, 24), p.copyOfRange(24, 40), srcPort, dstPort, payload, questionName(payload))
+        return Parsed(6, p.copyOfRange(0, 40), p.copyOfRange(8, 24), p.copyOfRange(24, 40), srcPort, dstPort, payload, question(payload))
     }
 
-    fun questionName(dns: ByteArray): String? {
-        if (dns.size < 13) return null
+    // The first question: its name, type, and the offset just past it.
+    fun question(dns: ByteArray): Question? {
+        if (dns.size < 17) return null
         val qdcount = ((dns[4].toInt() and 0xFF) shl 8) or (dns[5].toInt() and 0xFF)
         if (qdcount < 1) return null
         val sb = StringBuilder()
@@ -292,7 +344,31 @@ object Dns {
             sb.append(String(dns, i + 1, len, Charsets.US_ASCII))
             i += 1 + len
         }
-        return if (sb.isEmpty()) null else sb.toString().lowercase()
+        if (sb.isEmpty() || i + 5 > dns.size) return null
+        val type = ((dns[i + 1].toInt() and 0xFF) shl 8) or (dns[i + 2].toInt() and 0xFF)
+        return Question(sb.toString().lowercase(), type, i + 5)
+    }
+
+    fun questionName(dns: ByteArray): String? = question(dns)?.name
+
+    // Copies the header and question, then answers with one address record
+    // per entry (4 bytes for A, 16 for AAAA), the name written as a pointer
+    // to the question. An empty list gives a NOERROR answer with no records.
+    fun answer(query: ByteArray, q: Question, addresses: List<ByteArray>, ttl: Int = 300): ByteArray {
+        val out = ByteBuffer.allocate(q.end + addresses.sumOf { 12 + it.size })
+        out.put(query, 0, q.end)
+        for (a in addresses) {
+            out.put(0xC0.toByte()).put(0x0C.toByte())
+            out.putShort((if (a.size == 16) TYPE_AAAA else TYPE_A).toShort()).putShort(1)
+            out.putInt(ttl).putShort(a.size.toShort()).put(a)
+        }
+        val b = out.array()
+        b[2] = ((b[2].toInt() and 0x01) or 0x80).toByte() // QR=1, keep RD
+        b[3] = (0x80).toByte() // RA=1, RCODE=0
+        b[4] = 0; b[5] = 1 // QDCOUNT
+        b[6] = (addresses.size shr 8).toByte(); b[7] = addresses.size.toByte() // ANCOUNT
+        b[8] = 0; b[9] = 0; b[10] = 0; b[11] = 0 // NSCOUNT, ARCOUNT
+        return b
     }
 
     // Copies the query and flips it into an NXDOMAIN response.

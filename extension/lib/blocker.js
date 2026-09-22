@@ -1,11 +1,22 @@
 // Adult site blocker helpers: domain normalisation, dynamic rule builders for
 // the user's own lists, and block page helpers. Pure, no chrome.* calls.
+//
+// A blocked site gets two rules: a redirect of navigations to the block page
+// and a block of everything else it serves (images, video, frames, scripts),
+// so its media stays off other pages too.
 (globalThis.AntiBrainrot ||= {}).blocker = (() => {
   'use strict';
 
   const BLOCK_PAGE = '/blocked/blocked.html';
   const DYNAMIC_BLOCK_ID = 1000;
+  const DYNAMIC_SUBRESOURCE_ID = 1001;
   const DYNAMIC_ALLOW_ID = 2000;
+  // Every declarativeNetRequest resource type. An allow rule has to name
+  // them all to cover both the navigation and the media a page embeds.
+  const ALL_RESOURCE_TYPES = Object.freeze([
+    'main_frame', 'sub_frame', 'stylesheet', 'script', 'image', 'font', 'object', 'xmlhttprequest',
+    'ping', 'csp_report', 'media', 'websocket', 'webtransport', 'webbundle', 'other',
+  ]);
 
   function normalizeDomain(entry) {
     if (typeof entry !== 'string') return null;
@@ -50,12 +61,20 @@
     const rules = [];
     if (blocked.length > 0) {
       // Priority 2 so a user's own entry beats the bundled allow rule for
-      // benign hostnames that match a keyword (rules/adult.json rule 7).
+      // benign hostnames that match a keyword (the allow rule in
+      // rules/adult.json). Navigations go to the block page; images, video,
+      // frames and scripts from the site are blocked on every page.
       rules.push({
         id: DYNAMIC_BLOCK_ID,
         priority: 2,
         action: redirectAction(extensionId),
         condition: { requestDomains: blocked, regexFilter: '^https?://.*', resourceTypes: ['main_frame'] },
+      });
+      rules.push({
+        id: DYNAMIC_SUBRESOURCE_ID,
+        priority: 2,
+        action: { type: 'block' },
+        condition: { requestDomains: blocked, excludedResourceTypes: ['main_frame'] },
       });
     }
     if (allowed.length > 0) {
@@ -63,7 +82,7 @@
         id: DYNAMIC_ALLOW_ID,
         priority: 3,
         action: { type: 'allow' },
-        condition: { requestDomains: allowed, resourceTypes: ['main_frame'] },
+        condition: { requestDomains: allowed, resourceTypes: [...ALL_RESOURCE_TYPES] },
       });
     }
     return rules;
@@ -86,14 +105,14 @@
     }
   }
 
-  // 'adult' (default), 'block', 'pause' or 'guard'.
+  // 'adult' (default), 'block', 'pause', 'guard' or 'keyword'.
   function kindFrom(href) {
     if (typeof href !== 'string') return 'adult';
     const q = href.indexOf('?');
     if (q < 0) return 'adult';
     const head = href.slice(q + 1).split(/[?&]u=/)[0];
     const kind = new URLSearchParams(head).get('kind');
-    return ['adult', 'block', 'pause', 'guard'].includes(kind) ? kind : 'adult';
+    return ['adult', 'block', 'pause', 'guard', 'keyword'].includes(kind) ? kind : 'adult';
   }
 
   function hostOf(url) {
@@ -104,5 +123,25 @@
     }
   }
 
-  return Object.freeze({ BLOCK_PAGE, DYNAMIC_BLOCK_ID, DYNAMIC_ALLOW_ID, normalizeDomain, parseDomainList, dynamicRules, blockedUrlFrom, kindFrom, hostOf });
+  // True for youtube.com and its subdomains. The block page offers a way
+  // to Subscriptions only when the blocked page was on YouTube.
+  function isYouTube(url) {
+    const host = hostOf(url);
+    return host === 'youtube.com' || (typeof host === 'string' && host.endsWith('.youtube.com'));
+  }
+
+  return Object.freeze({
+    BLOCK_PAGE,
+    DYNAMIC_BLOCK_ID,
+    DYNAMIC_SUBRESOURCE_ID,
+    DYNAMIC_ALLOW_ID,
+    ALL_RESOURCE_TYPES,
+    normalizeDomain,
+    parseDomainList,
+    dynamicRules,
+    blockedUrlFrom,
+    kindFrom,
+    hostOf,
+    isYouTube,
+  });
 })();

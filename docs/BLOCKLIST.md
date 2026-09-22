@@ -55,6 +55,10 @@ and reviews them rather than concatenating them.
 8. Sort and write `adult.json`:
    - rule 1 redirects main-frame requests for every listed domain to the
      block page, appending the original URL as `?u=`;
+   - rules 7 to 12 (since 1.8.0) are block twins of rules 1 to 6 with
+     `excludedResourceTypes: ["main_frame"]`: images, video, frames,
+     scripts and fetches served by a listed or keyword host are blocked
+     on every page. The domain list therefore appears twice in the file;
    - rules 2 to 6 are hostname keyword rules, at most six keywords per
      RE2 regex: `porn`, `xxx`, `xvideos`, `xnxx`, `xhamster`, `hentai`,
      `redtube`, `brazzers`, `chaturbate`, `stripchat`, `livejasmin`,
@@ -67,11 +71,11 @@ and reviews them rather than concatenating them.
      `cam4` must be a whole label (`beegees.com`, `beegfs.io`, `cam4lab.dev`).
      Generic words such as sex, nude, adult, girls, teen or cam are not used;
      `sussex.ac.uk` and `adulteducation.org` would match.
-   - rule 7 is an allow rule with a higher priority for benign hostnames
-     that a keyword still matches, found by running the keywords over the
-     Tranco list: the XXXLutz furniture group, `mixxx.org`, `pornic.fr`
-     (a town in France), `odpornosc.org.pl` (Polish for immunity) and a few
-     more.
+   - the last rule is an allow rule with a higher priority, covering every
+     resource type, for benign hostnames that a keyword still matches,
+     found by running the keywords over the Tranco list: the XXXLutz
+     furniture group, `mixxx.org`, `pornic.fr` (a town in France),
+     `odpornosc.org.pl` (Polish for immunity) and a few more.
 
 The domain rule packs eight domains per line so that the file stays small.
 
@@ -88,13 +92,21 @@ The domain rule packs eight domains per line so that the file stays small.
 | Final | 15,000 (295 from the core list, 14,717 lower-ranked candidates cut) |
 | Lowest Tranco rank kept outside the core list | 533,473 |
 
-File size: 273.5 KB, 7 rules.
+File size: 545.4 KB, 13 rules (since the 1.8.0 rule rewrite; the list
+itself is the 2026-09-20 build).
 
 ## Regenerating
 
 ```
 npm run blocklist
 npm test
+```
+
+To change the rule structure without touching the list, for example after
+editing the keyword or resource type handling in the script:
+
+```
+node scripts/build-adult-list.mjs --rules-only
 ```
 
 The script needs Node 22 and network access. Tranco publishes a new list every

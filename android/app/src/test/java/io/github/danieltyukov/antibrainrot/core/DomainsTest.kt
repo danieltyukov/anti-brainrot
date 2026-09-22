@@ -46,6 +46,38 @@ class DomainsTest {
         assertFalse(off.isBlocked("badsite.example"))
     }
 
+    @Test fun safeSearchTargets() {
+        assertEquals(SafeSearch.GOOGLE, SafeSearch.searchTarget("www.google.com"))
+        assertEquals(SafeSearch.GOOGLE, SafeSearch.searchTarget("google.co.uk"))
+        assertEquals(SafeSearch.GOOGLE, SafeSearch.searchTarget("www.google.com.au"))
+        assertEquals(SafeSearch.GOOGLE, SafeSearch.searchTarget("google.nl"))
+        assertNull(SafeSearch.searchTarget("mail.google.com"))
+        assertNull(SafeSearch.searchTarget("docs.google.com"))
+        assertNull(SafeSearch.searchTarget("googleapis.com"))
+        assertEquals(SafeSearch.BING, SafeSearch.searchTarget("www.bing.com"))
+        assertEquals(SafeSearch.DUCKDUCKGO, SafeSearch.searchTarget("duckduckgo.com"))
+        assertEquals(SafeSearch.YOUTUBE, SafeSearch.youtubeTarget("m.youtube.com"))
+        assertEquals(SafeSearch.YOUTUBE, SafeSearch.youtubeTarget("www.youtube.com"))
+        assertNull(SafeSearch.youtubeTarget("www.google.com"))
+        assertNull(SafeSearch.searchTarget("www.youtube.com"))
+    }
+
+    @Test fun policyRewrites() {
+        val on = DomainPolicy(emptySet(), adultEnabled = true, blockedHosts = emptyList(), allowed = emptyList(), safeSearch = true, restrictYouTube = true)
+        assertEquals(SafeSearch.GOOGLE, on.rewrite("www.google.com"))
+        assertEquals(SafeSearch.GOOGLE, on.rewrite("WWW.GOOGLE.COM."))
+        assertEquals(SafeSearch.YOUTUBE, on.rewrite("www.youtube.com"))
+        assertNull(on.rewrite("example.com"))
+        assertFalse(on.isBlocked("www.google.com"))
+        val adultOff = DomainPolicy(emptySet(), adultEnabled = false, blockedHosts = emptyList(), allowed = emptyList(), safeSearch = true, restrictYouTube = true)
+        assertNull(adultOff.rewrite("www.google.com"))
+        val partsOff = DomainPolicy(emptySet(), adultEnabled = true, blockedHosts = emptyList(), allowed = emptyList(), safeSearch = false, restrictYouTube = false)
+        assertNull(partsOff.rewrite("www.google.com"))
+        assertNull(partsOff.rewrite("www.youtube.com"))
+        val allowed = DomainPolicy(emptySet(), adultEnabled = true, blockedHosts = emptyList(), allowed = listOf("google.com"), safeSearch = true, restrictYouTube = true)
+        assertNull(allowed.rewrite("www.google.com"))
+    }
+
     @Test fun presets() {
         assertTrue(Presets.hosts(Presets.DEFAULT_IDS).contains("tiktok.com"))
         assertEquals(Presets.ALL.map { it.id }.distinct().size, Presets.ALL.size)

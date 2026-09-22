@@ -83,13 +83,54 @@ object Domains {
     }
 }
 
-// Decides whether a DNS name is blocked. Built once per settings change.
+// Forced safe search at the DNS level, the way Google, Microsoft and
+// DuckDuckGo document it for networks: the search host is answered with the
+// addresses of a host that serves the same site with the strict setting
+// locked on. YouTube gets its Restricted Mode host, which the YouTube app
+// honours as well as the browser.
+object SafeSearch {
+    const val GOOGLE = "forcesafesearch.google.com"
+    const val BING = "strict.bing.com"
+    const val DUCKDUCKGO = "safe.duckduckgo.com"
+    const val YOUTUBE = "restrict.youtube.com"
+    // www.google.com, google.nl, google.co.uk, google.com.au; not mail, docs or the APIs.
+    private val GOOGLE_SEARCH = Regex("^(www\\.)?google\\.(com|co\\.[a-z]{2}|com\\.[a-z]{2}|[a-z]{2})$")
+    private val BING_HOSTS = setOf("www.bing.com", "bing.com")
+    private val DDG_HOSTS = setOf("duckduckgo.com", "www.duckduckgo.com", "start.duckduckgo.com", "html.duckduckgo.com", "lite.duckduckgo.com")
+    private val YOUTUBE_HOSTS = setOf("www.youtube.com", "m.youtube.com", "youtube.com", "youtubei.googleapis.com", "youtube.googleapis.com", "www.youtube-nocookie.com")
+
+    fun searchTarget(host: String): String? = when {
+        GOOGLE_SEARCH.matches(host) -> GOOGLE
+        host in BING_HOSTS -> BING
+        host in DDG_HOSTS -> DUCKDUCKGO
+        else -> null
+    }
+
+    fun youtubeTarget(host: String): String? = if (host in YOUTUBE_HOSTS) YOUTUBE else null
+}
+
+// Decides whether a DNS name is blocked, or answered with a safe search
+// host instead. Built once per settings change.
 class DomainPolicy(
     private val adultList: Set<String>,
     private val adultEnabled: Boolean,
     private val blockedHosts: List<String>,
     private val allowed: List<String>,
+    private val safeSearch: Boolean = false,
+    private val restrictYouTube: Boolean = false,
 ) {
+    // The host whose addresses answer a lookup of `host`, or null to
+    // resolve it as it is. Only under the adult filter, never for an
+    // allowed host.
+    fun rewrite(host: String): String? {
+        if (!adultEnabled) return null
+        val h = host.lowercase().trimEnd('.')
+        if (allowed.any { Domains.matches(it, h) }) return null
+        if (safeSearch) SafeSearch.searchTarget(h)?.let { return it }
+        if (restrictYouTube) SafeSearch.youtubeTarget(h)?.let { return it }
+        return null
+    }
+
     fun isBlocked(host: String): Boolean {
         val h = host.lowercase().trimEnd('.')
         if (allowed.any { Domains.matches(it, h) }) return false

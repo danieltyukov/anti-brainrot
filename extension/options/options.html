@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Anti-Brainrot options</title>
+  <title>Anti Brainrot options</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <header class="top">
     <img src="../icons/icon-48.png" width="28" height="28" alt="">
-    <h1>anti-brainrot <span class="sub">options</span></h1>
+    <h1>Anti Brainrot <span class="sub">options</span></h1>
     <span id="status" class="status" aria-live="polite"></span>
   </header>
 
@@ -37,7 +37,10 @@
 
     <section class="card" id="sec-blocker">
       <h2>Block adult sites</h2>
-      <p class="muted">Redirects known adult sites to a block page. Uses a list that ships inside the extension, plus your own entries. Turn it on from the popup (Chrome asks for permission to act on all sites the first time).</p>
+      <p class="muted">Sends known adult sites to a block page and keeps their images, video, frames and scripts off every other page. Uses a list that ships inside the extension, plus your own entries. Turn it on from the popup (Chrome asks for permission to act on all sites the first time).</p>
+      <label class="row"><input type="checkbox" id="safe-search"><span>Force safe search. Google, Bing, DuckDuckGo, Yahoo, Yandex and Brave get their strict setting on every search, images and videos included, whatever the account says.</span></label>
+      <label class="row"><input type="checkbox" id="restrict-youtube"><span>Restrict YouTube. Every YouTube request carries the Restricted Mode header, which hides mature videos and comments.</span></label>
+      <p class="muted small">Both follow the adult filter: they only act while it is on, and switching either off waits until the filter is off. What no filter can do is judge a picture by its content; a page that is not on the list and not a search engine still shows what it shows.</p>
       <h3>Also block these sites</h3>
       <textarea id="blocked-domains" rows="4" spellcheck="false" placeholder="example.com"></textarea>
       <h3>Never block these sites</h3>
@@ -46,6 +49,16 @@
       <div class="actions">
         <button id="save-domains" class="primary" type="button">Save sites</button>
       </div>
+    </section>
+
+    <section class="card" id="sec-keywords">
+      <h2>Block keywords</h2>
+      <p class="muted">Words you never want to search for or open. Any web address whose path or query contains one of them, as a whole word, goes to the block page: a search on any engine, a subreddit, a tag page. Two-word entries match with a space, plus, dash, dot or underscore between the words. Site names do not count; that is what the adult list is for. Turn it on from the popup (same one-time permission).</p>
+      <textarea id="blocked-keywords" rows="4" spellcheck="false" placeholder="one per line"></textarea>
+      <div class="actions">
+        <button id="save-keywords" class="primary" type="button">Save keywords</button>
+      </div>
+      <p class="muted small">Adding a word works any time. Taking one off waits until the filter is off.</p>
     </section>
 
     <section class="card" id="sec-distractions">
@@ -87,11 +100,12 @@
 
     <section class="card" id="sec-guard">
       <h2>Prevent removal</h2>
-      <p class="muted">Chrome gives an extension no way to protect itself, so this works in two layers. The switch in the popup sends the extensions page, where the Remove button and the on/off switch live, to a block page while the filter is on; Chrome asks for the tabs permission the first time. The toolbar menu can still remove the extension. A browser policy closes that door too: Chrome then treats Anti-Brainrot as managed and refuses to remove or turn it off until the policy file is deleted with administrator rights.</p>
+      <p class="muted">Chrome gives an extension no way to protect itself, so this works in two layers. The switch in the popup sends the extensions page, where the Remove button and the on/off switch live, to a block page while the filter is on; Chrome asks for the tabs permission the first time. The toolbar menu can still remove the extension. A browser policy closes that door too: Chrome then treats Anti Brainrot as managed and refuses to remove or turn it off until the policy file is deleted with administrator rights.</p>
       <p id="managed-status" class="managed"></p>
       <h3>Browser policy on Linux</h3>
       <p class="muted small">Run this once and restart Chrome. Chrome installs its own copy from the update manifest on the website, keeps it updated and marks it "installed by your administrator". Your settings carry over.</p>
       <pre id="policy-command" class="command"></pre>
+      <p class="muted small">While Block adult sites is on, the policy also carries Chrome's own safe search and YouTube Restricted Mode settings for the parts you have switched on, so they hold even if the extension is gone.</p>
       <p class="muted small">Undo: delete <code>/etc/opt/chrome/policies/managed/anti-brainrot.json</code> and restart Chrome, which then removes the extension. On Windows and macOS Chrome only honours a policy for an extension outside the Chrome Web Store on a managed machine (domain joined, MDM or Chrome Enterprise Core). Steps for every platform are on the <a href="https://danieltyukov.github.io/anti-brainrot/#prevent-removal" target="_blank" rel="noopener">website</a>.</p>
     </section>
 
@@ -134,6 +148,7 @@
   <script src="../lib/settings.js"></script>
   <script src="../lib/education.js"></script>
   <script src="../lib/blocker.js"></script>
+  <script src="../lib/keywords.js"></script>
   <script src="../lib/countdown.js"></script>
   <script src="../lib/distractions.js"></script>
   <script src="options.js"></script>

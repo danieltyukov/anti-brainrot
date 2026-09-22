@@ -1,6 +1,6 @@
 # Privacy
 
-Anti-Brainrot is a local tool. This page lists everything it touches.
+Anti Brainrot is a local tool. This page lists everything it touches.
 
 ## What is stored
 
@@ -32,16 +32,18 @@ category from it. That request goes to YouTube only.
 ## Permissions
 
 - `storage`: settings.
-- `declarativeNetRequest`: the Shorts redirect rule and the adult site
-  ruleset. Rules are declarative; the extension never sees request contents.
+- `declarativeNetRequest`: the Shorts redirect rule, the adult site
+  ruleset, the safe search and YouTube Restricted Mode rulesets, and the
+  keyword rules built from your list. Rules are declarative; the extension
+  never sees request contents.
 - Host access to youtube.com: the content scripts that hide elements and
   gate videos.
 - `scripting`: registers the distracting sites watcher, and only for the
   hosts you enabled. Nothing runs on other sites.
 - `alarms`: the once-a-minute locked hours check and pass expiry timers.
 - Optional host access to all sites: requested only when you switch on
-  Block adult sites or Block distracting sites, because a redirect rule can
-  only act on sites the extension has access to. You can revoke it at any
+  Block adult sites, Block keywords or Block distracting sites, because a
+  redirect rule can only act on sites the extension has access to. You can revoke it at any
   time in `chrome://extensions`.
 - Optional `tabs`: requested only when you switch on Prevent removal. It
   lets the worker see tab URLs, which it needs to notice the extensions

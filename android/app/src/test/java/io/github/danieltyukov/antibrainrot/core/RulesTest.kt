@@ -24,6 +24,21 @@ class RulesTest {
     @Test fun featureOffLoosens() {
         assertTrue(loosens { it.copy(sites = it.sites.copy(adult = false)) })
         assertTrue(loosens { it.copy(schedule = it.schedule.copy(enabled = false)) })
+        // Safe search and Restricted Mode follow the adult filter.
+        assertTrue(loosens { it.copy(sites = it.sites.copy(safeSearch = false)) })
+        assertTrue(loosens { it.copy(sites = it.sites.copy(restrictYouTube = false)) })
+        val adultOff = base.copy(sites = base.sites.copy(adult = false))
+        assertFalse(Rules.isLoosening(adultOff, adultOff.copy(sites = adultOff.sites.copy(safeSearch = false, restrictYouTube = false))))
+        assertFalse(Rules.isLoosening(adultOff.copy(sites = adultOff.sites.copy(safeSearch = false)), adultOff))
+    }
+
+    @Test fun keywords() {
+        val words = base.copy(sites = base.sites.copy(keywords = listOf("feet", "nudes")))
+        assertTrue(Rules.isLoosening(words, words.copy(sites = words.sites.copy(keywords = listOf("feet")))))
+        assertFalse(Rules.isLoosening(words, words.copy(sites = words.sites.copy(keywords = listOf("feet", "nudes", "more")))))
+        assertFalse(Rules.isLoosening(words, words.copy(sites = words.sites.copy(keywords = listOf("Feet", "NUDES")))))
+        assertFalse(Rules.isLoosening(base, words))
+        assertEquals(listOf("feet", "nudes"), Settings.normalize(Settings(sites = Sites(keywords = listOf(" Feet ", "", "nudes", "feet")))).sites.keywords)
     }
 
     @Test fun appRules() {

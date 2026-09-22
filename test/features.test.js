@@ -34,7 +34,7 @@ test('roots keep registry order and exclude children', () => {
       'homeFeed', 'sidebar', 'endScreenFeed', 'endScreenCards', 'shorts', 'comments',
       'mixes', 'merch', 'videoInfo', 'topHeader', 'inaptSearch', 'explore',
       'moreFromYouTube', 'subscriptions', 'history', 'autoplay', 'annotations', 'thumbnails', 'metrics', 'chips',
-      'richSections', 'searchSuggestions', 'grayscale', 'educational', 'adultSites', 'distractions', 'schedule',
+      'richSections', 'searchSuggestions', 'grayscale', 'educational', 'adultSites', 'keywords', 'distractions', 'schedule',
       'preventRemoval',
     ],
   );
@@ -65,12 +65,28 @@ test('nothing in the registry is locked on', () => {
 });
 
 test('web-section features', () => {
-  assert.deepEqual(features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id), ['adultSites', 'distractions', 'schedule', 'preventRemoval']);
+  assert.deepEqual(
+    features.FEATURES.filter((f) => f.section === 'web').map((f) => f.id),
+    ['adultSites', 'safeSearch', 'restrictYouTube', 'keywords', 'distractions', 'schedule', 'preventRemoval'],
+  );
+});
+
+test('safe search and restricted YouTube sit under the adult filter and only matter while it is on', () => {
+  assert.deepEqual(features.children('adultSites').map((f) => f.id), ['safeSearch', 'restrictYouTube']);
+  for (const id of ['safeSearch', 'restrictYouTube']) {
+    const f = features.byId(id);
+    assert.equal(f.parent, 'adultSites');
+    assert.equal(f.mode, 'when-parent-on');
+    assert.equal(f.default, true);
+    assert.equal(f.attr, null);
+    assert.equal(f.section, 'web');
+  }
 });
 
 test('features that need an optional permission declare it', () => {
   assert.deepEqual(features.PERMISSIONS.adultSites, { origins: ['<all_urls>'] });
   assert.deepEqual(features.PERMISSIONS.distractions, { origins: ['<all_urls>'] });
+  assert.deepEqual(features.PERMISSIONS.keywords, { origins: ['<all_urls>'] });
   assert.deepEqual(features.PERMISSIONS.preventRemoval, { permissions: ['tabs'] });
   for (const id of Object.keys(features.PERMISSIONS)) assert.ok(features.byId(id), id);
 });

@@ -5,6 +5,52 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-09-22
+
+### Added
+- Block adult sites now keeps the media off other pages too. Images, video,
+  frames, scripts and fetches served by any of the 15,000 listed domains or
+  a keyword host are blocked wherever they are embedded, so a forum or a
+  search results page cannot show them. Navigations still land on the block
+  page. Your own blocked sites get the same treatment.
+- Force safe search, under Block adult sites, on by default. Every search on
+  Google, Bing, DuckDuckGo, Yahoo, Yandex and Brave, images and videos
+  included, carries the engine's strict setting in its address, whatever
+  the account says. It is the same parameter Chrome's own
+  ForceGoogleSafeSearch policy appends.
+- Restrict YouTube, under Block adult sites, on by default. Every YouTube
+  request carries the Restricted Mode header, which hides mature videos and
+  comments.
+- Block keywords, in the Everywhere group. A list of words in the options;
+  any web address whose path or query contains one of them, as a whole
+  word, goes to the block page: a search on any engine, a subreddit, a tag
+  page. Frames and fetches with one are blocked. In-page searches on YouTube
+  and on the distracting sites are caught too. Adding a word works any time,
+  taking one off waits until the filter is off.
+- The policy file the options page prints for Prevent removal also carries
+  Chrome's ForceGoogleSafeSearch and ForceYouTubeRestrict settings while
+  the matching switches are on.
+- Android: Force safe search and Restrict YouTube, under Block adult sites.
+  The DNS filter answers lookups for Google search, Bing, DuckDuckGo and
+  YouTube with the addresses of their forced safe search hosts, the way
+  those companies document it for networks. The YouTube app follows too.
+- Android: Blocked keywords on the Sites tab. A page whose address carries
+  one of the words gets the block screen in the supported browsers.
+
+### Changed
+- The block page only offers the way to Subscriptions when the blocked page
+  was on YouTube. An adult site, a feed elsewhere or the extensions page
+  guard now shows Keep it blocked alone.
+- The name is written Anti Brainrot everywhere it is shown: the extension,
+  its pages, the website and its wordmark, the README, the phone. The
+  repository, package and file names keep the slug anti-brainrot.
+- The leaf on the website glides.
+
+### Known limits
+- No filter here judges a picture by its content. A page that is not on
+  the list, not a search engine and has no blocked word in its address
+  still shows what it shows.
+
 ## [1.7.0] - 2026-09-21
 
 ### Changed

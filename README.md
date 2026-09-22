@@ -5,15 +5,17 @@
   </picture>
 </p>
 
-# Anti-Brainrot
+# Anti Brainrot
 
 The anti brain rot extension for Chrome, and an Android app that follows the
 same rules. It puts the things that eat your day behind a friction timer:
 feeds and Shorts on YouTube, the feeds and short-video surfaces of TikTok,
-Instagram, X, Reddit, Facebook and the rest, adult sites, and on the phone
-whole apps. Each one is blocked outright or paused with a countdown and a
-timed pass, the filter locks itself during your focus hours, and it can be
-made hard to remove. No accounts, no analytics, no network calls of its own.
+Instagram, X, Reddit, Facebook and the rest, adult sites and their media,
+searches for the words you have banned, and on the phone whole apps. Each
+one is blocked outright or paused with a countdown and a timed pass, safe
+search is forced on every engine while the adult filter is on, the filter
+locks itself during your focus hours, and it can be made hard to remove. No
+accounts, no analytics, no network calls of its own.
 
 Everything is a setting. The defaults carry an opinion (Shorts hidden, home
 feed replaced by Subscriptions, the usual feeds on pause), the timer carries
@@ -45,8 +47,15 @@ Website: https://danieltyukov.github.io/anti-brainrot/
   they are simply off. In-app navigation is caught too, and the site turns
   grayscale during a pass.
 - **Adult sites.** A bundled list of 15,000 domains plus hostname keyword
-  rules redirect to a block page. Add your own sites, or allow false
-  positives, in the options.
+  rules redirect to a block page, and the images, video and frames those
+  hosts serve are blocked on every other page. Under it, Force safe search
+  gives every search on Google, Bing, DuckDuckGo, Yahoo, Yandex and Brave
+  the engine's strict setting, images and videos included, and Restrict
+  YouTube turns on YouTube's Restricted Mode. Add your own sites, or allow
+  false positives, in the options.
+- **Keywords.** A list of words you never want to search for or open. Any
+  address whose path or query carries one, as a whole word, goes to the
+  block page, on any search engine, any subreddit, any tag page.
 - **Prevent removal.** The browser's extensions page, where the Remove button
   and the on/off switch live, is sent to a block page while the filter is
   on. For the real lock, a browser policy makes Chrome install its own copy
@@ -89,7 +98,8 @@ Website: https://danieltyukov.github.io/anti-brainrot/
 The Android app, AntiBrainrot, is an app and site blocker in the spirit of
 AppBlock: every app and every site gets its own rule, blocked outright or a
 daily timer, an optional pause before timed ones, an optional block on
-installing new apps, adult sites filtered at the DNS level, the friction
+installing new apps, adult sites filtered at the DNS level with forced safe
+search and YouTube Restricted Mode under it, blocked keywords, the friction
 timer, locked hours, Lock for N hours, strict mode, Prevent uninstall (the
 app becomes a device admin Android refuses to remove), and a Progress tab
 with ninety days of counters, charts and a streak. Download
@@ -204,7 +214,22 @@ enabled hosts.
 Off by default, same one-time permission. The list is generated from public
 blocklists intersected with the Tranco top million, plus a curated core, and
 ships inside the extension. See [docs/BLOCKLIST.md](docs/BLOCKLIST.md) for
-sources, licences and how to regenerate it.
+sources, licences and how to regenerate it. Since 1.8.0 the media those
+hosts serve is blocked on every page too, and two switches sit under the
+filter: Force safe search (the engine's strict parameter on every search,
+the one Chrome's own policy uses) and Restrict YouTube (the Restricted Mode
+header). No filter here judges a picture by its content; a page that is not
+on the list, not a search engine and has no blocked word in its address
+still shows what it shows.
+
+## Blocked keywords
+
+Off by default, same permission. Words go in the options, one per line. A
+web address whose path or query contains one of them as a whole word goes
+to the block page, which names the word; frames and fetches with one are
+blocked. Two-word entries match with a space, plus, dash, dot or underscore
+between the words. Site names do not count. Adding a word works any time;
+taking one off waits until the filter is off.
 
 Your own entries in the options page are applied as dynamic rules. Allowed
 sites win over blocked ones, so a false positive is a one-line fix once the
@@ -221,7 +246,7 @@ off.
 
 ## Educational videos only
 
-YouTube assigns every video one of 15 categories. Anti-Brainrot reads that
+YouTube assigns every video one of 15 categories. Anti Brainrot reads that
 category on the watch page (from the page data, or by fetching the watch page
 itself when the single-page app has not exposed it yet) and compares it with
 your allow list. Videos from allowed channels always play.

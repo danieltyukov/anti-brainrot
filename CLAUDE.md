@@ -1,4 +1,4 @@
-# Anti-Brainrot (anti-brainrot)
+# Anti Brainrot (anti-brainrot)
 
 Chrome MV3 extension and Android app: feeds, Shorts, distracting sites and
 apps behind a friction timer, optional educational-only playback, locks,

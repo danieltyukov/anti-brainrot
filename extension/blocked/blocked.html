@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Blocked by Anti-Brainrot</title>
+  <title>Blocked by Anti Brainrot</title>
   <link rel="stylesheet" href="blocked.css">
 </head>
 <body>
   <main class="card">
-    <div class="brand">anti-brainrot</div>
+    <div class="brand">Anti Brainrot</div>
     <p id="reason" class="reason" hidden></p>
 
     <section id="view-adult" hidden>
       <h1>Not now</h1>
-      <p>Anti-Brainrot blocked <b class="host">this site</b>.</p>
+      <p>Anti Brainrot blocked <b class="host">this site</b>.</p>
       <p class="muted">It is on the adult site list. To open it, turn the filter off in the popup and wait out your unlock delay.</p>
-      <p class="hint">False positive? Add the site to the allow list in Anti-Brainrot options once the filter is off.</p>
+      <p class="hint">False positive? Add the site to the allow list in Anti Brainrot options once the filter is off.</p>
     </section>
 
     <section id="view-block" hidden>
@@ -38,18 +38,27 @@
       <p id="cooldown" class="muted" hidden></p>
     </section>
 
+    <section id="view-keyword" hidden>
+      <h1>Not now</h1>
+      <p>The address on <b class="host">this site</b> contains <b id="keyword-word">a blocked keyword</b>.</p>
+      <p class="muted">It is on your blocked keywords list. To open it, turn the filter off in the popup and wait out your unlock delay, or take the word off the list in the options once the filter is off.</p>
+    </section>
+
     <section id="view-guard" hidden>
       <h1>Not while the filter is on</h1>
-      <p>The extensions page is where Anti-Brainrot could be removed or switched off, so Prevent removal closes it.</p>
+      <p>The extensions page is where Anti Brainrot could be removed or switched off, so Prevent removal closes it.</p>
       <p class="muted">To manage extensions, turn the filter off in the popup and wait out your unlock delay.</p>
     </section>
 
     <div class="actions">
       <button id="back" type="button" class="secondary">Keep it blocked</button>
-      <a class="button" href="https://www.youtube.com/feed/subscriptions">Subscriptions</a>
+      <a id="subscriptions" class="button" href="https://www.youtube.com/feed/subscriptions" hidden>Subscriptions</a>
     </div>
   </main>
+  <script src="../lib/features.js"></script>
+  <script src="../lib/settings.js"></script>
   <script src="../lib/blocker.js"></script>
+  <script src="../lib/keywords.js"></script>
   <script src="blocked.js"></script>
 </body>
 </html>

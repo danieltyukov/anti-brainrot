@@ -1,21 +1,26 @@
 // Service worker: seeds settings on install, keeps the toolbar badge in sync,
-// switches the Shorts and adult site rulesets and the user's own domain
-// rules, manages the distracting sites rules, passes and daily budget,
+// switches the Shorts, adult site, safe search and YouTube Restricted Mode
+// rulesets, the user's own domain rules and the keyword rules, manages the
+// distracting sites rules, passes and daily budget,
 // enforces locked hours, and guards the extensions page while Prevent
 // removal is on. Every piece re-derives its state from storage, so worker
 // restarts are harmless.
-importScripts('lib/features.js', 'lib/settings.js', 'lib/blocker.js', 'lib/distractions.js');
+importScripts('lib/features.js', 'lib/settings.js', 'lib/blocker.js', 'lib/keywords.js', 'lib/distractions.js');
 
 const S = globalThis.AntiBrainrot.settings;
 const B = globalThis.AntiBrainrot.blocker;
+const K = globalThis.AntiBrainrot.keywords;
 const D = globalThis.AntiBrainrot.distractions;
 const dnr = chrome.declarativeNetRequest;
 
 const SHORTS_RULESET = 'shorts';
 const ADULT_RULESET = 'adult';
+const SAFESEARCH_RULESET = 'safesearch';
+const YOUTUBE_RESTRICT_RULESET = 'youtube-restrict';
 const DISTRACTION_RULE_BASE = 3000; // dynamic redirect rules 3000..3499
 const EXCEPTION_RULE_BASE = 3500; // dynamic allow rules 3500..3999
 const PASS_RULE_BASE = 4000; // session allow rules 4000..4999
+const KEYWORD_RULE_BASE = K.RULE_BASE; // dynamic keyword rules 5000..5999
 const SCRIPT_ID = 'abr-distractions';
 const MAIN_SCRIPT_ID = 'abr-distractions-main';
 const SCHEDULE_ALARM = 'abr-schedule';
@@ -57,9 +62,15 @@ async function syncShorts(settings) {
 
 // ---------------------------------------------------------------- adult sites
 
+// The adult ruleset redirects navigations and blocks media from the listed
+// sites. Under it, Force safe search rewrites search engine URLs with the
+// engine's strict setting and Restrict YouTube adds the Restricted Mode
+// header; both are children of the adult toggle and follow it.
 async function syncBlocker(settings) {
   const on = S.isActive(settings, 'adultSites');
   await setRuleset(ADULT_RULESET, on);
+  await setRuleset(SAFESEARCH_RULESET, S.isActive(settings, 'safeSearch'));
+  await setRuleset(YOUTUBE_RESTRICT_RULESET, S.isActive(settings, 'restrictYouTube'));
   try {
     const existing = await dnr.getDynamicRules();
     await dnr.updateDynamicRules({
@@ -68,6 +79,24 @@ async function syncBlocker(settings) {
     });
   } catch (err) {
     warn('could not update custom site rules', err);
+  }
+}
+
+// ---------------------------------------------------------------- blocked keywords
+
+// One redirect and one block rule per handful of keywords, matched against
+// the path and query of every request. Priority 5, so a pass on a
+// distracting site does not let a blocked word through.
+async function syncKeywords(settings) {
+  const on = S.isActive(settings, 'keywords');
+  try {
+    const existing = await dnr.getDynamicRules();
+    await dnr.updateDynamicRules({
+      removeRuleIds: existing.filter((r) => r.id >= KEYWORD_RULE_BASE && r.id < KEYWORD_RULE_BASE + 1000).map((r) => r.id),
+      addRules: on ? K.rules(settings.keywords.blocked, chrome.runtime.id) : [],
+    });
+  } catch (err) {
+    warn('could not update keyword rules', err);
   }
 }
 
@@ -161,7 +190,7 @@ async function syncDistractions(settings) {
         {
           id: SCRIPT_ID,
           matches,
-          js: ['lib/features.js', 'lib/settings.js', 'lib/distractions.js', 'content/distractions.js'],
+          js: ['lib/features.js', 'lib/settings.js', 'lib/keywords.js', 'lib/distractions.js', 'content/distractions.js'],
           runAt: 'document_start',
           persistAcrossSessions: true,
         },
@@ -297,6 +326,7 @@ async function sync(settings) {
   await refreshBadge(s);
   await syncShorts(s);
   await syncBlocker(s);
+  await syncKeywords(s);
   await syncDistractions(s);
   await syncGuard(s);
   await enforceSchedule(s);

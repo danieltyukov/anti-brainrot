@@ -173,6 +173,7 @@
 
   const NOTES = {
     adultSites: 'Acting on sites outside YouTube needs the permission Chrome just asked for.',
+    keywords: 'Acting on sites outside YouTube needs the permission Chrome just asked for.',
     distractions: 'Acting on sites outside YouTube needs the permission Chrome just asked for.',
     preventRemoval: 'Leaving the extensions page needs the tabs permission Chrome just asked for.',
   };

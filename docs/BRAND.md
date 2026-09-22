@@ -1,8 +1,8 @@
-# Anti-Brainrot brand
+# Anti Brainrot brand
 
 ## The mark
 
-The Anti-Brainrot mark is a single leaf whose silhouette is a play triangle pointing
+The Anti Brainrot mark is a single leaf whose silhouette is a play triangle pointing
 right. The blade is a rounded triangle with a gentle belly about a third of
 the way from the base, a short stem leaves the middle of the base, and one
 midrib runs from the stem toward the tip. The midrib is not drawn on top of
@@ -40,7 +40,7 @@ rasters or external references.
 | `assets/logo-cream.svg` | Same mark in cream                                | Dark backgrounds                               |
 | `assets/icon.svg`       | Mark on a sky rounded square, 128 viewBox         | 48 px and 128 px extension icons, store tile   |
 | `assets/icon-small.svg` | Heavier stem and midrib, larger mark on the tile  | 16 px and 32 px toolbar icons only             |
-| `assets/wordmark.svg`   | Mark plus "anti-brainrot" in Inter, as outlines   | Site header, README banner, social cards       |
+| `assets/wordmark.svg`   | Mark plus "Anti Brainrot" in Inter, as outlines   | Site header, README banner, social cards       |
 
 The rounded square in the icons uses a corner radius of 22 percent of the
 tile. The mark spans about 63 percent of the tile in `icon.svg` and about

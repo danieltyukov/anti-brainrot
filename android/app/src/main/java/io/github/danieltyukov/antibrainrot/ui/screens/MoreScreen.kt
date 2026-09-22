@@ -50,7 +50,7 @@ fun MoreScreen(vm: AppViewModel, s: Settings, onSetup: () -> Unit) {
             }
         }
         Appear(1) {
-            SectionCard("Strict mode", "While the filter is on, the Settings pages that could disable AntiBrainrot (its App info page, the accessibility page) are closed as soon as they open. Turning strict mode off waits until the filter is off.") {
+            SectionCard("Strict mode", "While the filter is on, the Settings pages that could disable Anti Brainrot (its App info page, the accessibility page) are closed as soon as they open. Turning strict mode off waits until the filter is off.") {
                 SwitchRow("Strict mode", s.strictMode) { v -> vm.update { it.copy(strictMode = v) } }
             }
         }
@@ -61,7 +61,7 @@ fun MoreScreen(vm: AppViewModel, s: Settings, onSetup: () -> Unit) {
                 if (Permissions.adminActive(context)) vm.update { it.copy(preventUninstall = true) }
                 else vm.message.value = "Uninstall protection needs the device admin confirmation."
             }
-            SectionCard("Prevent uninstall", "Makes AntiBrainrot a device admin with no policies. Android then refuses to uninstall it until the admin is turned off in Settings, and strict mode leaves that page as soon as it opens. Turning this off waits until the filter is off.") {
+            SectionCard("Prevent uninstall", "Makes Anti Brainrot a device admin with no policies. Android then refuses to uninstall it until the admin is turned off in Settings, and strict mode leaves that page as soon as it opens. Turning this off waits until the filter is off.") {
                 SwitchRow("Prevent uninstall", s.preventUninstall && adminActive) { v ->
                     if (v) askAdmin.launch(Permissions.adminIntent(context))
                     else vm.update { it.copy(preventUninstall = false) }.also { if (!s.focus.enabled) { Permissions.removeAdmin(context); refreshAdmin += 1 } }
@@ -81,7 +81,7 @@ fun MoreScreen(vm: AppViewModel, s: Settings, onSetup: () -> Unit) {
         }
         Appear(5) {
             SectionCard("About") {
-                Text("AntiBrainrot ${BuildConfig.VERSION_NAME}. Open source, MIT. No accounts, no analytics, no network calls of its own.", style = MaterialTheme.typography.bodyMedium)
+                Text("Anti Brainrot ${BuildConfig.VERSION_NAME}. Open source, MIT. No accounts, no analytics, no network calls of its own.", style = MaterialTheme.typography.bodyMedium)
                 TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/danieltyukov/anti-brainrot"))) }) { Text("Source on GitHub") }
                 TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://danieltyukov.github.io/anti-brainrot/"))) }) { Text("Website") }
             }

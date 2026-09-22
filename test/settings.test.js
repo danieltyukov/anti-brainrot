@@ -248,9 +248,29 @@ function on() {
   const s = S.defaults();
   s.features.educational = true;
   s.features.adultSites = true;
+  s.features.keywords = true;
   s.blocker.blockedDomains = ['x.com'];
+  s.keywords.blocked = ['feet', 'nudes'];
   return s;
 }
+
+test('keywords: defaults empty, normalised and capped, removing one is loosening while on', () => {
+  assert.deepEqual(S.defaults().keywords, { blocked: [] });
+  const n = S.normalize({ keywords: { blocked: [' feet ', '', 7, 'nudes'] } });
+  assert.deepEqual(n.keywords.blocked, ['feet', 'nudes']);
+  assert.equal(S.normalize({ keywords: { blocked: Array.from({ length: 300 }, (_, i) => `w${i}`) } }).keywords.blocked.length, 200);
+  assert.deepEqual(S.normalize({ keywords: 'nope' }).keywords, { blocked: [] });
+  const base = on();
+  let next = on(); next.keywords.blocked = ['feet'];
+  assert.equal(S.isLoosening(base, next), true, 'removing a keyword');
+  next = on(); next.keywords.blocked = ['feet', 'nudes', 'more'];
+  assert.equal(S.isLoosening(base, next), false, 'adding a keyword');
+  next = on(); next.keywords.blocked = ['Feet', 'NUDES'];
+  assert.equal(S.isLoosening(base, next), false, 'case does not count');
+  const off = on(); off.features.keywords = false;
+  next = on(); next.features.keywords = false; next.keywords.blocked = [];
+  assert.equal(S.isLoosening(off, next), false, 'the list does not matter while the feature is off');
+});
 
 test('isLoosening detects every way of allowing more', () => {
   const base = on();

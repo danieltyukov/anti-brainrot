@@ -54,6 +54,12 @@ data class Apps(
 @Serializable
 data class Sites(
     val adult: Boolean = false,
+    // Under the adult filter: search engines are answered with their forced
+    // safe search hosts, YouTube with its Restricted Mode host.
+    val safeSearch: Boolean = true,
+    val restrictYouTube: Boolean = true,
+    // Words that put the block screen over any page whose address carries one.
+    val keywords: List<String> = emptyList(),
     // Host to rule; subdomains follow the rule of their parent.
     val rules: Map<String, Rule> = emptyMap(),
     // Never blocked, whatever the adult list says.
@@ -164,6 +170,7 @@ data class Settings(
             val sites = s.sites.copy(
                 rules = siteRules,
                 allowed = Domains.parseList(s.sites.allowed.joinToString("\n")),
+                keywords = Keywords.parseList(s.sites.keywords.joinToString("\n")),
             )
             return s.copy(
                 version = 2,

@@ -76,7 +76,7 @@ fun SetupScreen(vm: AppViewModel, onDone: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
             }
             if (Permissions.needsRestrictedSettingsHint && !accessibility) {
-                Text("Sideloaded apps on Android 13 and later: if the switch is greyed out, open App info for AntiBrainrot, tap the three dots, choose Allow restricted settings, then come back.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Sideloaded apps on Android 13 and later: if the switch is greyed out, open App info for Anti Brainrot, tap the three dots, choose Allow restricted settings, then come back.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 OutlinedButton(onClick = { context.startActivity(Permissions.appInfoIntent(context)) }) { Text("Open App info") }
                 Spacer(Modifier.height(8.dp))
             }

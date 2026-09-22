@@ -48,7 +48,7 @@ object Permissions {
     fun adminIntent(context: Context): Intent =
         Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
             .putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, AdminReceiver.component(context))
-            .putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Android will refuse to uninstall AntiBrainrot while this is active. No device policies are used.")
+            .putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Android will refuse to uninstall Anti Brainrot while this is active. No device policies are used.")
 
     fun removeAdmin(context: Context) {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
