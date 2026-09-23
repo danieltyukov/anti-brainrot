@@ -341,3 +341,33 @@ Every message from the popup and the block page now uses the promise form
 inside try/catch. Checked with a message no handler knows: it resolves to
 an empty reply, `runtime.lastError` stays unset, the popup renders its
 rows, and the console shows nothing.
+
+## 2026-09-23, Android 14 emulator (API 34), version 1.8.3
+
+Reported: with linkedin.com blocked, typing "li" in Chrome's address bar
+put up "linkedin.com is blocked" while typing something else. Chrome fills
+in the rest of an address from history, selected, and redraws its
+suggestion list on every key; each redraw is a content change, so the
+service read the bar mid-word as linkedin.com.
+
+Chrome 113 on this image dies with the same SIGTRAP in libmonochrome as on
+the API 35 image once it loads a page, so the check used a stand-in
+browser: an app with the package name `com.kiwibrowser.browser`, an
+EditText with the id `url_bar` that completes "l" to linkedin.com with the
+rest selected, a suggestion line redrawn on every key, and Go that clears
+focus and shows the address. Filter on, linkedin.com set to Block, DNS
+tunnel up.
+
+| Check | 1.8.2 | 1.8.3 |
+| --- | --- | --- |
+| Type "l", "i" | Service read `linkedin.com`, focused, selection 1-12; block screen mid-word | Bar shows li + nkedin.com selected with suggestions; no block screen |
+| Go on the completed linkedin.com | Block screen | Block screen "Not now, linkedin.com is blocked" |
+| "lin" then Go 150 ms later, three runs | | Block screen each time |
+| Same, with the focus fix but no trailing scan, three runs | | Page left on linkedin.com unblocked until the app raised another event |
+| Unit tests | | 40 pass, including the new address bar cases: a focused bar keeps the key from before for sites and keywords |
+
+The last row is why a throttled burst now ends with one more scan: the
+events after Go fell inside the 400 ms window and were dropped. Not
+verified here: real Chrome, for the reason above. The fix relies on the
+bar holding input focus while you type, which is how a Chromium omnibox
+works: it takes focus on tap and drops it on Go.

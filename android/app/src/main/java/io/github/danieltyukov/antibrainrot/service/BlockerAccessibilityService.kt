@@ -17,9 +17,7 @@ import io.github.danieltyukov.antibrainrot.App
 import io.github.danieltyukov.antibrainrot.BuildConfig
 import io.github.danieltyukov.antibrainrot.R
 import io.github.danieltyukov.antibrainrot.block.BlockActivity
-import io.github.danieltyukov.antibrainrot.core.Domains
 import io.github.danieltyukov.antibrainrot.core.Keys
-import io.github.danieltyukov.antibrainrot.core.Keywords
 import io.github.danieltyukov.antibrainrot.core.LocalState
 import io.github.danieltyukov.antibrainrot.core.Passes
 import io.github.danieltyukov.antibrainrot.core.Rule
@@ -117,6 +115,7 @@ class BlockerAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         handler.removeCallbacks(ticker)
+        handler.removeCallbacks(trailingUrlScan)
         try { unregisterReceiver(screenReceiver) } catch (e: Exception) { }
         try { unregisterReceiver(packageReceiver) } catch (e: Exception) { }
         scope.cancel()
@@ -160,12 +159,19 @@ class BlockerAccessibilityService : AccessibilityService() {
     }
 
     // Reads the browser's address bar and applies the site's rule. Content
-    // events come in bursts, so scans are throttled.
+    // events come in bursts, so scans are throttled, and a burst ends with
+    // one more scan: the page shown once the bar lets go must be read.
     private fun watchAddressBar(pkg: String, root: AccessibilityNodeInfo) {
         val now = System.currentTimeMillis()
-        if (now - lastUrlScanAt < 400) return
+        val since = now - lastUrlScanAt
+        if (since < URL_SCAN_MS) {
+            handler.removeCallbacks(trailingUrlScan)
+            handler.postDelayed(trailingUrlScan, URL_SCAN_MS - since)
+            return
+        }
         lastUrlScanAt = now
-        val key = siteKeyInFront(pkg, root)
+        val bar = URL_BARS[pkg]?.let { id -> root.findAccessibilityNodeInfosByViewId("$pkg:id/$id").firstOrNull() }
+        val key = Keys.forAddressBar(settings, bar?.text?.toString(), bar?.isFocused == true, siteInFront)
         if (key != siteInFront) {
             siteInFront = key
             meter(foregroundPackage() ?: pkg)
@@ -173,16 +179,10 @@ class BlockerAccessibilityService : AccessibilityService() {
         if (key != null && Enforcer.isBlocked(settings, local, key)) block(key, pkg)
     }
 
-    // "keyword:<word>" when the address carries a blocked keyword, else
-    // "site:<rule host>" for the page shown in a known browser, or null.
-    private fun siteKeyInFront(pkg: String, root: AccessibilityNodeInfo): String? {
-        val id = URL_BARS[pkg] ?: return null
-        val node = root.findAccessibilityNodeInfosByViewId("$pkg:id/$id").firstOrNull() ?: return null
-        val text = node.text?.toString() ?: return null
-        Keywords.match(settings.sites.keywords, text)?.let { return Keys.keyword(it) }
-        val host = Domains.normalize(text) ?: return null
-        val ruleHost = Keys.siteRuleHost(settings, host) ?: return null
-        return Keys.site(ruleHost)
+    private val trailingUrlScan = Runnable {
+        val root = rootInActiveWindow ?: return@Runnable
+        val pkg = root.packageName?.toString() ?: return@Runnable
+        if (pkg in URL_BARS) watchAddressBar(pkg, root)
     }
 
     // The rule keys to meter for the app in front: the app itself when it
@@ -289,6 +289,7 @@ class BlockerAccessibilityService : AccessibilityService() {
     companion object {
         private const val TAG = "abr-a11y"
         private const val TICK_SECONDS = 15
+        private const val URL_SCAN_MS = 400L
         @Volatile var instance: BlockerAccessibilityService? = null
 
         // The uninstall confirmation lives here; strict mode leaves it when it names this app.

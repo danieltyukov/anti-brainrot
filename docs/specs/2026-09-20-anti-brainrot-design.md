@@ -234,6 +234,14 @@ accessibility service; a hit is the rule key `keyword:<word>`, which
 `Keys.ruleFor` turns into a Block rule so the block screen and the
 loosening guard work unchanged.
 
+The address bar counts only once it shows a page (fixed in 1.8.3). While
+the bar has input focus its text is what is being typed plus the browser's
+inline completion from history, so typing "li" read as linkedin.com and
+put up the block screen mid-word. `Keys.forAddressBar` keeps the key from
+before while the bar is focused, for site rules and keywords alike. The
+scan throttle (400 ms) ends every burst with one more scan, so the page
+shown right after Go is read even when Go comes inside the window.
+
 Not done, on purpose: judging a picture by its content. An image
 classifier in the extension would mean a multi-megabyte model, CPU time on
 every image and false positives, against the no-dependencies rule. A page

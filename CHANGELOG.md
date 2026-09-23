@@ -5,6 +5,17 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-09-23
+
+### Fixed
+- Android: typing in a browser's address bar no longer brings up the block
+  screen for a site you are not going to. Chrome fills in the rest of an
+  address from history as you type, so "li" read as linkedin.com and a
+  blocked LinkedIn locked you out mid-word. The address bar now counts
+  only once it shows a page: while it has focus nothing is judged, and the
+  site you open is checked as soon as the bar lets go, including when you
+  press Go faster than the scan interval.
+
 ## [1.8.2] - 2026-09-22
 
 ### Fixed

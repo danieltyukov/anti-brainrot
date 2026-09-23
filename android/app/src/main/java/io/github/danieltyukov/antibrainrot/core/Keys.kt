@@ -36,4 +36,17 @@ object Keys {
         s.sites.rules.keys.filter { Domains.matches(it, host) }.maxByOrNull { it.length }
 
     fun blockedHosts(s: Settings): List<String> = s.sites.rules.filterValues { it.mode == "block" }.keys.toList()
+
+    // The rule key for the page a browser's address bar shows:
+    // "keyword:<word>" when the address carries a blocked keyword, else
+    // "site:<rule host>", or null. While the bar has input focus its text is
+    // what is being typed plus the browser's inline completion ("li" reads
+    // as linkedin.com), not a page, so the key from before stays in front.
+    fun forAddressBar(s: Settings, text: String?, focused: Boolean, before: String?): String? {
+        if (focused) return before
+        if (text == null) return null
+        Keywords.match(s.sites.keywords, text)?.let { return keyword(it) }
+        val host = Domains.normalize(text) ?: return null
+        return siteRuleHost(s, host)?.let { site(it) }
+    }
 }

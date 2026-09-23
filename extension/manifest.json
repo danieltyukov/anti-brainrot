@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Anti Brainrot",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Feeds, Shorts and distracting sites behind a friction timer. Blocks or pauses sites, locks itself in focus hours, hard to remove.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs5GLwkr2EUF+8rweRPiylYJ/FCMnmKg0XfmbOIAu7IHw1SZIJBSORDx0ODXkpW1ki5g56suMGUPclu+v2HgHzq/G8OcBt6bGlCBrYKJ0KXea5lWHRPU/iRgiVs7FbsW0ZltrH31tIoeesOXIYwEKHPS5nHjkm1sPqIPninX4vl9oAt8E0CcF/0S8QvGI0EpEl3s4QAf61cdfJWTstk9ujp2l1r5Ms/Hk8foQBPH5SUfb7Ui+sUwhzLwOufY5Qq35Zqn2Rgj21+D2C4ab+eoAsjwwavOTqAUpGxq3IyNAzQrduwAL4MlbVImzY1J2k13oywlN4QiP79EHXiYLIOksfQIDAQAB",
   "minimum_chrome_version": "111",
