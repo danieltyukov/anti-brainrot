@@ -49,4 +49,20 @@ object Keys {
         val host = Domains.normalize(text) ?: return null
         return siteRuleHost(s, host)?.let { site(it) }
     }
+
+    // A URL to open an address by, as a bar shows it: most leave out the scheme.
+    fun addressUrl(address: String): String {
+        val a = address.trim()
+        return if (SCHEME.containsMatchIn(a)) a else "https://$a"
+    }
+    private val SCHEME = Regex("^[a-z][a-z0-9+.-]*://", RegexOption.IGNORE_CASE)
+
+    // Firefox draws its toolbar in Compose and puts the address only in the
+    // description of the URL box: the address without its scheme, a period,
+    // then a localized hint (" mozilla.org/en-US. Search or enter address").
+    // With no page open the description is the hint alone ("Search").
+    fun addressFromDescription(description: String?): String? {
+        val first = description?.trim()?.substringBefore(' ')?.trimEnd('.') ?: return null
+        return first.takeIf { Domains.normalize(it) != null }
+    }
 }

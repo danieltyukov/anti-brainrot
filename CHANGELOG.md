@@ -5,6 +5,19 @@ Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.8.4] - 2026-09-27
+
+### Fixed
+- Android: closing the block screen for a site no longer locks you out of
+  the browser. The browser stayed on the blocked page, so every time you
+  opened it again the block screen came straight back and there was no way
+  to type another address. The browser now goes back a page before the
+  block screen shows, so it opens on the page you came from. When the
+  pause lets a timed site through, Continue opens the page again.
+- Android: sites and blocked keywords are read in Firefox again. Newer
+  Firefox versions draw the toolbar in Compose, and the address bar the
+  app looked for no longer exists there.
+
 ## [1.8.3] - 2026-09-23
 
 ### Fixed

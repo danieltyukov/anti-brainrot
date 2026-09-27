@@ -47,6 +47,8 @@ class BlockerAccessibilityService : AccessibilityService() {
     private var meteredSince = 0L
     // The rule site shown in the browser in front, if any, and the last scan.
     private var siteInFront: String? = null
+    // The address the bar showed last, to open the page again after a pause.
+    private var addressInFront: String? = null
     private var lastUrlScanAt = 0L
     private val power by lazy { getSystemService(Context.POWER_SERVICE) as PowerManager }
     private val notifier by lazy { SessionNotifier(this) }
@@ -114,8 +116,8 @@ class BlockerAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(ticker)
-        handler.removeCallbacks(trailingUrlScan)
+        // The ticker, the trailing scan and a block screen still to show.
+        handler.removeCallbacksAndMessages(null)
         try { unregisterReceiver(screenReceiver) } catch (e: Exception) { }
         try { unregisterReceiver(packageReceiver) } catch (e: Exception) { }
         scope.cancel()
@@ -170,13 +172,43 @@ class BlockerAccessibilityService : AccessibilityService() {
             return
         }
         lastUrlScanAt = now
-        val bar = URL_BARS[pkg]?.let { id -> root.findAccessibilityNodeInfosByViewId("$pkg:id/$id").firstOrNull() }
-        val key = Keys.forAddressBar(settings, bar?.text?.toString(), bar?.isFocused == true, siteInFront)
+        val (text, focused) = addressBar(pkg, root)
+        val key = Keys.forAddressBar(settings, text, focused, siteInFront)
+        if (BuildConfig.DEBUG && key != siteInFront) Log.d(TAG, "bar: $pkg text=$text focused=$focused key=$key")
+        if (!focused) addressInFront = text
         if (key != siteInFront) {
             siteInFront = key
             meter(foregroundPackage() ?: pkg)
         }
         if (key != null && Enforcer.isBlocked(settings, local, key)) block(key, pkg)
+    }
+
+    // What the browser's address bar shows and whether it has input focus.
+    // Firefox's Compose toolbar has no bar view: its URL box carries the
+    // address in its description, and while you type the box gives way to
+    // an edit field, which counts as focus.
+    private fun addressBar(pkg: String, root: AccessibilityNodeInfo): Pair<String?, Boolean> {
+        val bar = URL_BARS[pkg]?.let { id -> root.findAccessibilityNodeInfosByViewId("$pkg:id/$id").firstOrNull() }
+        if (bar != null) return bar.text?.toString() to bar.isFocused
+        if (pkg !in FIREFOX) return null to false
+        val toolbar = root.findAccessibilityNodeInfosByViewId("$pkg:id/composable_toolbar").firstOrNull() ?: return null to false
+        val box = findByViewId(toolbar, "ADDRESSBAR_URL_BOX") ?: return null to true
+        return Keys.addressFromDescription(box.contentDescription?.toString()) to false
+    }
+
+    // Compose test tags are not resource ids, so findAccessibilityNodeInfosByViewId
+    // cannot see them; walk the (small) subtree instead.
+    private fun findByViewId(root: AccessibilityNodeInfo, id: String, limit: Int = 200): AccessibilityNodeInfo? {
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var seen = 0
+        while (queue.isNotEmpty() && seen < limit) {
+            val node = queue.removeFirst()
+            seen += 1
+            if (node.viewIdResourceName == id) return node
+            for (i in 0 until node.childCount) node.getChild(i)?.let { queue.add(it) }
+        }
+        return null
     }
 
     private val trailingUrlScan = Runnable {
@@ -268,16 +300,33 @@ class BlockerAccessibilityService : AccessibilityService() {
     }
 
     // Shows the block screen for a rule key over the app `pkg` (the browser,
-    // for a site).
+    // for a site). A blocked page is taken off the browser first: left on
+    // it, the browser would show it again every time it opens and the block
+    // screen would come straight back, with no way to go anywhere else. So
+    // the browser goes back a page, and the block screen follows once that
+    // key has landed; started together, the new window can take the key.
     private fun block(key: String, pkg: String) {
         val now = System.currentTimeMillis()
         if (now - (lastBlockAt[key] ?: 0L) < 1500) return
         lastBlockAt[key] = now
+        val front = foregroundPackage() ?: rootInActiveWindow?.packageName?.toString()
+        if (BuildConfig.DEBUG) Log.d(TAG, "block: $key over $pkg, front=$front")
         scope.launch { App.instance.local.update { Passes.recordBlock(it, pkg = key) } }
         val intent = Intent(this, BlockActivity::class.java)
             .putExtra(BlockActivity.EXTRA_KEY, key)
             .putExtra(BlockActivity.EXTRA_PACKAGE, pkg)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        val page = Keys.isSite(key) || Keys.isKeyword(key)
+        if (page && pkg in URL_BARS && front == pkg) {
+            addressInFront?.let { intent.putExtra(BlockActivity.EXTRA_ADDRESS, it) }
+            performGlobalAction(GLOBAL_ACTION_BACK)
+            handler.postDelayed({ showBlockScreen(intent) }, LEAVE_PAGE_MS)
+        } else {
+            showBlockScreen(intent)
+        }
+    }
+
+    private fun showBlockScreen(intent: Intent) {
         try {
             startActivity(intent)
         } catch (e: Exception) {
@@ -290,6 +339,8 @@ class BlockerAccessibilityService : AccessibilityService() {
         private const val TAG = "abr-a11y"
         private const val TICK_SECONDS = 15
         private const val URL_SCAN_MS = 400L
+        // How long the browser gets to take the back key before the block screen.
+        private const val LEAVE_PAGE_MS = 300L
         @Volatile var instance: BlockerAccessibilityService? = null
 
         // The uninstall confirmation lives here; strict mode leaves it when it names this app.
@@ -314,5 +365,8 @@ class BlockerAccessibilityService : AccessibilityService() {
             "com.opera.mini.native" to "url_field",
             "com.duckduckgo.mobile.android" to "omnibarTextInput",
         )
+
+        // Firefox builds whose newer versions draw the toolbar in Compose.
+        val FIREFOX = setOf("org.mozilla.firefox", "org.mozilla.firefox_beta", "org.mozilla.fenix")
     }
 }

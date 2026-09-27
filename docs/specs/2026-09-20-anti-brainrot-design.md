@@ -242,6 +242,24 @@ before while the bar is focused, for site rules and keywords alike. The
 scan throttle (400 ms) ends every burst with one more scan, so the page
 shown right after Go is read even when Go comes inside the window.
 
+A blocked page is taken off the browser before the block screen shows
+(fixed in 1.8.4). The block screen used to cover the browser and leave it
+on the page; closing it went home, and the next time the browser opened
+the bar read the same address and the block screen came straight back,
+with no chance to go anywhere else. The service now presses Back while
+the browser is in front and starts the block screen 300 ms later: started
+together, the new window can take the key before the browser does. A
+browser that keeps a tab it has no history for (Firefox does, for a tab
+opened with the blocked address) shows it again only when that tab is
+selected, and each time it goes back again. The pause's Continue opens
+the address again, since the browser has left it.
+
+Firefox's toolbar is Compose in current versions (156 checked). There is
+no bar view; the node tagged `ADDRESSBAR_URL_BOX` inside
+`composable_toolbar` carries the address in its description, "<address>.
+<localized hint>", and gives way to an edit field while you type, which
+counts as focus.
+
 Not done, on purpose: judging a picture by its content. An image
 classifier in the extension would mean a multi-megabyte model, CPU time on
 every image and false positives, against the no-dependencies rule. A page

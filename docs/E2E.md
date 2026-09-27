@@ -371,3 +371,42 @@ events after Go fell inside the 400 ms window and were dropped. Not
 verified here: real Chrome, for the reason above. The fix relies on the
 bar holding input focus while you type, which is how a Chromium omnibox
 works: it takes focus on tap and drops it on Go.
+
+## 2026-09-27, Android 15 emulator (API 35), version 1.8.4
+
+Reported: with a site blocked, typing it in the browser brought up the
+block screen, closing it went to the home screen, and from then on opening
+the browser only brought the block screen back; nothing else could be
+done in the browser. The block screen covered the browser but left it on
+the blocked page, so each time the browser came to the front the bar read
+the same address.
+
+Chrome still dies at page load on this image, so the check used a real
+browser instead of a stand-in: Firefox 156 (x86_64 build from
+ftp.mozilla.org). That showed a second problem: current Firefox draws its
+toolbar in Compose, the `mozac_browser_toolbar_url_view` id is gone, and
+the app read no Firefox address at all. The address is in the description
+of the node tagged `ADDRESSBAR_URL_BOX`, " linkedin.com. Search or enter
+address"; 1.8.4 reads it there. Filter on, linkedin.com set to Block,
+wikipedia.org on a 5 minute timer with the pause on, "feet" as a blocked
+keyword, DNS tunnel up. Debug builds log each bar reading and block.
+
+| Check | 1.8.3 logic (Firefox read added) | 1.8.4 |
+| --- | --- | --- |
+| Type linkedin.com from a search results page, Go | Block screen | Block screen; the bar had left linkedin.com 300 ms later |
+| Keep it blocked, open Firefox again | Block screen at once, every time (three opens) | Firefox on the search results page, no block screen |
+| Type mozilla.org there | | Loads |
+| 35 s on the home screen after Keep it blocked | No block screen | No block screen |
+| linkedin.com typed in a new tab (its only history entry) | | Block screen; Firefox went to its home page; reopening is clean |
+| linkedin.com/feed opened from another app | | Block screen; Firefox closed that tab and selected the tab left from the row above, which showed linkedin.com and got one more block screen and back; then clean |
+| en.wikipedia.org/wiki/Cat with the pause, wait, intention, Continue | | Firefox opens en.wikipedia.org/wiki/Cat, no block screen |
+| duckduckgo.com/?q=feet | | Block screen for the keyword; reopening is clean |
+| Calendar (app rule Block) | | Block screen, no Back sent |
+| Unit tests | | 42 pass, including Firefox descriptions and the reopen address |
+
+Not verified here: Chrome, for the reason above. Expected from how
+Chrome handles Back on phones: the previous page when there is one, the
+tab closed for a tab opened from another app or from a link, and for a
+tab with no history of its own Chrome moves to the background and keeps
+the tab. That tab gets the block screen and a Back again when it is next
+shown, as in the Firefox rows above.

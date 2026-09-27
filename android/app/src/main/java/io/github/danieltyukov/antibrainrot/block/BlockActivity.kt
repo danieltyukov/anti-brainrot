@@ -1,8 +1,10 @@
 package io.github.danieltyukov.antibrainrot.block
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -95,7 +97,8 @@ class BlockActivity : ComponentActivity() {
         val key = intent.getStringExtra(EXTRA_KEY) ?: pkg
         val label = if (Keys.isSite(key) || Keys.isKeyword(key)) Keys.label(key) else appLabel(pkg)
         val icon = appIcon(pkg)
-        setContent { BlockScreen(key, label, icon, onHome = { goHome() }, onOpen = { openApp(pkg) }) }
+        val address = intent.getStringExtra(EXTRA_ADDRESS)
+        setContent { BlockScreen(key, label, icon, onHome = { goHome() }, onOpen = { openApp(pkg, address) }) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -114,9 +117,16 @@ class BlockActivity : ComponentActivity() {
         finish()
     }
 
-    private fun openApp(pkg: String) {
+    // The browser was taken back from a blocked page before this screen
+    // showed, so a site the pause lets through is opened again by address.
+    private fun openApp(pkg: String, address: String?) {
+        val page = address?.let { Intent(Intent.ACTION_VIEW, Uri.parse(Keys.addressUrl(it))).setPackage(pkg) }
         val launch = packageManager.getLaunchIntentForPackage(pkg)
-        if (launch != null) startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        try {
+            (page ?: launch)?.let { startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        } catch (e: ActivityNotFoundException) {
+            launch?.let { startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
         finish()
     }
 
@@ -137,6 +147,8 @@ class BlockActivity : ComponentActivity() {
         const val EXTRA_PACKAGE = "package"
         // The rule key: the package, or "site:" plus the rule host.
         const val EXTRA_KEY = "key"
+        // For a page: the address the browser showed before it went back.
+        const val EXTRA_ADDRESS = "address"
     }
 }
 

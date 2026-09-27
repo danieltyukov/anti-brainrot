@@ -29,4 +29,24 @@ class AddressBarTest {
         assertNull(Keys.forAddressBar(s, "google.com/search?q=feet", focused = true, before = null))
         assertEquals("site:reddit.com", Keys.forAddressBar(s, "linkedin.com", focused = true, before = "site:reddit.com"))
     }
+
+    // After a pause the page is opened again from what the bar showed.
+    @Test fun addressUrl() {
+        assertEquals("https://reddit.com/r/all", Keys.addressUrl("reddit.com/r/all"))
+        assertEquals("https://old.reddit.com", Keys.addressUrl(" old.reddit.com "))
+        assertEquals("http://example.com/a", Keys.addressUrl("http://example.com/a"))
+        assertEquals("HTTPS://example.com", Keys.addressUrl("HTTPS://example.com"))
+    }
+
+    // Descriptions as Firefox 156 reports them.
+    @Test fun firefoxDescription() {
+        assertEquals("mozilla.org/en-US", Keys.addressFromDescription(" mozilla.org/en-US. Search or enter address"))
+        assertEquals("linkedin.com", Keys.addressFromDescription(" linkedin.com. Search or enter address"))
+        assertEquals("linkedin.com", Keys.addressFromDescription(" linkedin.com. Zoeken of adres invoeren"))
+        assertEquals("duckduckgo.com/?q=hello+world&ia=web", Keys.addressFromDescription(" duckduckgo.com/?q=hello+world&ia=web. Search or enter address"))
+        assertEquals("keyword:feet", Keys.forAddressBar(s, Keys.addressFromDescription(" google.com/search?q=feet. Search or enter address"), focused = false, before = null))
+        assertNull(Keys.addressFromDescription("Search"))
+        assertNull(Keys.addressFromDescription(""))
+        assertNull(Keys.addressFromDescription(null))
+    }
 }
