@@ -403,6 +403,7 @@ keyword, DNS tunnel up. Debug builds log each bar reading and block.
 | duckduckgo.com/?q=feet | | Block screen for the keyword; reopening is clean |
 | Calendar (app rule Block) | | Block screen, no Back sent |
 | Unit tests | | 42 pass, including Firefox descriptions and the reopen address |
+| The released APK (v1.8.4 from GitHub, signed and minified), upgraded over 1.4.0: linkedin.com typed from mozilla.org, Keep it blocked, open Firefox twice | | Block screen, then Firefox on mozilla.org both times |
 
 Not verified here: Chrome, for the reason above. Expected from how
 Chrome handles Back on phones: the previous page when there is one, the
